@@ -43,7 +43,7 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 | **Ventas** | `sales`, `sale_items`, `payments`, `layaways`, `layaway_payments` |
 | **Compra de metales** | `metal_purchases`, `metal_purchase_items`, `purchase_adjustments` |
 | **Caja** | `cash_sessions`, `cash_movements` |
-| **Sistema** | `settings`, `document_sequences`, `contact_messages`, `activity_log`, `jobs`, `failed_jobs`, `cache`, `sessions` |
+| **Sistema** | `system_settings`, `document_sequences`, `contact_messages`, `activity_log`, `jobs`, `failed_jobs`, `cache`, `sessions` |
 
 *Las tablas de roles y permisos las crea `spatie/laravel-permission` y la tabla `activity_log` la crea `spatie/laravel-activitylog`, con su estructura estándar. Las demás de la última fila son las estándar de Laravel.*
 
@@ -360,10 +360,35 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 
 ## 11. Sistema
 
-- `settings`: `id`, `store_id`, `key`, `value` (`JSON`), índice único `(store_id, key)`. Ejemplos: `purchase_approval_limit`, `max_discount_percent`, `layaway_days`, `ticket_footer`.
+### `system_settings`
+Configuración central por sucursal (marca, paleta, límites operativos y parámetros predeterminados). Único por `store_id`.
+
+| Columna | Tipo | Notas |
+| :--- | :--- | :--- |
+| `store_id` | `BIGINT UNSIGNED` | FK `stores`, índice único |
+| `system_name` | `VARCHAR(100)` | Nombre comercial del sistema (default: "Joyería Web") |
+| `logo_light_path` | `VARCHAR(255) NULL` | Logo para fondos oscuros |
+| `logo_dark_path` | `VARCHAR(255) NULL` | Logo para fondos claros |
+| `favicon_path` | `VARCHAR(255) NULL` | Favicon de la tienda |
+| `primary_color` | `VARCHAR(7)` | Default: `#12161F` (Noche) |
+| `background_color` | `VARCHAR(7)` | Default: `#F7F4EE` (Hueso) |
+| `accent_gold_color` | `VARCHAR(7)` | Default: `#B89A5E` (Dorado Champán) |
+| `accent_light_gold` | `VARCHAR(7)` | Default: `#E3D6B4` (Dorado Claro) |
+| `purchase_approval_limit` | `DECIMAL(12,2)` | Default: `500.00` (monto compra que requiere gerente) |
+| `max_discount_percent` | `DECIMAL(5,2)` | Default: `10.00` (% máximo descuento en POS) |
+| `layaway_max_days` | `INT` | Default: `30` (días para apartados) |
+| `ticket_footer_text` | `TEXT NULL` | Mensaje al pie del ticket térmico |
+| `low_stock_alert_threshold` | `INT` | Default: `5` (alerta stock bajo) |
+| `cash_difference_alert_limit` | `DECIMAL(12,2)` | Default: `10.00` (alerta descalce de caja) |
+| `default_layaway_terms` | `TEXT NULL` | Términos predeterminados en apartados |
+| `default_purchase_disclaimer` | `TEXT NULL` | Leyenda legal en compras de oro |
+| `metal_api_provider` | `VARCHAR(50)` | Default: `"GoldAPI.io"` |
+| `whatsapp_number` | `VARCHAR(20) NULL` | Número de WhatsApp público |
+| `updated_at` | `TIMESTAMP` | Marca temporal |
+
 - `document_sequences`: `id`, `store_id`, `type` (`sale`, `purchase`, `layaway`), `prefix`, `next_number`. Se incrementa dentro de una transacción con bloqueo pesimista de fila (`lockForUpdate()`) para garantizar consecutivos estrictos sin duplicados.
 - `contact_messages`: `id`, `store_id`, `name`, `email`, `phone`, `message`, `status` (`new`, `read`, `answered`), `ip`, `created_at`.
-- `activity_log`: Estructura estándar Spatie: `log_name`, `description`, `subject`, `causer`, `properties` (`JSON`), `created_at`.
+- `activity_log`: Estructura estándar Spatie: `log_name`, `description`, `subject_type`, `subject_id`, `event`, `causer_type`, `causer_id`, `properties` (`JSON`), `batch_uuid`, `created_at`.
 
 ---
 
@@ -371,7 +396,7 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 
 | Relación | Tipo |
 | :--- | :--- |
-| `stores` a `users`, `customers`, `products`, `sales`, `cash_sessions` | Uno a muchos |
+| `stores` a `users`, `customers`, `products`, `sales`, `cash_sessions`, `system_settings` | Uno a muchos / Uno a uno |
 | `metals` a `metal_purities` | Uno a muchos |
 | `products` a `product_photos` | Uno a muchos (borrado en cascada) |
 | `products` a `inventory_movements` | Uno a muchos |
@@ -386,12 +411,26 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 
 ---
 
-## 13. Integridad y reglas de datos
+## 13. Integridad, restricciones CHECK y disparadores (Triggers)
 
 1. **Restricción de borrado (`ON DELETE RESTRICT`):** No se permite borrar un cliente, usuario, producto o turno que tenga transacciones, ventas, compras o movimientos asociados. Solo `product_photos` se elimina en cascada junto con su producto.
 2. **Tablas inmutables:** `inventory_movements`, `metal_prices`, `purchase_adjustments`, `cash_movements` y `activity_log` nunca se actualizan ni se borran. Las ventas, compras y turnos cerrados se anulan o ajustan con motivo justificado.
-3. **Restricciones de valor:** Pesos $> 0$, montos y precios $\ge 0$, `discount_percent` entre $0$ y $100$, `fineness` entre $0$ y $1$, `quantity_delta` $\neq 0$.
-4. **Saldo de inventario derivado:** El estado de un producto (`products.status`) y el peso de un lote (`material_lots.current_weight_g`) se actualizan en la misma transacción que inserta el movimiento, con un comando de verificación de saldos programado.
+3. **Restricciones CHECK en motor MySQL 8:**
+   - Pureza: `chk_metal_purities_fineness` (`fineness > 0 AND fineness <= 1.0000`).
+   - Productos: `chk_products_weight` (`weight_g > 0`), `chk_products_cost` (`cost >= 0`), `chk_products_price` (`price >= 0`).
+   - Lotes: `chk_material_lots_initial_weight` (`> 0`), `chk_material_lots_current_weight` (`>= 0`).
+   - Caja: `chk_cash_sessions_opening_amount` (`>= 0`), `chk_cash_movements_amount` (`> 0`).
+   - Precios y descuentos: `chk_metal_prices_price_per_gram` (`> 0`), `chk_purchase_settings_discount_percent` (`0 <= discount_percent <= 100`).
+   - Ventas e ítems: `chk_sales_subtotal` (`>= 0`), `chk_sales_total` (`>= 0`), `chk_sales_discount` (`>= 0`), `chk_sale_items_weight` (`> 0`), `chk_payments_amount` (`> 0`).
+   - Apartados: `chk_layaways_total` (`> 0`), `chk_layaways_paid` (`>= 0`), `chk_layaways_balance` (`>= 0`), `chk_layaway_payments_amount` (`> 0`).
+   - Compras de metal: `chk_metal_purchases_total` (`>= 0`), `chk_purchase_items_gross_weight` (`> 0`), `chk_purchase_items_net_weight` (`> 0`), `chk_purchase_items_net_le_gross` (`net_weight_g <= gross_weight_g`), `chk_purchase_items_amount` (`>= 0`).
+   - Movimientos: `chk_quantity_delta` (`quantity_delta IN (-1, 0, 1)`).
+   - Configuración: `chk_purchase_limit` (`>= 0`), `chk_max_discount` (`0 <= max_discount <= 100`), `chk_layaway_days` (`> 0`), `chk_next_number` (`>= 1`).
+4. **Disparadores a nivel de base de datos (Triggers MySQL):**
+   - `trg_material_lots_no_negative_weight`: Impide a nivel de motor que el peso actual de un lote de fundición sea menor a cero (`BEFORE UPDATE`).
+   - `trg_cash_sessions_one_open_per_user`: Impide que un cajero tenga dos turnos en estado `open` simultáneamente (`BEFORE INSERT`).
+   - `trg_layaways_balance_check`: Mantiene el saldo de apartado estrictamente sincronizado (`balance = total_price - paid_total`) y bloquea cobros que superen el precio total (`BEFORE UPDATE`).
+   - `trg_inventory_movements_xor_target`: Garantiza la exclusión mutua (`product_id` XOR `material_lot_id`) en cada movimiento de existencias (`BEFORE INSERT`).
 5. **Transaccionalidad:** Venta, anulación, compra de metal, apartado, abono, cierre de caja y conteo físico se ejecutan en transacciones atómicas individuales.
 
 ---
