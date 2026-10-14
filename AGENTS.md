@@ -1,3 +1,24 @@
+# JoyeriaWeb - AI Agents Project Instructions & Documentation Map
+
+> [!IMPORTANT]
+> **MANUAL Y DOCUMENTACIÓN DEL PROYECTO PARA AGENTES DE IA:**
+> Este proyecto cuenta con 6 documentos normativos estructurados en la carpeta [`docs/`](file:///c:/laragon/www/joyeria-web/docs/README.md).
+> Antes de diseñar, proponer o programar cualquier funcionalidad, el agente DEBE consultar el documento correspondiente:
+>
+> 1. [PRD (Qué hace el producto)](file:///c:/laragon/www/joyeria-web/docs/01-prd.md)
+> 2. [TRD (Requisitos técnicos y stack)](file:///c:/laragon/www/joyeria-web/docs/02-trd.md)
+> 3. [Flujo de la App (UX, pantallas y botones)](file:///c:/laragon/www/joyeria-web/docs/03-flujo-app.md)
+> 4. [Brief de Diseño (UI, colores y tipografía)](file:///c:/laragon/www/joyeria-web/docs/04-brief-diseno.md)
+> 5. [Esquema de Base de Datos (Tablas, tipos exactos y reglas)](file:///c:/laragon/www/joyeria-web/docs/05-esquema-bd.md)
+> 6. [Plan de Implementación (Fases y pasos)](file:///c:/laragon/www/joyeria-web/docs/06-plan-implementacion.md)
+>
+> **Reglas fundamentales:**
+> - El inventario se controla **exclusivamente por movimientos inmutables** en `InventoryService`.
+> - Las operaciones de valuación de metales se calculan **únicamente en `PricingCalculator`**.
+> - **Nunca usar float ni double** para dinero ni pesos (usar `DECIMAL` y `brick/money`).
+> - Todos los cambios monetarios y de existencias van en transacciones atómicas de base de datos.
+> - Código en inglés, interfaz de usuario en español.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

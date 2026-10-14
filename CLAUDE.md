@@ -1,47 +1,23 @@
-<laravel-boost-guidelines>
-# Laravel Application
+# JoyeriaWeb - AI Agents Project Instructions & Documentation Map
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+> [!IMPORTANT]
+> **MANUAL Y DOCUMENTACIÓN DEL PROYECTO PARA AGENTES DE IA:**
+> Este proyecto cuenta con 6 documentos normativos estructurados en la carpeta [`docs/`](file:///c:/laragon/www/joyeria-web/docs/README.md).
+> Antes de diseñar, proponer o programar cualquier funcionalidad, el agente DEBE consultar el documento correspondiente:
+>
+> 1. [PRD (Qué hace el producto)](file:///c:/laragon/www/joyeria-web/docs/01-prd.md)
+> 2. [TRD (Requisitos técnicos y stack)](file:///c:/laragon/www/joyeria-web/docs/02-trd.md)
+> 3. [Flujo de la App (UX, pantallas y botones)](file:///c:/laragon/www/joyeria-web/docs/03-flujo-app.md)
+> 4. [Brief de Diseño (UI, colores y tipografía)](file:///c:/laragon/www/joyeria-web/docs/04-brief-diseno.md)
+> 5. [Esquema de Base de Datos (Tablas, tipos exactos y reglas)](file:///c:/laragon/www/joyeria-web/docs/05-esquema-bd.md)
+> 6. [Plan de Implementación (Fases y pasos)](file:///c:/laragon/www/joyeria-web/docs/06-plan-implementacion.md)
 
-## Prerequisites
-
-Verify that PHP and Composer are available:
-
-```sh
-php -v
-composer -V
-```
-
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
-
-macOS:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
-
-Windows PowerShell:
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
-
-Linux:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
-
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+## Reglas Técnicas y Arquitectura Clave
+- **Framework:** Laravel 12 con PHP 8.5, MySQL 8 (InnoDB, utf8mb4_unicode_ci).
+- **Frontend / Panel:** Blade, Livewire 3, Alpine.js, Bootstrap 5 personalizado con SCSS.
+- **Cálculo de metales:** Centralizado estrictamente en `PricingCalculator` (`app/Services/PricingCalculator.php`).
+- **Control de existencias:** No se modifican saldos a mano; únicamente mediante `InventoryService` y movimientos inmutables (`inventory_movements`).
+- **Precisión numérica:** Usar `DECIMAL` en base de datos y `brick/money` en PHP; **nunca float ni double**.
+- **Seguridad e integridad:** `ON DELETE RESTRICT` en registros con transacciones; snapshots inmutables en ventas y compras; fotos de clientes y piezas en disco privado.
+- **Convenciones:** Código, métodos, variables y tablas en inglés; interfaz de usuario y mensajes en español.
+- **Formateo:** Ejecutar `vendor/bin/pint --format agent` antes de finalizar cambios de código PHP.
