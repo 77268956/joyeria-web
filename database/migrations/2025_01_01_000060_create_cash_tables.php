@@ -31,25 +31,27 @@ return new class extends Migration
             $table->index(['store_id', 'opened_at']);
         });
 
-        DB::statement('ALTER TABLE cash_sessions ADD CONSTRAINT chk_cash_sessions_opening_amount CHECK (opening_amount >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE cash_sessions ADD CONSTRAINT chk_cash_sessions_opening_amount CHECK (opening_amount >= 0)');
 
-        // Trigger: block a second open session for the same user
-        DB::unprepared('
-            CREATE TRIGGER trg_cash_sessions_one_open_per_user
-            BEFORE INSERT ON cash_sessions
-            FOR EACH ROW
-            BEGIN
-                DECLARE open_count INT;
-                SELECT COUNT(*) INTO open_count
-                FROM cash_sessions
-                WHERE user_id = NEW.user_id
-                  AND status = "open";
-                IF open_count > 0 THEN
-                    SIGNAL SQLSTATE "45000"
-                    SET MESSAGE_TEXT = "User already has an open cash session";
-                END IF;
-            END
-        ');
+            // Trigger: block a second open session for the same user
+            DB::unprepared('
+                CREATE TRIGGER trg_cash_sessions_one_open_per_user
+                BEFORE INSERT ON cash_sessions
+                FOR EACH ROW
+                BEGIN
+                    DECLARE open_count INT;
+                    SELECT COUNT(*) INTO open_count
+                    FROM cash_sessions
+                    WHERE user_id = NEW.user_id
+                      AND status = "open";
+                    IF open_count > 0 THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "User already has an open cash session";
+                    END IF;
+                END
+            ');
+        }
 
         Schema::create('cash_movements', function (Blueprint $table) {
             $table->id();
@@ -64,7 +66,9 @@ return new class extends Migration
             $table->index(['store_id', 'cash_session_id']);
         });
 
-        DB::statement('ALTER TABLE cash_movements ADD CONSTRAINT chk_cash_movements_amount CHECK (amount > 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE cash_movements ADD CONSTRAINT chk_cash_movements_amount CHECK (amount > 0)');
+        }
     }
 
     public function down(): void

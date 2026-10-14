@@ -67,9 +67,11 @@ return new class extends Migration
             $table->unique('store_id');
         });
 
-        DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_purchase_limit CHECK (purchase_approval_limit >= 0)');
-        DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_max_discount CHECK (max_discount_percent >= 0 AND max_discount_percent <= 100)');
-        DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_layaway_days CHECK (layaway_max_days > 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_purchase_limit CHECK (purchase_approval_limit >= 0)');
+            DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_max_discount CHECK (max_discount_percent >= 0 AND max_discount_percent <= 100)');
+            DB::statement('ALTER TABLE system_settings ADD CONSTRAINT chk_layaway_days CHECK (layaway_max_days > 0)');
+        }
 
         // -----------------------------------------------------------------
         // document_sequences — collision-free consecutive numbering
@@ -88,7 +90,9 @@ return new class extends Migration
             $table->unique(['store_id', 'type']);
         });
 
-        DB::statement('ALTER TABLE document_sequences ADD CONSTRAINT chk_next_number CHECK (next_number >= 1)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE document_sequences ADD CONSTRAINT chk_next_number CHECK (next_number >= 1)');
+        }
 
         // -----------------------------------------------------------------
         // contact_messages — public website inquiry form submissions

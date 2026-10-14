@@ -32,9 +32,11 @@ return new class extends Migration
             $table->index(['store_id', 'cash_session_id']);
         });
 
-        DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_subtotal CHECK (subtotal >= 0)');
-        DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_total CHECK (total >= 0)');
-        DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_discount CHECK (discount_total >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_subtotal CHECK (subtotal >= 0)');
+            DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_total CHECK (total >= 0)');
+            DB::statement('ALTER TABLE sales ADD CONSTRAINT chk_sales_discount CHECK (discount_total >= 0)');
+        }
 
         Schema::create('sale_items', function (Blueprint $table) {
             $table->id();
@@ -51,10 +53,12 @@ return new class extends Migration
             $table->index('sale_id');
         });
 
-        DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_weight CHECK (weight_g > 0)');
-        DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_price CHECK (unit_price >= 0)');
-        DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_discount CHECK (discount >= 0)');
-        DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_total CHECK (line_total >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_weight CHECK (weight_g > 0)');
+            DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_price CHECK (unit_price >= 0)');
+            DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_discount CHECK (discount >= 0)');
+            DB::statement('ALTER TABLE sale_items ADD CONSTRAINT chk_sale_items_total CHECK (line_total >= 0)');
+        }
 
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
@@ -70,7 +74,9 @@ return new class extends Migration
             $table->index(['cash_session_id', 'method']);
         });
 
-        DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount CHECK (amount > 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount CHECK (amount > 0)');
+        }
     }
 
     public function down(): void

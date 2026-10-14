@@ -52,7 +52,9 @@ return new class extends Migration
             $table->index(['store_id', 'customer_id']);
         });
 
-        DB::statement('ALTER TABLE metal_purchases ADD CONSTRAINT chk_purchases_total CHECK (total_amount >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE metal_purchases ADD CONSTRAINT chk_purchases_total CHECK (total_amount >= 0)');
+        }
 
         Schema::create('metal_purchase_items', function (Blueprint $table) {
             $table->id();
@@ -96,12 +98,14 @@ return new class extends Migration
             $table->index('metal_purchase_id');
         });
 
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_gross_weight CHECK (gross_weight_g > 0)');
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_net_weight CHECK (net_weight_g > 0)');
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_net_le_gross CHECK (net_weight_g <= gross_weight_g)');
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_amount CHECK (amount >= 0)');
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_fineness CHECK (fineness_snapshot > 0 AND fineness_snapshot <= 1)');
-        DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_discount CHECK (discount_percent_snapshot >= 0 AND discount_percent_snapshot <= 100)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_gross_weight CHECK (gross_weight_g > 0)');
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_net_weight CHECK (net_weight_g > 0)');
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_net_le_gross CHECK (net_weight_g <= gross_weight_g)');
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_amount CHECK (amount >= 0)');
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_fineness CHECK (fineness_snapshot > 0 AND fineness_snapshot <= 1)');
+            DB::statement('ALTER TABLE metal_purchase_items ADD CONSTRAINT chk_purchase_items_discount CHECK (discount_percent_snapshot >= 0 AND discount_percent_snapshot <= 100)');
+        }
 
         Schema::create('purchase_adjustments', function (Blueprint $table) {
             $table->id();

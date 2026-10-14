@@ -27,7 +27,9 @@ return new class extends Migration
             $table->index(['store_id', 'metal_id', 'price_date']);
         });
 
-        DB::statement('ALTER TABLE metal_prices ADD CONSTRAINT chk_metal_prices_price_per_gram CHECK (price_per_gram > 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE metal_prices ADD CONSTRAINT chk_metal_prices_price_per_gram CHECK (price_per_gram > 0)');
+        }
 
         Schema::create('purchase_settings', function (Blueprint $table) {
             $table->id();
@@ -41,7 +43,9 @@ return new class extends Migration
             $table->unique(['store_id', 'metal_id', 'purity_id']);
         });
 
-        DB::statement('ALTER TABLE purchase_settings ADD CONSTRAINT chk_purchase_settings_discount_percent CHECK (discount_percent >= 0 AND discount_percent <= 100)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE purchase_settings ADD CONSTRAINT chk_purchase_settings_discount_percent CHECK (discount_percent >= 0 AND discount_percent <= 100)');
+        }
     }
 
     public function down(): void

@@ -39,12 +39,14 @@ return new class extends Migration
             $table->index(['store_id', 'is_public', 'is_featured']);
         });
 
-        DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_weight CHECK (weight_g > 0)');
-        DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_cost CHECK (cost >= 0)');
-        DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_price CHECK (price >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_weight CHECK (weight_g > 0)');
+            DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_cost CHECK (cost >= 0)');
+            DB::statement('ALTER TABLE products ADD CONSTRAINT chk_products_price CHECK (price >= 0)');
 
-        // Full-text index for POS search by name or SKU
-        DB::statement('ALTER TABLE products ADD FULLTEXT INDEX ft_products_name_sku (name, sku)');
+            // Full-text index for POS search by name or SKU
+            DB::statement('ALTER TABLE products ADD FULLTEXT INDEX ft_products_name_sku (name, sku)');
+        }
 
         Schema::create('product_photos', function (Blueprint $table) {
             $table->id();

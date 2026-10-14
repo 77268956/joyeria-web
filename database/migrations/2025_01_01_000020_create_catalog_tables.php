@@ -34,7 +34,9 @@ return new class extends Migration
             $table->index('metal_id');
         });
 
-        DB::statement('ALTER TABLE metal_purities ADD CONSTRAINT chk_metal_purities_fineness CHECK (fineness > 0 AND fineness <= 1.0000)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE metal_purities ADD CONSTRAINT chk_metal_purities_fineness CHECK (fineness > 0 AND fineness <= 1.0000)');
+        }
 
         Schema::create('categories', function (Blueprint $table) {
             $table->id();

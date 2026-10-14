@@ -58,24 +58,26 @@ return new class extends Migration
             $table->index(['store_id', 'type']);
         });
 
-        DB::statement('ALTER TABLE inventory_movements ADD CONSTRAINT chk_quantity_delta CHECK (quantity_delta IN (-1, 0, 1))');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE inventory_movements ADD CONSTRAINT chk_quantity_delta CHECK (quantity_delta IN (-1, 0, 1))');
 
-        // Trigger: enforce that exactly one of product_id / material_lot_id is set
-        DB::unprepared('
-            CREATE TRIGGER trg_inventory_movements_xor_target
-            BEFORE INSERT ON inventory_movements
-            FOR EACH ROW
-            BEGIN
-                IF (NEW.product_id IS NULL AND NEW.material_lot_id IS NULL) THEN
-                    SIGNAL SQLSTATE "45000"
-                    SET MESSAGE_TEXT = "inventory_movements: product_id or material_lot_id must be set";
-                END IF;
-                IF (NEW.product_id IS NOT NULL AND NEW.material_lot_id IS NOT NULL) THEN
-                    SIGNAL SQLSTATE "45000"
-                    SET MESSAGE_TEXT = "inventory_movements: only one of product_id or material_lot_id may be set";
-                END IF;
-            END
-        ');
+            // Trigger: enforce that exactly one of product_id / material_lot_id is set
+            DB::unprepared('
+                CREATE TRIGGER trg_inventory_movements_xor_target
+                BEFORE INSERT ON inventory_movements
+                FOR EACH ROW
+                BEGIN
+                    IF (NEW.product_id IS NULL AND NEW.material_lot_id IS NULL) THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "inventory_movements: product_id or material_lot_id must be set";
+                    END IF;
+                    IF (NEW.product_id IS NOT NULL AND NEW.material_lot_id IS NOT NULL) THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "inventory_movements: only one of product_id or material_lot_id may be set";
+                    END IF;
+                END
+            ');
+        }
     }
 
     /**

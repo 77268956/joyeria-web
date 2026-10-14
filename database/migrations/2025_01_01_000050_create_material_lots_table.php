@@ -27,21 +27,23 @@ return new class extends Migration
             $table->index(['store_id', 'metal_id', 'purity_id']);
         });
 
-        DB::statement('ALTER TABLE material_lots ADD CONSTRAINT chk_material_lots_initial_weight CHECK (initial_weight_g > 0)');
-        DB::statement('ALTER TABLE material_lots ADD CONSTRAINT chk_material_lots_current_weight CHECK (current_weight_g >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE material_lots ADD CONSTRAINT chk_material_lots_initial_weight CHECK (initial_weight_g > 0)');
+            DB::statement('ALTER TABLE material_lots ADD CONSTRAINT chk_material_lots_current_weight CHECK (current_weight_g >= 0)');
 
-        // Trigger: prevent current_weight_g from going below zero
-        DB::unprepared('
-            CREATE TRIGGER trg_material_lots_no_negative_weight
-            BEFORE UPDATE ON material_lots
-            FOR EACH ROW
-            BEGIN
-                IF NEW.current_weight_g < 0 THEN
-                    SIGNAL SQLSTATE "45000"
-                    SET MESSAGE_TEXT = "current_weight_g cannot be negative in material_lots";
-                END IF;
-            END
-        ');
+            // Trigger: prevent current_weight_g from going below zero
+            DB::unprepared('
+                CREATE TRIGGER trg_material_lots_no_negative_weight
+                BEFORE UPDATE ON material_lots
+                FOR EACH ROW
+                BEGIN
+                    IF NEW.current_weight_g < 0 THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "current_weight_g cannot be negative in material_lots";
+                    END IF;
+                END
+            ');
+        }
     }
 
     public function down(): void

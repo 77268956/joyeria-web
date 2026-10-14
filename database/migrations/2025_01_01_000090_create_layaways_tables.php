@@ -30,23 +30,25 @@ return new class extends Migration
             $table->index(['store_id', 'customer_id']);
         });
 
-        DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_total CHECK (total_price > 0)');
-        DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_paid CHECK (paid_total >= 0)');
-        DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_balance CHECK (balance >= 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_total CHECK (total_price > 0)');
+            DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_paid CHECK (paid_total >= 0)');
+            DB::statement('ALTER TABLE layaways ADD CONSTRAINT chk_layaway_balance CHECK (balance >= 0)');
 
-        // Trigger: keep balance in sync and prevent over-payment
-        DB::unprepared('
-            CREATE TRIGGER trg_layaways_balance_check
-            BEFORE UPDATE ON layaways
-            FOR EACH ROW
-            BEGIN
-                IF NEW.paid_total > NEW.total_price THEN
-                    SIGNAL SQLSTATE "45000"
-                    SET MESSAGE_TEXT = "paid_total cannot exceed total_price in layaways";
-                END IF;
-                SET NEW.balance = NEW.total_price - NEW.paid_total;
-            END
-        ');
+            // Trigger: keep balance in sync and prevent over-payment
+            DB::unprepared('
+                CREATE TRIGGER trg_layaways_balance_check
+                BEFORE UPDATE ON layaways
+                FOR EACH ROW
+                BEGIN
+                    IF NEW.paid_total > NEW.total_price THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "paid_total cannot exceed total_price in layaways";
+                    END IF;
+                    SET NEW.balance = NEW.total_price - NEW.paid_total;
+                END
+            ');
+        }
 
         Schema::create('layaway_payments', function (Blueprint $table) {
             $table->id();
@@ -61,7 +63,9 @@ return new class extends Migration
             $table->index('layaway_id');
         });
 
-        DB::statement('ALTER TABLE layaway_payments ADD CONSTRAINT chk_layaway_payment CHECK (amount > 0)');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE layaway_payments ADD CONSTRAINT chk_layaway_payment CHECK (amount > 0)');
+        }
     }
 
     public function down(): void
