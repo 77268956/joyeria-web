@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Store;
 use App\Services\CashSessionService;
 use App\Services\MetalPriceService;
 use App\Services\Pricing\MetalPriceProviderInterface;
@@ -53,6 +54,15 @@ class AppServiceProvider extends ServiceProvider
                 'goldMetalPrice' => $service->currentByCode('GOLD'),
                 'silverMetalPrice' => $service->currentByCode('SILVER'),
                 'openCashSession' => $cash->currentSession(Auth::user()),
+            ]);
+        });
+
+        View::composer('layouts.public', function ($view): void {
+            $store = Store::publicSite();
+
+            $view->with([
+                'publicStore' => $store,
+                'publicSettings' => $store?->systemSettings,
             ]);
         });
     }

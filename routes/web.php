@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\StockCountController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,29 +33,18 @@ use Illuminate\Support\Facades\Route;
 // =========================================================================
 // 1. RUTAS PÚBLICAS (Sitio Web)
 // =========================================================================
-Route::get('/', function () {
-    return view('public.home');
-})->name('home');
-
-Route::get('/catalogo', function () {
-    return view('public.catalog');
-})->name('public.catalog');
-
-Route::get('/pieza/{id}', function ($id) {
-    return view('public.product-detail', ['id' => $id]);
-})->name('public.product');
-
-Route::get('/vender-oro', function () {
-    return view('public.sell-gold');
-})->name('public.sell_gold');
-
-Route::get('/sucursal', function () {
-    return view('public.store');
-})->name('public.store');
-
-Route::get('/contacto', function () {
-    return view('public.contact');
-})->name('public.contact');
+Route::get('/', [PublicSiteController::class, 'home'])->name('home');
+Route::get('/catalogo', [PublicSiteController::class, 'catalog'])->name('public.catalog');
+Route::get('/pieza/{product}', [PublicSiteController::class, 'product'])->name('public.product');
+Route::get('/vender-oro', [PublicSiteController::class, 'sellGold'])->name('public.sell_gold');
+Route::post('/vender-oro/cotizar', [PublicSiteController::class, 'quote'])
+    ->middleware('throttle:30,1')
+    ->name('public.sell_gold.quote');
+Route::get('/sucursal', [PublicSiteController::class, 'store'])->name('public.store');
+Route::get('/contacto', [PublicSiteController::class, 'contact'])->name('public.contact');
+Route::post('/contacto', [PublicSiteController::class, 'submitContact'])
+    ->middleware('throttle:5,1')
+    ->name('public.contact.store');
 
 // =========================================================================
 // 2. AUTENTICACIÓN

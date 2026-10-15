@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -76,5 +77,21 @@ class Store extends Model
     public function systemSettings(): HasOne
     {
         return $this->hasOne(SystemSetting::class);
+    }
+
+    /**
+     * Scope the query to active stores.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * The store that backs the public website (first active store).
+     */
+    public static function publicSite(): ?self
+    {
+        return static::query()->active()->orderBy('id')->first();
     }
 }

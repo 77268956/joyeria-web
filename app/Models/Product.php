@@ -142,6 +142,23 @@ class Product extends Model
     }
 
     /**
+     * Scope the query to pieces that may appear on the public website.
+     */
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query->where('is_public', true)
+            ->where('status', ProductStatus::Available->value);
+    }
+
+    /**
+     * Scope the query to pieces highlighted on the public website.
+     */
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
      * Generate a unique SKU for the given store.
      */
     public static function generateSku(int $storeId): string

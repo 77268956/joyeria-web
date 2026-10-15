@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductPhoto extends Model
 {
@@ -48,5 +49,13 @@ class ProductPhoto extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Public URL for a photo stored on the public disk.
+     */
+    public function getUrlAttribute(): string
+    {
+        return Storage::disk('public')->url($this->path);
     }
 }
