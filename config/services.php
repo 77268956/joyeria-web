@@ -35,4 +35,30 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Metal price provider
+    |--------------------------------------------------------------------------
+    |
+    | Daily spot prices for gold and silver are fetched through an abstract
+    | provider. Select the active one with METAL_PRICE_PROVIDER. Spot prices
+    | arrive per troy ounce in `currency`; `exchange_rate` converts them to the
+    | store's local currency before being stored per gram (see PricingCalculator).
+    |
+    */
+
+    'metal_prices' => [
+        'provider' => env('METAL_PRICE_PROVIDER', 'goldapi'),
+        'currency' => env('METAL_PRICE_CURRENCY', 'USD'),
+        'exchange_rate' => env('METAL_PRICE_EXCHANGE_RATE', '1'),
+        'goldapi' => [
+            'key' => env('GOLDAPI_KEY'),
+            'endpoint' => env('GOLDAPI_ENDPOINT', 'https://www.goldapi.io/api'),
+        ],
+        'metals_dev' => [
+            'key' => env('METALS_DEV_KEY'),
+            'endpoint' => env('METALS_DEV_ENDPOINT', 'https://api.metals.dev/v1/latest'),
+        ],
+    ],
+
 ];
