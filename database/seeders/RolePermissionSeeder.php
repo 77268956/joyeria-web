@@ -63,10 +63,11 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
         ]);
 
-        // Role Vendedor: sales, purchases, stock view, cash open/close, customers
+        // Role Vendedor: sales, layaways, purchases, stock view, cash open/close, customers
         $vendedorRole = Role::findOrCreate('Vendedor', 'web');
         $vendedorRole->syncPermissions([
             'sales.create',
+            'layaways.manage',
             'purchases.create',
             'inventory.view',
             'cash.open',

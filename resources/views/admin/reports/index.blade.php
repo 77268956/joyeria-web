@@ -1,29 +1,29 @@
 @extends('layouts.admin')
 
-@section('title', 'Reportes y Métricas')
+@section('title', 'Reportes')
 
 @section('content')
 <div class="page-header">
     <div>
-        <h1 class="page-title font-serif">Reportes y Analítica</h1>
-        <p class="page-subtitle">Ventas, compras, flujo de caja y valoración de inventario al costo vs mercado</p>
+        <h1 class="page-title font-serif">Reportes</h1>
+        <p class="page-subtitle">Informes exportables de ventas, compras, inventario y caja.</p>
     </div>
 </div>
 
-<div class="card">
-    <div style="text-align: center; padding: 3rem 1rem;">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="1.5" style="margin-bottom: 1rem;">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-        </svg>
-        <h2 class="font-serif" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Informes de Gestión</h2>
-        <p style="color: var(--color-piedra); font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem;">
-            Filtros por fecha, gráficos estadísticos y exportación diferida a formatos Excel y PDF.
-        </p>
-        <a href="{{ route('admin.dashboard') }}" class="btn-logout" style="display: inline-block;">
-            &larr; Volver al Dashboard
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+    @foreach ($reports as $slug => $report)
+        <a href="{{ route('admin.reports.show', $slug) }}" class="card" style="display: flex; flex-direction: column; gap: 0.5rem; text-decoration: none; color: inherit;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="badge badge-gold">{{ $report['dated'] ? 'Por período' : 'Instantáneo' }}</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+            </div>
+            <h2 class="font-serif" style="font-size: 1.25rem; margin: 0.25rem 0 0;">{{ $report['title'] }}</h2>
+            <p class="muted" style="font-size: 0.88rem; line-height: 1.5; margin: 0;">{{ $report['description'] }}</p>
         </a>
-    </div>
+    @endforeach
 </div>
 @endsection

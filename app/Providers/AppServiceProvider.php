@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Services\CashSessionService;
+use App\Services\MetalPriceService;
+use App\Services\Pricing\MetalPriceProviderInterface;
+use App\Services\Pricing\Providers\GoldApiProvider;
+use App\Services\Pricing\Providers\MetalsDevProvider;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +18,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(MetalPriceProviderInterface::class, function (): MetalPriceProviderInterface {
+            $currency = (string) config('services.metal_prices.currency', 'USD');
+
+            return match (config('services.metal_prices.provider')) {
+                'metals_dev' => new MetalsDevProvider(
+                    apiKey: config('services.metal_prices.metals_dev.key'),
+                    endpoint: (string) config('services.metal_prices.metals_dev.endpoint'),
+                    currency: $currency,
+                ),
+                default => new GoldApiProvider(
+                    apiKey: config('services.metal_prices.goldapi.key'),
+                    endpoint: (string) config('services.metal_prices.goldapi.endpoint'),
+                    currency: $currency,
+                ),
+            };
+        });
     }
 
     /**
@@ -19,6 +41,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('layouts.admin', function ($view): void {
+            if (! Auth::check()) {
+                return;
+            }
+
+            $service = $this->app->make(MetalPriceService::class);
+            $cash = $this->app->make(CashSessionService::class);
+
+            $view->with([
+                'goldMetalPrice' => $service->currentByCode('GOLD'),
+                'silverMetalPrice' => $service->currentByCode('SILVER'),
+                'openCashSession' => $cash->currentSession(Auth::user()),
+            ]);
+        });
     }
 }

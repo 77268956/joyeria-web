@@ -114,30 +114,6 @@ return new class extends Migration
 
             $table->index(['store_id', 'status']);
         });
-
-        // -----------------------------------------------------------------
-        // activity_log — Spatie Activitylog compatible
-        // Append-only; no updated_at.
-        // -----------------------------------------------------------------
-        Schema::create('activity_log', function (Blueprint $table) {
-            $table->id();
-            $table->string('log_name', 255)->nullable()->index();
-            $table->text('description');
-            $table->string('subject_type', 255)->nullable();
-            $table->unsignedBigInteger('subject_id')->nullable();
-            $table->string('event', 255)->nullable();
-            $table->string('causer_type', 255)->nullable();
-            $table->foreignId('causer_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-            $table->json('properties')->nullable();
-            $table->uuid('batch_uuid')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->index(['subject_type', 'subject_id']);
-            $table->index(['causer_type', 'causer_id']);
-        });
     }
 
     /**
@@ -145,7 +121,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_log');
         Schema::dropIfExists('contact_messages');
         Schema::dropIfExists('document_sequences');
         Schema::dropIfExists('system_settings');

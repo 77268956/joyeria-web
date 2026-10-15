@@ -167,3 +167,26 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run `vendor/bin/phpunit` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 
 </laravel-boost-guidelines>
+
+---
+
+## Skills de agentes instaladas (global)
+
+Instaladas globalmente en `~/.agents/skills/` vía `npx skills`, disponibles para OpenCode y Antigravity:
+
+- **`laravel-database-optimization`** (asyrafhussin/agent-skills): consultas/N+1, índices compuestos, locking pesimista, transacciones cortas, paginación y migraciones sin downtime. Alineada a Laravel 13.x + PHP 8.3.
+- **`laravel-security`** (affaan-m/ecc): checklist de seguridad, cabeceras HTTP, rate limiting, almacenamiento privado de archivos y logging de auditoría.
+
+### Nota de compatibilidad — `laravel-security`
+
+Esta skill fue escrita para Laravel 10 o inferior y en sus ejemplos usa:
+
+- `app/Http/Kernel.php` y `protected $middlewareGroups['web']`
+- `protected $routeMiddleware = [...]` para registrar middleware
+
+Este proyecto usa **Laravel 13.36**, donde esos archivos y API ya no existen. Al aplicar cualquiera de esos ejemplos, tradúcelos a la API actual:
+
+- Registrar middleware (`role`, `can`, cabeceras de seguridad) en `bootstrap/app.php` con `->withMiddleware(function (Middleware $middleware) { ... })`, usando `$middleware->alias([...])` y `$middleware->append(...)`.
+- El grupo `web` (CSRF, sesiones) ya viene configurado por defecto; no hay `Kernel.php` que editar.
+
+Además, los bloques de **Sanctum, Passport y S3** de esa skill no aplican: este proyecto usa autenticación por sesión y disco local (`storage/app/private/`), y ninguno de esos paquetes está instalado.

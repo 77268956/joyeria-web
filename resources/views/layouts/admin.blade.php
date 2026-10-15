@@ -13,19 +13,20 @@
 
     <style>
         :root {
-            --color-noche: #12161F;
-            --color-hueso: #F7F4EE;
-            --color-blanco: #FFFFFF;
-            --color-dorado: #B89A5E;
+            --color-noche:        #12161F;
+            --color-hueso:        #F7F4EE;
+            --color-crema:        #F3EFE8; /* slightly darker than hueso, for table heads & filter bars */
+            --color-blanco:       #FFFFFF;
+            --color-dorado:       #B89A5E;
             --color-dorado-claro: #E3D6B4;
-            --color-piedra: #6B6B70;
-            --color-linea: #E4DFD3;
-            --color-exito: #3E7C59;
-            --color-error: #A63D40;
-            --color-aviso: #B7791F;
-            --color-info: #3F5F7A;
+            --color-piedra:       #6B6B70;
+            --color-linea:        #E4DFD3;
+            --color-exito:        #3E7C59;
+            --color-error:        #A63D40;
+            --color-aviso:        #B7791F;
+            --color-info:         #3F5F7A;
             --font-serif: 'Cormorant Garamond', Georgia, serif;
-            --font-sans: 'Jost', system-ui, -apple-system, sans-serif;
+            --font-sans:  'Jost', system-ui, -apple-system, sans-serif;
             --sidebar-width: 250px;
         }
 
@@ -287,7 +288,168 @@
             box-shadow: 0 1px 3px rgba(18, 22, 31, 0.02);
             margin-bottom: 1.5rem;
         }
+
+        /* ------------------ BUTTONS ------------------ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            height: 40px;
+            padding: 0 1.25rem;
+            border-radius: 4px;
+            font-family: var(--font-sans);
+            font-size: 0.86rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-sm {
+            height: 32px;
+            padding: 0 0.7rem;
+            font-size: 0.78rem;
+        }
+
+        .btn-gold { background-color: var(--color-dorado); color: var(--color-noche); font-weight: 600; }
+        .btn-gold:hover { background-color: #a98a4e; }
+
+        .btn-dark { background-color: var(--color-noche); color: var(--color-hueso); }
+        .btn-dark:hover { background-color: #232a38; }
+
+        .btn-outline { background: transparent; border-color: var(--color-linea); color: var(--color-piedra); }
+        .btn-outline:hover { border-color: var(--color-dorado); color: var(--color-dorado); }
+
+        .btn-danger { background: transparent; border-color: #E0B4B4; color: var(--color-error); }
+        .btn-danger:hover { background-color: #FDEDED; }
+
+        /* ------------------ FORMS ------------------ */
+        .form-group { margin-bottom: 1.1rem; }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-noche);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            height: 42px;
+            border: 1px solid var(--color-linea);
+            border-radius: 4px;
+            padding: 0 0.75rem;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            color: var(--color-noche);
+            background-color: var(--color-blanco);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea.form-control { height: auto; padding: 0.6rem 0.75rem; resize: vertical; }
+
+        .form-control:focus, .form-select:focus { border-color: var(--color-dorado); }
+
+        .form-hint { font-size: 0.78rem; color: var(--color-piedra); margin-top: 0.3rem; }
+
+        .form-check { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.88rem; color: var(--color-noche); }
+        .form-check input { width: 16px; height: 16px; accent-color: var(--color-dorado); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+        /* ------------------ TABLES ------------------ */
+        .table-wrap { overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+        table.data-table thead tr { background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); }
+        table.data-table th {
+            padding: 0.85rem 1.1rem;
+            font-weight: 600;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-noche);
+        }
+        table.data-table td { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--color-linea); color: var(--color-noche); }
+        table.data-table tbody tr:hover { background-color: #FBF9F5; }
+        .num { font-variant-numeric: tabular-nums; }
+
+        /* ------------------ BADGES & ALERTS ------------------ */
+        .badge {
+            display: inline-block;
+            padding: 0.22rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-radius: 4px;
+            background-color: #F1EFEA;
+            color: var(--color-piedra);
+        }
+        .badge-gold { background-color: rgba(184, 154, 94, 0.15); color: var(--color-dorado); }
+        .badge-success { background-color: #EDF7EE; color: var(--color-exito); }
+        .badge-danger { background-color: #FDEDED; color: var(--color-error); }
+        .badge-info { background-color: #EBF3FB; color: #205493; }
+        .badge-muted { background-color: #F1F0EB; color: var(--color-piedra); }
+
+        .alert { padding: 1rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; gap: 1rem; }
+        .alert-success { background-color: rgba(184, 154, 94, 0.15); border-left: 4px solid var(--color-dorado); color: var(--color-noche); }
+        .alert-error { background-color: #FDEDED; border-left: 4px solid var(--color-error); color: #5F2120; }
+        .alert-error ul { margin: 0.35rem 0 0; padding-left: 1.25rem; font-size: 0.88rem; }
+
+        .muted { color: var(--color-piedra); }
+        .text-right { text-align: right; }
+
+        /* ------------------ MODAL ------------------ */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(18, 22, 31, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal {
+            background-color: var(--color-blanco);
+            border-radius: 6px;
+            width: 100%;
+            max-width: 540px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            margin: 1rem;
+        }
+        .modal-header {
+            padding: 1.15rem 1.5rem;
+            background-color: var(--color-crema);
+            border-bottom: 1px solid var(--color-linea);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            border-top: 1px solid var(--color-linea);
+            padding: 1.15rem 1.5rem;
+        }
+        .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--color-piedra); }
+
+        .page-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
     </style>
+
+    @stack('styles')
 </head>
 <body>
     <!-- Sidebar / Menú Lateral -->
@@ -332,6 +494,18 @@
             </li>
 
             <li class="nav-item">
+                <a href="{{ route('admin.sales.index') }}" class="nav-link {{ request()->routeIs('admin.sales.*') ? 'active' : '' }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                        <line x1="9" y1="11" x2="15" y2="11"></line>
+                    </svg>
+                    <span>Ventas</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a href="{{ route('admin.layaways.index') }}" class="nav-link {{ request()->routeIs('admin.layaways.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -353,11 +527,31 @@
             </li>
 
             <li class="nav-item">
-                <a href="{{ route('admin.inventory.index') }}" class="nav-link {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.inventory.index') }}" class="nav-link {{ request()->routeIs('admin.inventory.*') && ! request()->routeIs('admin.inventory.lots.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                     </svg>
                     <span>Inventario</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.inventory.lots.index') }}" class="nav-link {{ request()->routeIs('admin.inventory.lots.*') ? 'active' : '' }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    <span>Materia Prima</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.stock-counts.index') }}" class="nav-link {{ request()->routeIs('admin.stock-counts.*') ? 'active' : '' }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <span>Conteos</span>
                 </a>
             </li>
 
@@ -438,19 +632,37 @@
         <!-- Topbar Superior -->
         <header class="topbar">
             <div class="topbar-left">
-                <!-- Ticker de Oro del día -->
-                <div class="gold-ticker">
-                    <span class="gold-ticker-label">Oro 24k Hoy</span>
-                    <span class="gold-ticker-value">$74.50 / g</span>
-                </div>
+                <!-- Ticker de metales del día -->
+                @php($tickerCurrency = Auth::user()?->store?->currency ?? 'USD')
+                @if ($goldMetalPrice ?? null)
+                    <div class="gold-ticker" title="Precio vigente por gramo de oro puro (24k) — {{ $goldMetalPrice->price_date?->format('d/m/Y') }}">
+                        <span class="gold-ticker-label">Oro 24k</span>
+                        <span class="gold-ticker-value">{{ $tickerCurrency }} ${{ number_format((float) $goldMetalPrice->price_per_gram, 2) }} / g</span>
+                    </div>
+                @endif
+                @if ($silverMetalPrice ?? null)
+                    <div class="gold-ticker" title="Precio vigente por gramo de plata pura (1000) — {{ $silverMetalPrice->price_date?->format('d/m/Y') }}">
+                        <span class="gold-ticker-label">Plata</span>
+                        <span class="gold-ticker-value">{{ $tickerCurrency }} ${{ number_format((float) $silverMetalPrice->price_per_gram, 2) }} / g</span>
+                    </div>
+                @endif
 
                 <!-- Estado de Caja -->
-                <div class="cash-status-badge cash-status-closed">
-                    <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor">
-                        <circle cx="5" cy="5" r="5"></circle>
-                    </svg>
-                    <span>Caja Cerrada</span>
-                </div>
+                @if ($openCashSession ?? null)
+                    <a href="{{ route('admin.cash.index') }}" class="cash-status-badge cash-status-open" style="text-decoration: none;">
+                        <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor">
+                            <circle cx="5" cy="5" r="5"></circle>
+                        </svg>
+                        <span>Turno Abierto</span>
+                    </a>
+                @else
+                    <a href="{{ route('admin.cash.index') }}" class="cash-status-badge cash-status-closed" style="text-decoration: none;">
+                        <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor">
+                            <circle cx="5" cy="5" r="5"></circle>
+                        </svg>
+                        <span>Caja Cerrada</span>
+                    </a>
+                @endif
             </div>
 
             <div class="topbar-right">
@@ -479,5 +691,7 @@
             @yield('content')
         </main>
     </div>
+
+    @stack('scripts')
 </body>
 </html>
