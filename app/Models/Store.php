@@ -47,6 +47,30 @@ class Store extends Model
     }
 
     /**
+     * Get the locations associated with this store.
+     */
+    public function locations(): HasMany
+    {
+        return $this->hasMany(Location::class);
+    }
+
+    /**
+     * Get the customers associated with this store.
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    /**
+     * Get the products associated with this store.
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
      * Get the system settings for this store.
      */
     public function systemSettings(): HasOne
