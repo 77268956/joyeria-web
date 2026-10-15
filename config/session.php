@@ -38,6 +38,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Inactivity Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of seconds a signed-in session may stay idle before it is
+    | invalidated. Enforced by App\Http\Middleware\CheckSessionInactivity.
+    |
+    */
+
+    'inactivity_timeout' => (int) env('SESSION_INACTIVITY_TIMEOUT', 1800),
+
+    /*
+    |--------------------------------------------------------------------------
     | Session Encryption
     |--------------------------------------------------------------------------
     |
@@ -169,7 +181,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV', 'production') === 'production'),
 
     /*
     |--------------------------------------------------------------------------

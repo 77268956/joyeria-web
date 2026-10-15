@@ -8,7 +8,9 @@ use App\Services\MetalPriceService;
 use App\Services\Pricing\MetalPriceProviderInterface;
 use App\Services\Pricing\Providers\GoldApiProvider;
 use App\Services\Pricing\Providers\MetalsDevProvider;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -42,6 +44,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::preventLazyLoading(! $this->app->isProduction());
+
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
+        }
+
         View::composer('layouts.admin', function ($view): void {
             if (! Auth::check()) {
                 return;

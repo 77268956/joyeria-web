@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -45,6 +46,8 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
+            $this->logSecurityEvent('login.locked', $request, ['seconds' => $seconds]);
+
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors([
@@ -58,6 +61,8 @@ class AuthController extends Controller
         if ($user && ! $user->is_active) {
             RateLimiter::hit($throttleKey, 60);
 
+            $this->logSecurityEvent('login.inactive', $request, ['email' => $request->input('email')]);
+
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors([
@@ -70,6 +75,8 @@ class AuthController extends Controller
 
         if (! Auth::attempt($credentials, $remember)) {
             RateLimiter::hit($throttleKey, 60);
+
+            $this->logSecurityEvent('login.failed', $request, ['email' => $request->input('email')]);
 
             return back()
                 ->withInput($request->only('email', 'remember'))
@@ -89,6 +96,8 @@ class AuthController extends Controller
             'last_login_at' => now(),
         ]);
 
+        $this->logSecurityEvent('login.success', $request, ['user_id' => $authenticatedUser->id]);
+
         return redirect()->intended(route('admin.dashboard'));
     }
 
@@ -103,5 +112,19 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('status', 'Sesión cerrada exitosamente.');
+    }
+
+    /**
+     * Write an authentication event to the dedicated security log.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    protected function logSecurityEvent(string $event, Request $request, array $context = []): void
+    {
+        Log::channel('security')->info($event, array_merge([
+            'email' => $request->input('email'),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ], $context));
     }
 }

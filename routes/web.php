@@ -51,7 +51,7 @@ Route::post('/contacto', [PublicSiteController::class, 'submitContact'])
 // =========================================================================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.attempt');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

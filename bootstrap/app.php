@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckSessionInactivity;
 use App\Http\Middleware\EnsureCashSessionIsOpen;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             CheckSessionInactivity::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->alias([
