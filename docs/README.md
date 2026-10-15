@@ -2,7 +2,7 @@
 
 Bienvenido a la documentación oficial y manual técnico y funcional de **JoyeriaWeb**.
 
-Este directorio contiene los **seis documentos rectores** que definen la totalidad del sistema: negocio, arquitectura, flujo de usuario, identidad visual, base de datos y plan de desarrollo paso a paso.
+Este directorio contiene los **documentos rectores** que definen la totalidad del sistema: negocio, arquitectura, flujo de usuario, identidad visual, base de datos, plan de desarrollo paso a paso, y los manuales operativos y el guion de aceptación de la puesta en marcha.
 
 ---
 
@@ -16,6 +16,9 @@ Este directorio contiene los **seis documentos rectores** que definen la totalid
 | **04** | **Brief de Diseño** | [`04-brief-diseno.md`](file:///c:/laragon/www/joyeria-web/docs/04-brief-diseno.md) | **Identidad visual:** Paleta de colores (Noche, Hueso, Dorado champán, etc.), tipografías (Cormorant Garamond y Jost), componentes, estados y especificaciones para tickets y comprobantes. |
 | **05** | **Esquema de Base de Datos** | [`05-esquema-bd.md`](file:///c:/laragon/www/joyeria-web/docs/05-esquema-bd.md) | **Estructura y reglas de datos:** Todas las tablas, columnas, tipos de datos exactos (`DECIMAL`), relaciones, índices, integridad referencial (`ON DELETE RESTRICT`), inmutabilidad y seeders. |
 | **06** | **Plan de Implementación** | [`06-plan-implementacion.md`](file:///c:/laragon/www/joyeria-web/docs/06-plan-implementacion.md) | **Hoja de ruta paso a paso:** Fases de desarrollo (Fase 0 a Fase 9), criterios de aceptación de cada fase, estrategia TDD y protocolo de despliegue. |
+| **07** | **Manual del Usuario** | [`07-manual-usuario.md`](file:///c:/laragon/www/joyeria-web/docs/07-manual-usuario.md) | **Uso diario (mostrador):** acceso, caja, punto de venta, apartados, compra de metales, clientes, inventario (consulta) y balanza digital. |
+| **08** | **Manual del Administrador** | [`08-manual-administrador.md`](file:///c:/laragon/www/joyeria-web/docs/08-manual-administrador.md) | **Administración:** usuarios y permisos, inventario, precio del metal, reportes, auditoría, respaldos, importación inicial, sitio público y seguridad. |
+| **09** | **Guion de Aceptación** | [`09-aceptacion.md`](file:///c:/laragon/www/joyeria-web/docs/09-aceptacion.md) | **Puesta en marcha:** guion de pruebas por rol, pruebas clave de negocio y firma de aceptación del personal. |
 
 ---
 

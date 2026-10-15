@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **MANUAL Y DOCUMENTACIÓN DEL PROYECTO PARA AGENTES DE IA:**
-> Este proyecto cuenta con 6 documentos normativos estructurados en la carpeta [`docs/`](file:///c:/laragon/www/joyeria-web/docs/README.md).
+> Este proyecto cuenta con 9 documentos estructurados en la carpeta [`docs/`](file:///c:/laragon/www/joyeria-web/docs/README.md).
 > Antes de diseñar, proponer o programar cualquier funcionalidad, el agente DEBE consultar el documento correspondiente:
 >
 > 1. [PRD (Qué hace el producto)](file:///c:/laragon/www/joyeria-web/docs/01-prd.md)
@@ -11,6 +11,9 @@
 > 4. [Brief de Diseño (UI, colores y tipografía)](file:///c:/laragon/www/joyeria-web/docs/04-brief-diseno.md)
 > 5. [Esquema de Base de Datos (Tablas, tipos exactos y reglas)](file:///c:/laragon/www/joyeria-web/docs/05-esquema-bd.md)
 > 6. [Plan de Implementación (Fases y pasos)](file:///c:/laragon/www/joyeria-web/docs/06-plan-implementacion.md)
+> 7. [Manual del Usuario (Personal de mostrador)](file:///c:/laragon/www/joyeria-web/docs/07-manual-usuario.md)
+> 8. [Manual del Administrador (Dueño y gerencia)](file:///c:/laragon/www/joyeria-web/docs/08-manual-administrador.md)
+> 9. [Guion de Aceptación (Pruebas con el personal)](file:///c:/laragon/www/joyeria-web/docs/09-aceptacion.md)
 >
 > **Reglas fundamentales:**
 > - El inventario se controla **exclusivamente por movimientos inmutables** en `InventoryService`.
