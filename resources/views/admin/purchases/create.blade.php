@@ -53,13 +53,14 @@
             <button type="button" class="btn btn-outline btn-sm" id="add-item">Añadir pieza</button>
         </div>
 
+        @include('admin.partials.scale-widget')
+
         <div id="items"></div>
 
         <p class="muted" style="font-size: 0.88rem; margin-top: 0.5rem;">
             Cada pieza requiere foto obligatoria. El peso puede tomarse de la balanza o justificarse como manual.
         </p>
     </div>
-
     <div class="card">
         <h2 class="font-serif" style="font-size: 1.15rem; margin-bottom: 1rem;">3. Valuación y confirmación</h2>
 
@@ -81,6 +82,7 @@
 @endsection
 
 @push('scripts')
+@vite('resources/js/scale.js')
 <script>
 (function () {
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -123,6 +125,10 @@
                 '<div class="form-group"><label class="form-label">Peso neto (g)</label><input type="number" step="0.001" min="0.001" class="form-control" data-field="net_weight_g"></div>' +
                 '<div class="form-group"><label class="form-label">Origen del peso</label><select class="form-select" data-field="weight_source"><option value="scale">Balanza</option><option value="manual">Manual</option></select></div>' +
             '</div>' +
+            '<div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; flex-wrap: wrap;">' +
+                '<button type="button" class="btn btn-outline btn-sm" data-take-scale>Tomar peso de la balanza</button>' +
+                '<span class="muted" data-scale-note style="font-size: 0.8rem;"></span>' +
+            '</div>' +
             '<div class="grid-2">' +
                 '<div class="form-group"><label class="form-label">Destino</label><select class="form-select" data-field="destination"><option value="used_inventory">Inventario de ocasión</option><option value="melting">Materia prima (fundición)</option></select></div>' +
                 '<div class="form-group"><label class="form-label">Foto de la pieza</label><input type="file" class="form-control" data-field="photo" accept="image/*"></div>' +
@@ -141,6 +147,35 @@
         ['purity_id', 'gross_weight_g', 'net_weight_g'].forEach((field) => {
             row.querySelector('[data-field="' + field + '"]').addEventListener('input', () => scheduleQuote(row));
             row.querySelector('[data-field="' + field + '"]').addEventListener('change', () => scheduleQuote(row));
+        });
+
+        const grossInput = row.querySelector('[data-field="gross_weight_g"]');
+        const netInput = row.querySelector('[data-field="net_weight_g"]');
+        const sourceSelect = row.querySelector('[data-field="weight_source"]');
+        const scaleNote = row.querySelector('[data-scale-note]');
+
+        const markManual = () => {
+            sourceSelect.value = 'manual';
+            scaleNote.textContent = 'Captura manual del peso.';
+        };
+
+        grossInput.addEventListener('input', markManual);
+        netInput.addEventListener('input', markManual);
+
+        row.querySelector('[data-take-scale]').addEventListener('click', () => {
+            const reading = window.JoyeriaScale ? window.JoyeriaScale.lastReading : null;
+
+            if (reading === null || reading === undefined) {
+                scaleNote.textContent = 'Sin lectura de balanza. Conéctala o escribe el peso a mano.';
+                return;
+            }
+
+            const value = Number(reading).toFixed(3);
+            grossInput.value = value;
+            netInput.value = value;
+            sourceSelect.value = 'scale';
+            scaleNote.textContent = 'Peso capturado de la balanza.';
+            scheduleQuote(row);
         });
 
         row.querySelector('[data-remove]').addEventListener('click', () => {

@@ -447,6 +447,79 @@
         .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--color-piedra); }
 
         .page-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+        /* ------------------ BALANZA (Web Serial) ------------------ */
+        .scale-panel {
+            border: 1px dashed var(--color-linea);
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(180deg, rgba(243, 239, 232, 0.6), rgba(255, 255, 255, 0));
+        }
+
+        .scale-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .scale-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--color-piedra);
+        }
+
+        .scale-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: var(--color-piedra);
+            box-shadow: 0 0 0 3px rgba(107, 107, 112, 0.12);
+        }
+
+        .scale-status[data-scale-status="connected"] .scale-dot {
+            background-color: var(--color-exito);
+            box-shadow: 0 0 0 3px rgba(62, 124, 89, 0.15);
+            animation: scale-pulse 1.6s ease-in-out infinite;
+        }
+
+        .scale-status[data-scale-status="connecting"] .scale-dot { background-color: var(--color-aviso); }
+
+        .scale-status[data-scale-status="error"] .scale-dot,
+        .scale-status[data-scale-status="unsupported"] .scale-dot { background-color: var(--color-error); }
+
+        @keyframes scale-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        .scale-reading {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.3rem;
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            line-height: 1;
+            color: var(--color-noche);
+        }
+
+        .scale-reading.is-live { color: var(--color-exito); }
+
+        .scale-unit { font-size: 1rem; color: var(--color-piedra); }
+
+        .scale-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .scale-actions .form-select { width: auto; height: 32px; }
     </style>
 
     @stack('styles')
