@@ -85,6 +85,10 @@ El sistema reproduce el ritmo de una jornada comercial habitual en una joyería:
   1. Escanear código de barras o buscar por SKU/nombre.
   2. La pieza se añade al carrito con foto miniatura, metal, quilataje, peso y precio.
   3. Opcional: seleccionar o crear cliente, aplicar descuento con permiso y motivo justificado.
+     - **Descuentos $\le 10\%$:** El vendedor los aplica directamente con motivo justificado.
+     - **Descuentos $> 10\%$:** Requieren autorización de supervisor (Gerente o Dueño). El sistema despliega un banner de advertencia y un modal híbrido con dos vías de autorización:
+       - *Opción A (PIN presencial):* El supervisor teclea su PIN numérico de 4 dígitos directamente en el POS para autorizar al instante sin cambiar de sesión de caja.
+       - *Opción B (Solicitud remota):* El vendedor envía la solicitud con motivo. El supervisor recibe una notificación en tiempo real (campana en cabecera) y puede aprobarla o rechazarla con motivo. El POS sondea en segundo plano cada 2.5s y, al ser aprobada, procesa el cobro automáticamente.
   4. Click en **Cobrar**, definir métodos de pago (pago mixto disponible).
   5. Click en **Confirmar venta**: el sistema crea en una sola transacción la venta, los ítems con snapshots, los pagos, descuenta el stock mediante movimientos de inventario y asienta el ingreso en caja.
   6. Imprime ticket térmico de 80 mm o genera factura en PDF.

@@ -40,7 +40,7 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 | **Catálogos** | `metals`, `metal_purities`, `categories`, `locations` |
 | **Inventario** | `products`, `product_photos`, `material_lots`, `inventory_movements`, `stock_counts`, `stock_count_items` |
 | **Precios** | `metal_prices`, `purchase_settings` |
-| **Ventas** | `sales`, `sale_items`, `payments`, `layaways`, `layaway_payments` |
+| **Ventas** | `sales`, `sale_items`, `payments`, `layaways`, `layaway_payments`, `discount_authorizations` |
 | **Compra de metales** | `metal_purchases`, `metal_purchase_items`, `purchase_adjustments` |
 | **Caja** | `cash_sessions`, `cash_movements` |
 | **Sistema** | `system_settings`, `document_sequences`, `contact_messages`, `activity_log`, `jobs`, `failed_jobs`, `cache`, `sessions` |
@@ -70,6 +70,7 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 | `name` | `VARCHAR(120)` | Nombre del colaborador |
 | `email` | `VARCHAR(150)` | Único |
 | `password` | `VARCHAR(255)` | Hash de Laravel |
+| `supervisor_pin` | `VARCHAR(255) NULL` | Hash de PIN de 4 dígitos para autorizaciones |
 | `is_active` | `BOOLEAN` | Desactivar en lugar de borrar |
 | `last_login_at` | `TIMESTAMP NULL` | Último inicio de sesión |
 | `remember_token` | `VARCHAR(100) NULL` | Recordar sesión |
@@ -271,6 +272,26 @@ Este documento define cómo se organizan y guardan los datos del sistema en MySQ
 ### `layaways` y `layaway_payments`
 - `layaways`: `id`, `store_id`, `number`, `customer_id`, `product_id`, `user_id`, `total_price`, `paid_total`, `balance`, `due_date`, `status` (`active`, `completed`, `cancelled`), `cancel_reason`, `completed_sale_id` (FK `sales NULL`), `created_at`, `updated_at`.
 - `layaway_payments`: `id`, `layaway_id`, `cash_session_id`, `method`, `amount`, `reference`, `user_id`, `created_at`.
+
+### `discount_authorizations`
+| Columna | Tipo | Notas |
+| :--- | :--- | :--- |
+| `store_id` | `BIGINT UNSIGNED` | FK `stores` |
+| `requested_by` | `BIGINT UNSIGNED` | FK `users` (Vendedor que solicita) |
+| `cash_session_id` | `BIGINT UNSIGNED` | FK `cash_sessions` (Caja activa) |
+| `authorized_by` | `BIGINT UNSIGNED NULL`| FK `users` (Dueño/Gerente que autoriza) |
+| `discount_percent`| `DECIMAL(5,2)` | Porcentaje solicitado (ej. `15.00`) |
+| `discount_amount` | `DECIMAL(12,2)` | Monto monetario del descuento |
+| `cart_subtotal` | `DECIMAL(12,2)` | Subtotal del carrito al solicitar |
+| `expected_total` | `DECIMAL(12,2)` | Total neto resultante |
+| `reason` | `VARCHAR(255)` | Justificación comercial del vendedor |
+| `rejection_reason`| `VARCHAR(255) NULL` | Motivo de rechazo de gerencia |
+| `status` | `VARCHAR(30)` | `pending`, `approved`, `rejected`, `expired`, `used` |
+| `authorized_at` | `TIMESTAMP NULL` | Fecha/hora de aprobación o rechazo |
+| `used_at` | `TIMESTAMP NULL` | Fecha/hora en que se cobró la venta |
+| `created_at`, `updated_at` | `TIMESTAMP` | Marcas de tiempo |
+
+*Índices:* `(store_id, status, created_at)`, `(requested_by, status)`.
 
 ---
 

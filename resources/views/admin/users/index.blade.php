@@ -313,6 +313,14 @@
                 </div>
             </div>
 
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-noche); margin-bottom: 0.4rem;">
+                    PIN de Supervisor (4 dígitos numéricos, opcional)
+                </label>
+                <input type="password" name="supervisor_pin" maxlength="4" pattern="[0-9]{4}" placeholder="Ej. 1234" style="width: 100%; height: 40px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.9rem; outline: none; letter-spacing: 0.2em;">
+                <span style="font-size: 0.75rem; color: var(--color-piedra); display: block; margin-top: 0.25rem;">Permite autorizar descuentos en mostrador rápidamente sin ingresar la contraseña completa.</span>
+            </div>
+
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.88rem; color: var(--color-noche); user-select: none;">
                     <input type="checkbox" name="is_active" value="1" checked style="accent-color: var(--color-dorado); width: 16px; height: 16px;">
@@ -396,6 +404,14 @@
                         <input type="password" name="password_confirmation" minlength="8" placeholder="Confirmar nueva" style="width: 100%; height: 36px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.65rem; font-size: 0.85rem; outline: none;">
                     </div>
                 </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-noche); margin-bottom: 0.4rem;">
+                    PIN de Supervisor (4 dígitos numéricos)
+                </label>
+                <input type="password" name="supervisor_pin" maxlength="4" pattern="[0-9]{4}" placeholder="Dejar en blanco para conservar el actual" style="width: 100%; height: 40px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.9rem; outline: none; letter-spacing: 0.2em;">
+                <span style="font-size: 0.75rem; color: var(--color-piedra); display: block; margin-top: 0.25rem;">PIN de 4 dígitos para autorizaciones rápidas en mostrador (POS).</span>
             </div>
 
             <div style="margin-bottom: 1.5rem;">

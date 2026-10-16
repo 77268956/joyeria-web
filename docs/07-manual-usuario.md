@@ -88,14 +88,20 @@ Antes de vender, verifica que la barra superior diga **Turno Abierto**. El POS e
 - Puedes asociar la venta a un **cliente existente** (búscalo por nombre o documento) o registrar uno nuevo.
 - Si la venta es de mostrador sin ficha, puedes continuar sin cliente.
 
-### 4.3 Descuento
-- Si cuentas con permiso, puedes aplicar un **descuento** indicando **motivo justificado**. Sin permiso, el campo no está disponible.
+### 4.3 Descuentos y autorización de supervisión
+- **Límite de mostrador (hasta 10%):** Puedes aplicar un descuento de hasta el 10% capturando un motivo justificado (por ejemplo: "Promoción del día" o "Cliente frecuente"). El sistema lo deduce inmediatamente.
+- **Descuentos especiales (> 10%):** Si ingresas un descuento mayor al 10% (por ejemplo, 15% acordado con el cliente), aparecerá una advertencia destacada en color ámbar y un botón **"Solicitar / Autorizar Descuento"**. Al pulsar **Cobrar**, se abrirá una ventana con dos alternativas:
+  - **Opción 1 — PIN Presencial (Supervisor en mostrador):** Si el Gerente o Dueño se encuentra físicamente contigo en la tienda, selecciona la pestaña *PIN de Supervisor*. El supervisor introduce su PIN de 4 dígitos y pulsa *Autorizar y Cobrar*. La venta se procesa de inmediato en tu propio turno de caja.
+  - **Opción 2 — Solicitud Remota (Supervisor ocupado o en otra área):** Si el supervisor no puede acercarse, selecciona la pestaña *Solicitud Remota*, escribe el motivo de la negociación con el cliente y pulsa *Enviar solicitud a Gerencia*. La pantalla cambiará a un estado de espera activa que verifica la respuesta cada 2.5 segundos. Cuando el supervisor apruebe la solicitud desde su panel, tu pantalla detectará la confirmación y completará el cobro automáticamente sin que tengas que volver a teclear nada. Si el supervisor la rechaza, te mostrará el motivo del rechazo para que ajustes la negociación con el cliente.
 
-### 4.4 Cobrar
+### 4.4 Cobrar y métodos de pago
 1. Pulsa **Cobrar**.
-2. Define los **métodos de pago**. Se admite **pago mixto** (por ejemplo, parte en efectivo y parte con transferencia).
+2. Define los **métodos de pago**. Se admite **pago mixto** (por ejemplo, parte en efectivo y parte con transferencia bancaria).
+   - **Monto:** Cantidad de dinero destinada a este método de pago.
+   - **Recibido (solo efectivo):** Cantidad de billetes físicos que el cliente te entrega (por ejemplo, una compra de $85 pagada con un billete de $100). El sistema calcula automáticamente el **cambio** a devolver.
+   - **Referencia (tarjetas y transferencias):** Número de autorización del voucher del POS bancario, clave de rastreo SPEI o número de transferencia para conciliar el pago con el extracto bancario.
 3. Revisa el total y los montos.
-4. Pulsa **Confirmar venta**.
+4. Pulsa **Confirmar venta** (o se confirmará automáticamente si provino de una solicitud remota aprobada).
 
 En ese momento, en una sola operación, el sistema:
 - Crea la venta y sus ítems (con los datos exactos de cada pieza al momento de vender).

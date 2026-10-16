@@ -739,6 +739,32 @@
             </div>
 
             <div class="topbar-right">
+                @can('products.edit_price')
+                <!-- Campana de Notificaciones de Autorizaciones de Descuento -->
+                <div style="position: relative;" id="supervisor-notif-container">
+                    <button type="button" id="btn-toggle-notifs" title="Solicitudes de descuento pendientes" style="background: none; border: 1px solid var(--color-linea); border-radius: 4px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-piedra); position: relative; transition: all 0.2s;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="notif-badge" style="display: none; position: absolute; top: -5px; right: -5px; background-color: var(--color-error); color: #fff; font-size: 0.65rem; font-weight: 700; border-radius: 10px; padding: 1px 5px; min-width: 16px; text-align: center; border: 2px solid #fff;">0</span>
+                    </button>
+
+                    <!-- Dropdown de Solicitudes -->
+                    <div id="notif-dropdown" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 360px; background-color: var(--color-blanco); border: 1px solid var(--color-linea); border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1000; overflow: hidden;">
+                        <div style="padding: 0.85rem 1.1rem; background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); display: flex; align-items: center; justify-content: space-between;">
+                            <strong style="font-size: 0.88rem; color: var(--color-noche);">Descuentos Pendientes</strong>
+                            <span id="notif-count-badge" class="badge badge-gold" style="font-size: 0.7rem;">0 pendientes</span>
+                        </div>
+                        <div id="notif-list" style="max-height: 380px; overflow-y: auto;">
+                            <div style="padding: 2rem 1rem; text-align: center; color: var(--color-piedra); font-size: 0.85rem;">
+                                No hay solicitudes de descuento pendientes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endcan
+
                 <div class="user-profile">
                     <span class="user-name">{{ Auth::user()->name ?? 'Usuario' }}</span>
                     <span class="user-role">{{ Auth::user()->roles->first()->name ?? 'Colaborador' }}</span>
@@ -766,5 +792,139 @@
     </div>
 
     @stack('scripts')
+
+    @can('products.edit_price')
+    <script>
+    (function () {
+        const notifContainer = document.getElementById('supervisor-notif-container');
+        if (!notifContainer) return;
+
+        const btnToggle = document.getElementById('btn-toggle-notifs');
+        const notifBadge = document.getElementById('notif-badge');
+        const notifDropdown = document.getElementById('notif-dropdown');
+        const notifList = document.getElementById('notif-list');
+        const notifCountBadge = document.getElementById('notif-count-badge');
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        const countUrl = @json(route('admin.authorizations.count'));
+        const pendingUrl = @json(route('admin.authorizations.pending'));
+        const baseUrl = @json(url('admin/autorizaciones'));
+
+        let isOpen = false;
+
+        function updateBadge() {
+            fetch(countUrl, { headers: { 'Accept': 'application/json' } })
+                .then((r) => r.json())
+                .then((data) => {
+                    const count = data.count || 0;
+                    if (count > 0) {
+                        notifBadge.textContent = count;
+                        notifBadge.style.display = 'inline-block';
+                        btnToggle.style.borderColor = 'var(--color-dorado)';
+                        btnToggle.style.color = 'var(--color-dorado)';
+                    } else {
+                        notifBadge.style.display = 'none';
+                        btnToggle.style.borderColor = 'var(--color-linea)';
+                        btnToggle.style.color = 'var(--color-piedra)';
+                    }
+                    if (isOpen) {
+                        loadPendingList();
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function loadPendingList() {
+            fetch(pendingUrl, { headers: { 'Accept': 'application/json' } })
+                .then((r) => r.json())
+                .then((data) => {
+                    const list = data.authorizations || [];
+                    notifCountBadge.textContent = list.length + ' pendientes';
+
+                    if (list.length === 0) {
+                        notifList.innerHTML = '<div style="padding: 2rem 1rem; text-align: center; color: var(--color-piedra); font-size: 0.85rem;">No hay solicitudes de descuento pendientes.</div>';
+                        return;
+                    }
+
+                    notifList.innerHTML = '';
+                    list.forEach((auth) => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--color-linea); font-size: 0.85rem;';
+                        item.innerHTML =
+                            '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">' +
+                                '<strong>' + auth.requester_name + '</strong>' +
+                                '<span class="badge badge-gold" style="font-size: 0.72rem;">' + auth.discount_percent + '% dto.</span>' +
+                            '</div>' +
+                            '<div style="color: var(--color-piedra); font-size: 0.82rem; margin-bottom: 0.4rem;">' +
+                                'Subtotal: $' + Number(auth.subtotal).toFixed(2) + ' · Descuento: <strong style="color: var(--color-aviso);">$' + Number(auth.discount_amount).toFixed(2) + '</strong>' +
+                            '</div>' +
+                            '<div style="background-color: var(--color-crema); padding: 0.4rem 0.6rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.65rem; color: var(--color-noche);">' +
+                                '<em>Motivo: ' + auth.reason + '</em>' +
+                            '</div>' +
+                            '<div style="display: flex; justify-content: flex-end; gap: 0.5rem;">' +
+                                '<button type="button" class="btn btn-sm btn-outline" style="border-color: #E0B4B4; color: var(--color-error);" data-reject="' + auth.id + '">Rechazar</button>' +
+                                '<button type="button" class="btn btn-sm btn-gold" data-approve="' + auth.id + '">Aprobar</button>' +
+                            '</div>';
+                        notifList.appendChild(item);
+                    });
+
+                    // Event handlers for approve/reject
+                    notifList.querySelectorAll('[data-approve]').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            const id = btn.dataset.approve;
+                            btn.disabled = true;
+                            fetch(baseUrl + '/' + id + '/aprobar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+                            })
+                                .then((r) => r.json())
+                                .then(() => { updateBadge(); })
+                                .catch((e) => alert(e.message));
+                        });
+                    });
+
+                    notifList.querySelectorAll('[data-reject]').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            const id = btn.dataset.reject;
+                            const reason = prompt('Motivo del rechazo de la solicitud:');
+                            if (!reason || !reason.trim()) return;
+
+                            btn.disabled = true;
+                            fetch(baseUrl + '/' + id + '/rechazar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                                body: JSON.stringify({ reason: reason.trim() })
+                            })
+                                .then((r) => r.json())
+                                .then(() => { updateBadge(); })
+                                .catch((e) => alert(e.message));
+                        });
+                    });
+                })
+                .catch(() => {});
+        }
+
+        btnToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isOpen = !isOpen;
+            notifDropdown.style.display = isOpen ? 'block' : 'none';
+            if (isOpen) {
+                loadPendingList();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (isOpen && !notifContainer.contains(e.target)) {
+                isOpen = false;
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        // Polling cada 5 segundos
+        updateBadge();
+        setInterval(updateBadge, 5000);
+    })();
+    </script>
+    @endcan
 </body>
 </html>

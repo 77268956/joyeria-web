@@ -7,6 +7,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\ProductStatus;
 use App\Enums\SaleStatus;
 use App\Models\CashSession;
+use App\Models\DiscountAuthorization;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Sale;
@@ -29,6 +30,7 @@ class SaleService
     public function __construct(
         protected DocumentSequenceService $sequences,
         protected InventoryService $inventory,
+        protected DiscountAuthorizationService $authorizations,
     ) {}
 
     /**
@@ -64,9 +66,23 @@ class SaleService
             $discountTotal = bcadd($lineDiscounts, $globalDiscount, 2);
             $total = bcsub($subtotal, $discountTotal, 2);
 
-            $this->assertDiscountIsAllowed($user, $session, $subtotal, $discountTotal, $data['discount_reason'] ?? null);
+            $supervisor = $this->assertDiscountIsAllowed(
+                $user,
+                $session,
+                $subtotal,
+                $discountTotal,
+                $data['discount_reason'] ?? null,
+                $data['supervisor_pin'] ?? null,
+                isset($data['discount_authorization_id']) ? (int) $data['discount_authorization_id'] : null,
+            );
             $payments = $this->normalisePayments($data['payments']);
             $this->assertPaymentsMatch($payments, $total);
+
+            $notes = $data['notes'] ?? null;
+            if ($supervisor !== null) {
+                $authNote = "Descuento autorizado por: {$supervisor->name}";
+                $notes = $notes ? "{$notes} | {$authNote}" : $authNote;
+            }
 
             $sale = Sale::create([
                 'store_id' => $session->store_id,
@@ -78,7 +94,7 @@ class SaleService
                 'discount_total' => $discountTotal,
                 'total' => $total,
                 'status' => SaleStatus::Completed,
-                'notes' => $data['notes'] ?? null,
+                'notes' => $notes,
             ]);
 
             foreach ($lines as $line) {
@@ -223,12 +239,19 @@ class SaleService
     }
 
     /**
-     * Validate that the discount does not exceed the seller's limit.
+     * Validate that the discount does not exceed the seller's limit, or verify supervisor approval.
      */
-    protected function assertDiscountIsAllowed(User $user, CashSession $session, string $subtotal, string $discountTotal, ?string $reason): void
-    {
+    protected function assertDiscountIsAllowed(
+        User $user,
+        CashSession $session,
+        string $subtotal,
+        string $discountTotal,
+        ?string $reason,
+        ?string $supervisorPin = null,
+        ?int $discountAuthorizationId = null
+    ): ?User {
         if (bccomp($discountTotal, '0', 2) <= 0) {
-            return;
+            return null;
         }
 
         if (blank($reason)) {
@@ -238,14 +261,35 @@ class SaleService
         $maxPercent = (string) $this->settings($session->store_id)->max_discount_percent;
 
         if (bccomp($subtotal, '0', 2) <= 0) {
-            return;
+            return null;
         }
 
         $discountPercent = bcmul(bcdiv($discountTotal, $subtotal, 6), '100', 4);
 
-        if (bccomp($discountPercent, $maxPercent, 2) > 0 && ! $user->can('products.edit_price')) {
-            throw new RuntimeException("El descuento ({$discountPercent}%) supera el máximo permitido ({$maxPercent}%).");
+        if (bccomp($discountPercent, $maxPercent, 2) <= 0 || $user->can('products.edit_price')) {
+            return null;
         }
+
+        // Supervisor authorization required:
+        // 1. In-person PIN
+        if (! blank($supervisorPin)) {
+            return $this->authorizations->authorizeByPin($supervisorPin, $session->store_id);
+        }
+
+        // 2. Approved remote authorization ID
+        if ($discountAuthorizationId !== null) {
+            $auth = DiscountAuthorization::find($discountAuthorizationId);
+            if ($auth === null || ! $auth->isUsable() || $auth->store_id !== $session->store_id) {
+                throw new RuntimeException('La autorización de descuento no es válida o ha expirado.');
+            }
+            $this->authorizations->markUsed($auth);
+
+            return $auth->authorizer;
+        }
+
+        $displayPercent = number_format((float) $discountPercent, 2);
+
+        throw new RuntimeException("El descuento ({$displayPercent}%) supera el máximo permitido ({$maxPercent}%). Requiere autorización de gerencia.");
     }
 
     /**

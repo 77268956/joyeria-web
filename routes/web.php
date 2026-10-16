@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\CashSessionController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DiscountAuthorizationController;
 use App\Http\Controllers\Admin\LayawayController;
 use App\Http\Controllers\Admin\MaterialLotController;
 use App\Http\Controllers\Admin\MetalPriceController;
@@ -72,6 +73,19 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
         Route::get('/pos/buscar', [PosController::class, 'search'])->name('pos.search');
         Route::post('/pos/venta', [PosController::class, 'store'])->name('pos.store');
+
+        // Autorizaciones de descuento en mostrador (híbrido PIN / remoto)
+        Route::post('/pos/autorizacion/validar-pin', [DiscountAuthorizationController::class, 'validatePin'])->name('pos.authorization.pin');
+        Route::post('/pos/autorizacion/solicitar', [DiscountAuthorizationController::class, 'store'])->name('pos.authorization.store');
+        Route::get('/pos/autorizacion/{authorization}/estado', [DiscountAuthorizationController::class, 'status'])->name('pos.authorization.status');
+    });
+
+    // Autorizaciones de descuento (Bandeja y acciones de Gerente / Dueño)
+    Route::middleware(['permission:products.edit_price'])->group(function () {
+        Route::get('/autorizaciones/pendientes', [DiscountAuthorizationController::class, 'pending'])->name('authorizations.pending');
+        Route::post('/autorizaciones/{authorization}/aprobar', [DiscountAuthorizationController::class, 'approve'])->name('authorizations.approve');
+        Route::post('/autorizaciones/{authorization}/rechazar', [DiscountAuthorizationController::class, 'reject'])->name('authorizations.reject');
+        Route::get('/autorizaciones/conteo', [DiscountAuthorizationController::class, 'count'])->name('authorizations.count');
     });
 
     // Ventas: listado, detalle, ticket y anulación

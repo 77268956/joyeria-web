@@ -36,6 +36,7 @@ class UpdateUserRequest extends FormRequest
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'exists:roles,name'],
+            'supervisor_pin' => ['nullable', 'string', 'size:4', 'regex:/^[0-9]{4}$/'],
             'store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
         ];

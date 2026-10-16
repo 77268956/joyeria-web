@@ -52,13 +52,14 @@ El sistema define tres roles:
 
 Menú **Usuarios** (solo Dueño).
 
-- **Crear usuario:** correo, nombre, contraseña y **rol** (Dueño, Gerente o Vendedor).
-- **Editar:** datos y rol del usuario.
+- **Crear usuario:** correo, nombre, contraseña, **rol** (Dueño, Gerente o Vendedor) y opcionalmente **PIN de Supervisor** (4 dígitos numéricos, obligatorio para roles que autorizan descuentos o compras).
+- **Editar:** datos, rol y actualización de PIN de supervisor.
+- **PIN de Supervisor:** clave numérica personal e intransferible utilizada para autorizaciones presenciales rápidas en el Punto de Venta sin cerrar la sesión de caja del vendedor.
 - **Activar / desactivar:** un usuario inactivo **no puede iniciar sesión** (el intento queda registrado como cuenta inactiva).
 - **Eliminar:** retira el acceso del usuario.
 
 Buenas prácticas:
-- Una cuenta por persona; nunca compartir cuentas.
+- Una cuenta por persona; nunca compartir cuentas ni el PIN de 4 dígitos.
 - Aplica el **principio de menor privilegio**: da rol Vendedor por defecto y escala solo cuando se necesite.
 - Revisa periódicamente las cuentas activas y elimina las que ya no correspondan.
 
@@ -113,6 +114,22 @@ En **Precio del Metal → Descuentos de compra** se configuran los porcentajes q
 - **Apertura / cierre:** ver el [Manual del Usuario](file:///c:/laragon/www/joyeria-web/docs/07-manual-usuario.md) (sección de caja).
 - Al **cerrar turno**, el sistema compara lo **contado** por método de pago contra lo **esperado** y registra la **diferencia**. Si hay diferencia, exige una **nota**.
 - Buen indicador de salud del turno: **efectivo esperado = efectivo contado** (diferencia cero).
+
+### 6.2 Autorización de descuentos especiales (> 10%)
+Los vendedores tienen un límite de descuento autónomo del 10%. Todo descuento superior requiere autorización de un usuario con permiso (`products.edit_price`, reservado a Dueño y Gerente). El sistema ofrece dos modalidades complementarias:
+
+1. **Autorización Presencial (PIN de 4 dígitos):**
+   - Cuando el supervisor está presente en el mostrador, puede teclear su PIN numérico en el modal del POS del vendedor.
+   - El sistema valida el PIN al instante, registra quién autorizó en las notas de la venta y procesa la transacción inmediatamente. El arqueo de caja y las comisiones permanecen a nombre del vendedor titular.
+
+2. **Autorización Remota (Campana de Notificaciones):**
+   - Si el supervisor está en otra oficina, su pantalla monitorea solicitudes en segundo plano cada 5 segundos.
+   - Al generarse una solicitud, la **campana de notificaciones** de la barra superior muestra un contador rojo parpadeante con el número de solicitudes pendientes.
+   - Al hacer clic en la campana, se despliega una tarjeta con los datos de la venta: sucursal, vendedor, subtotal, porcentaje y monto del descuento, total a pagar y el motivo redactado por el vendedor.
+   - El supervisor dispone de dos botones inmediatos:
+     - **Aprobar:** Guarda la autorización; el POS del vendedor lo detecta en menos de 2.5 segundos y completa el cobro automáticamente.
+     - **Rechazar:** Solicita el motivo del rechazo (ej. *"Margen insuficiente para esa pieza"*) y se lo notifica en pantalla al vendedor para que renegocie.
+   - Cada autorización aprobada solo puede utilizarse una vez y expira en 30 minutos si no se concreta la venta.
 
 ---
 

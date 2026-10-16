@@ -29,6 +29,7 @@ class UserSeeder extends Seeder
                 'store_id' => $store->id,
                 'name' => 'Carlos Administrador',
                 'password' => Hash::make('admin123'),
+                'supervisor_pin' => Hash::make('1234'),
                 'is_active' => true,
             ]
         );
@@ -41,6 +42,7 @@ class UserSeeder extends Seeder
                 'store_id' => $store->id,
                 'name' => 'María Gerente',
                 'password' => Hash::make('gerente123'),
+                'supervisor_pin' => Hash::make('1234'),
                 'is_active' => true,
             ]
         );

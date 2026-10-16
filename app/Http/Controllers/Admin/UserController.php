@@ -69,6 +69,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'supervisor_pin' => ! empty($validated['supervisor_pin']) ? Hash::make($validated['supervisor_pin']) : null,
             'store_id' => $storeId,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -109,6 +110,10 @@ class UserController extends Controller
 
         if (! empty($validated['password'])) {
             $data['password'] = Hash::make($validated['password']);
+        }
+
+        if (! empty($validated['supervisor_pin'])) {
+            $data['supervisor_pin'] = Hash::make($validated['supervisor_pin']);
         }
 
         $user->update($data);
