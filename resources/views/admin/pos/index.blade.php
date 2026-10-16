@@ -186,10 +186,18 @@
                 </div>
 
                 <div id="remote-waiting" style="display: none; text-align: center; padding: 1.5rem 0.5rem;">
-                    <div style="width: 42px; height: 42px; border: 3px solid rgba(184, 154, 94, 0.25); border-top-color: var(--color-dorado); border-radius: 50%; animation: spin-loader 0.9s linear infinite; margin: 0 auto 1rem;"></div>
+                    <div style="width: 42px; height: 42px; border: 3px solid rgba(184, 154, 94, 0.25); border-top-color: var(--color-dorado); border-radius: 50%; animation: spin-loader 0.9s linear infinite; margin: 0 auto 0.75rem;"></div>
+                    <div id="remote-timer-display" style="font-family: monospace; font-size: 1.8rem; font-weight: 700; color: var(--color-dorado); letter-spacing: 2px; margin-bottom: 0.35rem;">03:00</div>
                     <strong style="display: block; font-size: 1.05rem; color: var(--color-noche); margin-bottom: 0.35rem;">Esperando respuesta de Gerencia...</strong>
-                    <p class="muted" style="font-size: 0.82rem; margin-bottom: 1rem;">La solicitud se envió al panel del supervisor. Esta pantalla se actualizará automáticamente en cuanto responda.</p>
+                    <p class="muted" style="font-size: 0.82rem; margin-bottom: 1rem;">La solicitud se envió al panel del supervisor. Si no se aprueba en 3 minutos, la solicitud expirará.</p>
                     <button type="button" id="btn-cancel-remote" class="btn btn-outline btn-sm">Cancelar espera</button>
+                </div>
+
+                <div id="remote-expired" style="display: none; text-align: center; padding: 1rem 0;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background-color: #FFF4E5; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 0.75rem;">⏱</div>
+                    <strong style="color: #D97706; font-size: 1rem; display: block;">Tiempo de Espera Expirado (3 min)</strong>
+                    <p class="muted" style="font-size: 0.85rem; margin: 0.5rem 0 1rem;">Gerencia no respondió en el tiempo límite. Puedes volver a enviar la solicitud o negociar otro importe.</p>
+                    <button type="button" id="btn-retry-expired" class="btn btn-outline btn-sm">Cerrar y reintentar</button>
                 </div>
 
                 <div id="remote-rejected" style="display: none; text-align: center; padding: 1rem 0;">
@@ -228,6 +236,7 @@
     let approvedAuthorizationId = null;
     let supervisorPinCode = null;
     let activePollingInterval = null;
+    let countdownInterval = null;
     let currentAuthRequestId = null;
 
     const cart = [];
@@ -467,17 +476,26 @@
         el('remote-waiting').style.display = 'none';
         el('remote-approved').style.display = 'none';
         el('remote-rejected').style.display = 'none';
+        el('remote-expired').style.display = 'none';
 
         el('modal-supervisor-auth').style.display = 'flex';
         el('supervisor-pin').focus();
     }
 
-    function closeAuthModal() {
-        el('modal-supervisor-auth').style.display = 'none';
+    function stopPollingAndCountdown() {
         if (activePollingInterval) {
             clearInterval(activePollingInterval);
             activePollingInterval = null;
         }
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+    }
+
+    function closeAuthModal() {
+        el('modal-supervisor-auth').style.display = 'none';
+        stopPollingAndCountdown();
     }
 
     function switchAuthTab(tab) {
@@ -620,10 +638,7 @@
     });
 
     el('btn-cancel-remote').addEventListener('click', () => {
-        if (activePollingInterval) {
-            clearInterval(activePollingInterval);
-            activePollingInterval = null;
-        }
+        stopPollingAndCountdown();
         el('remote-waiting').style.display = 'none';
         el('remote-initial').style.display = 'block';
     });
@@ -633,8 +648,40 @@
         el('discount_total').focus();
     });
 
+    el('btn-retry-expired').addEventListener('click', () => {
+        closeAuthModal();
+        el('discount_total').focus();
+    });
+
     function startPollingStatus(authId) {
-        if (activePollingInterval) clearInterval(activePollingInterval);
+        stopPollingAndCountdown();
+
+        let remainingSeconds = 180; // 3 minutos
+        const timerDisplay = el('remote-timer-display');
+
+        function updateTimerUI() {
+            const m = Math.floor(remainingSeconds / 60);
+            const s = remainingSeconds % 60;
+            if (timerDisplay) {
+                timerDisplay.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                if (remainingSeconds <= 30) {
+                    timerDisplay.style.color = 'var(--color-error)';
+                } else {
+                    timerDisplay.style.color = 'var(--color-dorado)';
+                }
+            }
+        }
+        updateTimerUI();
+
+        countdownInterval = setInterval(() => {
+            remainingSeconds--;
+            updateTimerUI();
+            if (remainingSeconds <= 0) {
+                stopPollingAndCountdown();
+                el('remote-waiting').style.display = 'none';
+                el('remote-expired').style.display = 'block';
+            }
+        }, 1000);
 
         activePollingInterval = setInterval(() => {
             fetch(routes.checkStatus + '/' + authId + '/estado', {
@@ -643,8 +690,7 @@
                 .then((r) => r.json())
                 .then((data) => {
                     if (data.status === 'approved') {
-                        clearInterval(activePollingInterval);
-                        activePollingInterval = null;
+                        stopPollingAndCountdown();
                         approvedAuthorizationId = authId;
 
                         el('remote-waiting').style.display = 'none';
@@ -656,12 +702,15 @@
                             executeSale();
                         }, 1200);
                     } else if (data.status === 'rejected') {
-                        clearInterval(activePollingInterval);
-                        activePollingInterval = null;
+                        stopPollingAndCountdown();
 
                         el('remote-waiting').style.display = 'none';
                         el('remote-rejected').style.display = 'block';
                         el('rejected-reason-text').textContent = data.rejection_reason ? 'Motivo: ' + data.rejection_reason : 'Sin motivo especificado.';
+                    } else if (data.status === 'pending' && !data.is_pending) {
+                        stopPollingAndCountdown();
+                        el('remote-waiting').style.display = 'none';
+                        el('remote-expired').style.display = 'block';
                     }
                 })
                 .catch(() => {});

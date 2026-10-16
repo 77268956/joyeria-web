@@ -81,7 +81,7 @@ class DiscountAuthorizationService
             'discount_amount' => $discountAmount,
             'discount_percent' => $discountPercent,
             'reason' => $reason,
-            'expires_at' => now()->addMinutes(15),
+            'expires_at' => now()->addMinutes(3),
         ]);
     }
 
