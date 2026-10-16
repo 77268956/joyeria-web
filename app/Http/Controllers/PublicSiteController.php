@@ -117,8 +117,18 @@ class PublicSiteController extends Controller
             ->orderBy('name')
             ->get();
 
+        $metalsJson = $metals->map(fn (Metal $metal): array => [
+            'id' => $metal->id,
+            'name' => $metal->name,
+            'purities' => $metal->purities->map(fn ($purity): array => [
+                'id' => $purity->id,
+                'label' => $purity->label,
+            ])->values()->all(),
+        ])->values()->all();
+
         return view('public.sell-gold', [
             'metals' => $metals,
+            'metalsJson' => $metalsJson,
             'goldPricePerGram' => $this->pricePerGram('GOLD'),
         ]);
     }

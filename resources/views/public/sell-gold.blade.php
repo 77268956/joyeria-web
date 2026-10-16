@@ -82,14 +82,7 @@
     <script>
         window.publicQuote = {
             url: @json(route('public.sell_gold.quote')),
-            metals: @json($metals->map(fn ($metal) => [
-                'id' => $metal->id,
-                'name' => $metal->name,
-                'purities' => $metal->purities->map(fn ($purity) => [
-                    'id' => $purity->id,
-                    'label' => $purity->label,
-                ])->values(),
-            ])->values()),
+            metals: @json($metalsJson),
         };
     </script>
 @endpush

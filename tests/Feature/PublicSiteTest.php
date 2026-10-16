@@ -112,6 +112,16 @@ class PublicSiteTest extends TestCase
             ->assertSee('Collar Fino');
     }
 
+    public function test_gold_quoter_page_renders(): void
+    {
+        $this->goldPrice('74.5000');
+
+        $this->get(route('public.sell_gold'))
+            ->assertOk()
+            ->assertSee('Vender mi')
+            ->assertSee('publicQuote', false);
+    }
+
     public function test_gold_quoter_returns_estimated_amount(): void
     {
         $this->goldPrice('74.5000');
@@ -139,6 +149,19 @@ class PublicSiteTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonStructure(['message']);
+    }
+
+    public function test_contact_page_renders(): void
+    {
+        $this->get(route('public.contact'))
+            ->assertOk()
+            ->assertSee('Contacto');
+    }
+
+    public function test_store_page_renders(): void
+    {
+        $this->get(route('public.store'))
+            ->assertOk();
     }
 
     public function test_contact_message_is_stored(): void

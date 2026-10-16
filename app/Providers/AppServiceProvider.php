@@ -65,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        View::composer('layouts.public', function ($view): void {
+        View::composer(['layouts.public', 'public.contact', 'public.store'], function ($view): void {
             $store = Store::publicSite();
 
             $view->with([
