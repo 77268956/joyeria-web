@@ -244,4 +244,74 @@ class DiscountAuthorizationTest extends TestCase
                 'rejection_reason' => 'Margen insuficiente para 30%',
             ]);
     }
+
+    public function test_owner_sees_authorizations_from_all_stores_while_manager_only_sees_their_store(): void
+    {
+        $this->openSession($this->seller);
+
+        // Store 2 setup
+        $store2 = Store::create([
+            'name' => 'Sucursal Norte',
+            'code' => 'SUC-02',
+            'currency' => 'USD',
+            'timezone' => 'America/Mexico_City',
+            'is_active' => true,
+        ]);
+        $seller2 = User::factory()->create([
+            'store_id' => $store2->id,
+            'is_active' => true,
+        ]);
+        $seller2->assignRole('Vendedor');
+        $this->openSession($seller2);
+
+        $owner = User::where('email', 'admin@joyeriaweb.com')->first();
+        $owner->update(['supervisor_pin' => Hash::make('1234')]);
+
+        // Request in Store 1
+        $this->actingAs($this->seller)->postJson(route('admin.pos.authorization.store'), [
+            'sale_data' => ['items' => []],
+            'subtotal' => '1000.00',
+            'discount_amount' => '150.00',
+            'discount_percent' => '15.00',
+            'reason' => 'Cliente frecuente Tienda 1',
+        ]);
+
+        // Request in Store 2
+        $this->actingAs($seller2)->postJson(route('admin.pos.authorization.store'), [
+            'sale_data' => ['items' => []],
+            'subtotal' => '2000.00',
+            'discount_amount' => '300.00',
+            'discount_percent' => '15.00',
+            'reason' => 'Promoción apertura Tienda 2',
+        ]);
+
+        // Manager in Store 1 only sees Store 1's request (count = 1)
+        $managerCountResponse = $this->actingAs($this->manager)->getJson(route('admin.authorizations.count'));
+        $managerCountResponse->assertOk()->assertJson(['count' => 1]);
+
+        $managerPendingResponse = $this->actingAs($this->manager)->getJson(route('admin.authorizations.pending'));
+        $managerPendingResponse->assertOk()
+            ->assertJsonCount(1, 'authorizations')
+            ->assertJsonFragment(['reason' => 'Cliente frecuente Tienda 1']);
+
+        // Owner sees requests from BOTH stores (count = 2)
+        $ownerCountResponse = $this->actingAs($owner)->getJson(route('admin.authorizations.count'));
+        $ownerCountResponse->assertOk()->assertJson(['count' => 2]);
+
+        $ownerPendingResponse = $this->actingAs($owner)->getJson(route('admin.authorizations.pending'));
+        $ownerPendingResponse->assertOk()
+            ->assertJsonCount(2, 'authorizations')
+            ->assertJsonFragment(['reason' => 'Cliente frecuente Tienda 1'])
+            ->assertJsonFragment(['reason' => 'Promoción apertura Tienda 2']);
+
+        // Owner's PIN is valid even in Store 2 where owner is not directly assigned
+        $pinResponse = $this->actingAs($seller2)->postJson(route('admin.pos.authorization.pin'), [
+            'pin' => '1234',
+        ]);
+        $pinResponse->assertOk()->assertJson([
+            'valid' => true,
+            'supervisor_id' => $owner->id,
+            'supervisor_name' => $owner->name,
+        ]);
+    }
 }

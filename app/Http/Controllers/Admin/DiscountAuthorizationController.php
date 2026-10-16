@@ -121,17 +121,18 @@ class DiscountAuthorizationController extends Controller
     }
 
     /**
-     * List pending authorizations for the current store (supervisor view).
+     * List pending authorizations for the current supervisor (Dueño sees all stores; others see their store).
      */
     public function pending(): JsonResponse
     {
         $user = Auth::user();
 
-        $pending = $this->authorizations->pendingForStore($user->store_id);
+        $pending = $this->authorizations->pendingForUser($user);
 
         return response()->json([
             'authorizations' => $pending->map(fn (DiscountAuthorization $auth): array => [
                 'id' => $auth->id,
+                'store_name' => $auth->store?->name ?? 'Sucursal',
                 'requester_name' => $auth->requester->name,
                 'discount_percent' => (string) $auth->discount_percent,
                 'discount_amount' => (string) $auth->discount_amount,
@@ -191,7 +192,7 @@ class DiscountAuthorizationController extends Controller
     public function count(): JsonResponse
     {
         return response()->json([
-            'count' => $this->authorizations->pendingCount(Auth::user()->store_id),
+            'count' => $this->authorizations->pendingCountForUser(Auth::user()),
         ]);
     }
 }

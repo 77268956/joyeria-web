@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\DiscountAuthorizationStatus;
 use App\Models\CashSession;
 use App\Models\DiscountAuthorization;
+use App\Models\Scopes\StoreScope;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,9 +36,12 @@ class DiscountAuthorizationService
             throw new InvalidArgumentException('El PIN de supervisor es obligatorio.');
         }
 
-        $supervisors = User::where('store_id', $storeId)
-            ->where('is_active', true)
+        $supervisors = User::where('is_active', true)
             ->whereNotNull('supervisor_pin')
+            ->where(function ($query) use ($storeId) {
+                $query->where('store_id', $storeId)
+                    ->orWhereHas('roles', fn ($q) => $q->where('name', 'Dueño'));
+            })
             ->get();
 
         foreach ($supervisors as $user) {
@@ -149,16 +153,53 @@ class DiscountAuthorizationService
     }
 
     /**
+     * Retrieve pending authorizations for a user (Dueño sees all stores; other supervisors see their store).
+     *
+     * @return Collection<int, DiscountAuthorization>
+     */
+    public function pendingForUser(User $user): Collection
+    {
+        $query = DiscountAuthorization::withoutGlobalScope(StoreScope::class)
+            ->where('status', DiscountAuthorizationStatus::Pending)
+            ->where('expires_at', '>', now())
+            ->with(['requester', 'store'])
+            ->orderByDesc('created_at');
+
+        if (! $user->hasRole('Dueño')) {
+            $query->where('store_id', $user->store_id);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Count pending authorizations for a user.
+     */
+    public function pendingCountForUser(User $user): int
+    {
+        $query = DiscountAuthorization::withoutGlobalScope(StoreScope::class)
+            ->where('status', DiscountAuthorizationStatus::Pending)
+            ->where('expires_at', '>', now());
+
+        if (! $user->hasRole('Dueño')) {
+            $query->where('store_id', $user->store_id);
+        }
+
+        return $query->count();
+    }
+
+    /**
      * Retrieve pending authorizations for a store (supervisor view).
      *
      * @return Collection<int, DiscountAuthorization>
      */
     public function pendingForStore(int $storeId): Collection
     {
-        return DiscountAuthorization::where('store_id', $storeId)
+        return DiscountAuthorization::withoutGlobalScope(StoreScope::class)
+            ->where('store_id', $storeId)
             ->where('status', DiscountAuthorizationStatus::Pending)
             ->where('expires_at', '>', now())
-            ->with('requester')
+            ->with(['requester', 'store'])
             ->orderByDesc('created_at')
             ->get();
     }
@@ -168,7 +209,8 @@ class DiscountAuthorizationService
      */
     public function pendingCount(int $storeId): int
     {
-        return DiscountAuthorization::where('store_id', $storeId)
+        return DiscountAuthorization::withoutGlobalScope(StoreScope::class)
+            ->where('store_id', $storeId)
             ->where('status', DiscountAuthorizationStatus::Pending)
             ->where('expires_at', '>', now())
             ->count();
