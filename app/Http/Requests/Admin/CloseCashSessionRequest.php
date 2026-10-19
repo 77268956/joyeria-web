@@ -27,6 +27,7 @@ class CloseCashSessionRequest extends FormRequest
             'counted_card' => ['required', 'numeric', 'min:0'],
             'counted_transfer' => ['required', 'numeric', 'min:0'],
             'close_note' => ['nullable', 'string', 'max:255'],
+            'supervisor_pin' => ['nullable', 'string', 'digits:4'],
         ];
     }
 
@@ -42,6 +43,7 @@ class CloseCashSessionRequest extends FormRequest
             'counted_card' => 'tarjeta contada',
             'counted_transfer' => 'transferencia contada',
             'close_note' => 'nota de cierre',
+            'supervisor_pin' => 'PIN de supervisor',
         ];
     }
 }

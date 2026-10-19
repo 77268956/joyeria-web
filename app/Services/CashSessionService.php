@@ -137,15 +137,18 @@ class CashSessionService
     /**
      * Close a shift, recording the counted amounts and the difference.
      *
+     * If there is a discrepancy (difference != 0), a note and a supervisor PIN
+     * (Gerente or Dueño) are required.
+     *
      * @param  array{counted_cash: string, counted_card: string, counted_transfer: string}  $counted
      */
-    public function close(CashSession $session, array $counted, User $user, ?string $note = null): CashSession
+    public function close(CashSession $session, array $counted, User $user, ?string $note = null, ?string $supervisorPin = null): CashSession
     {
         if (! $session->isOpen()) {
             throw new RuntimeException('El turno ya está cerrado.');
         }
 
-        return DB::transaction(function () use ($session, $counted, $user, $note): CashSession {
+        return DB::transaction(function () use ($session, $counted, $user, $note, $supervisorPin): CashSession {
             $expected = $this->expectedTotals($session);
 
             $countedCash = $this->money($counted['counted_cash']);
@@ -162,14 +165,27 @@ class CashSessionService
                 2,
             );
 
-            if (bccomp($difference, '0', 2) !== 0 && blank($note)) {
-                throw new InvalidArgumentException('La nota de cierre es obligatoria cuando existe una diferencia.');
+            $supervisor = null;
+
+            if (bccomp($difference, '0', 2) !== 0) {
+                if (blank($note)) {
+                    throw new InvalidArgumentException('La nota de cierre es obligatoria cuando existe una diferencia.');
+                }
+
+                if (! empty($supervisorPin)) {
+                    $supervisor = app(DiscountAuthorizationService::class)->authorizeByPin($supervisorPin, $session->store_id);
+                } elseif (! $user->can('products.edit_price')) {
+                    throw new InvalidArgumentException('El cierre con diferencia requiere el PIN de un supervisor (Gerente o Dueño).');
+                } else {
+                    $supervisor = $user;
+                }
             }
 
             $session->forceFill([
                 'status' => CashSessionStatus::Closed,
                 'closed_at' => now(),
                 'closed_by' => $user->id,
+                'supervisor_id' => $supervisor?->id,
                 'expected_cash' => $expected['cash'],
                 'expected_card' => $expected['card'],
                 'expected_transfer' => $expected['transfer'],

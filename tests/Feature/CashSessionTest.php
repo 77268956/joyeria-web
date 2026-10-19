@@ -139,16 +139,44 @@ class CashSessionTest extends TestCase
         $this->assertDatabaseHas('cash_sessions', ['user_id' => $seller->id, 'status' => 'open']);
     }
 
-    public function test_a_difference_can_be_closed_with_a_justification_note(): void
+    public function test_closing_with_difference_requires_supervisor_pin(): void
     {
         $seller = $this->seller();
         $this->actingAs($seller)->post(route('admin.cash.open'), ['opening_amount' => '100.00']);
+
+        // Without PIN: fails
+        $failResponse = $this->actingAs($seller)->post(route('admin.cash.close'), [
+            'counted_cash' => '95.00',
+            'counted_card' => '0.00',
+            'counted_transfer' => '0.00',
+            'close_note' => 'Faltante de cambio',
+        ]);
+
+        $failResponse->assertSessionHasErrors('error');
+        $this->assertDatabaseHas('cash_sessions', ['user_id' => $seller->id, 'status' => 'open']);
+
+        // With invalid PIN: fails
+        $badPinResponse = $this->actingAs($seller)->post(route('admin.cash.close'), [
+            'counted_cash' => '95.00',
+            'counted_card' => '0.00',
+            'counted_transfer' => '0.00',
+            'close_note' => 'Faltante de cambio',
+            'supervisor_pin' => '9999',
+        ]);
+
+        $badPinResponse->assertSessionHasErrors('error');
+        $this->assertDatabaseHas('cash_sessions', ['user_id' => $seller->id, 'status' => 'open']);
+
+        // With valid supervisor PIN: succeeds
+        $manager = User::where('email', 'gerente@joyeriaweb.com')->first();
+        $manager->update(['supervisor_pin' => \Illuminate\Support\Facades\Hash::make('5678')]);
 
         $response = $this->actingAs($seller)->post(route('admin.cash.close'), [
             'counted_cash' => '95.00',
             'counted_card' => '0.00',
             'counted_transfer' => '0.00',
             'close_note' => 'Faltante de cambio',
+            'supervisor_pin' => '5678',
         ]);
 
         $response->assertRedirect(route('admin.cash.index'));
@@ -157,6 +185,7 @@ class CashSessionTest extends TestCase
             'status' => 'closed',
             'difference_total' => -5.00,
             'close_note' => 'Faltante de cambio',
+            'supervisor_id' => $manager->id,
         ]);
     }
 

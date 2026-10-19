@@ -73,8 +73,9 @@
 
         <div class="card">
             <h2 class="font-serif" style="font-size: 1.2rem; margin-bottom: 1rem;">Cerrar turno (arqueo)</h2>
-            <form action="{{ route('admin.cash.close') }}" method="POST">
+            <form action="{{ route('admin.cash.close') }}" method="POST" id="form-close-cash">
                 @csrf
+                <input type="hidden" name="supervisor_pin" id="close_supervisor_pin">
                 <div class="grid-3">
                     <div class="form-group">
                         <label class="form-label" for="counted_cash">Efectivo contado</label>
@@ -93,7 +94,7 @@
                     <label class="form-label" for="close_note">Nota de cierre (obligatoria si hay diferencia)</label>
                     <input type="text" name="close_note" id="close_note" class="form-control" maxlength="255">
                 </div>
-                <button type="submit" class="btn btn-gold">Cerrar turno</button>
+                <button type="button" id="btn-trigger-close" class="btn btn-gold">Cerrar turno</button>
             </form>
         </div>
     </div>
@@ -134,13 +135,13 @@
     <div class="card" style="max-width: 520px;">
         <h2 class="font-serif" style="font-size: 1.3rem; margin-bottom: 0.5rem;">Abrir turno de caja</h2>
         <p class="page-subtitle" style="margin-bottom: 1.25rem;">Declara el efectivo inicial con el que comienzas el turno.</p>
-        <form action="{{ route('admin.cash.open') }}" method="POST">
+        <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash">
             @csrf
             <div class="form-group">
                 <label class="form-label" for="opening_amount">Efectivo inicial</label>
                 <input type="number" step="0.01" min="0" name="opening_amount" id="opening_amount" class="form-control" value="0.00" required autofocus>
             </div>
-            <button type="submit" class="btn btn-gold">Abrir turno</button>
+            <button type="button" id="btn-trigger-open" class="btn btn-gold">Abrir turno</button>
         </form>
     </div>
 @endif
@@ -171,6 +172,11 @@
                         <td class="text-right num">$ {{ number_format((float) $closed->counted_cash, 2) }}</td>
                         <td class="text-right num" style="color: {{ (float) $closed->difference_total == 0.0 ? 'inherit' : 'var(--color-error)' }};">
                             $ {{ number_format((float) $closed->difference_total, 2) }}
+                            @if ($closed->supervisor)
+                                <div class="muted" style="font-size: 0.72rem; line-height: 1.1; margin-top: 2px;">
+                                    Aut: {{ $closed->supervisor->name }}
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -184,4 +190,223 @@
 <div style="margin-top: 1rem;">
     {{ $history->links() }}
 </div>
+
+{{-- Modal Confirmar Apertura --}}
+<div id="modal-confirm-open" style="display: none; position: fixed; inset: 0; background: rgba(18, 16, 12, 0.65); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px);">
+    <div style="background: #FFFFFF; border-radius: 8px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); overflow: hidden;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-linea); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--color-noche);">Confirmar Apertura de Caja</strong>
+            <button type="button" class="btn-close-open-modal" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--color-piedra);">&times;</button>
+        </div>
+        <div style="padding: 1.5rem; text-align: center;">
+            <p class="muted" style="font-size: 0.9rem; margin-bottom: 0.75rem;">¿Confirmas iniciar tu turno con el siguiente fondo de efectivo inicial?</p>
+            <div id="open-amount-display" class="font-serif" style="font-size: 2rem; color: var(--color-dorado); font-weight: 700; margin-bottom: 1.25rem;">$ 0.00</div>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <button type="button" class="btn btn-outline btn-close-open-modal">Cancelar</button>
+                <button type="button" id="btn-submit-open-confirmed" class="btn btn-gold">Confirmar y Abrir Turno</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Confirmar Cierre Exacto --}}
+<div id="modal-confirm-close-exact" style="display: none; position: fixed; inset: 0; background: rgba(18, 16, 12, 0.65); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px);">
+    <div style="background: #FFFFFF; border-radius: 8px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); overflow: hidden;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-linea); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--color-noche);">Confirmar Cierre de Turno</strong>
+            <button type="button" class="btn-close-exact-modal" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--color-piedra);">&times;</button>
+        </div>
+        <div style="padding: 1.5rem; text-align: center;">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: #EDF7EE; color: var(--color-exito); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 0.75rem;">✓</div>
+            <p style="font-size: 0.95rem; color: var(--color-noche); margin-bottom: 0.35rem; font-weight: 600;">Arqueo Exacto ($ 0.00 de diferencia)</p>
+            <p class="muted" style="font-size: 0.85rem; margin-bottom: 1.25rem;">Los valores contados coinciden exactamente con lo registrado en el sistema. ¿Deseas cerrar tu turno?</p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <button type="button" class="btn btn-outline btn-close-exact-modal">Cancelar</button>
+                <button type="button" id="btn-submit-close-exact" class="btn btn-gold">Confirmar Cierre</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Supervisión con PIN para Descuadre --}}
+<div id="modal-supervisor-cash-close" style="display: none; position: fixed; inset: 0; background: rgba(18, 16, 12, 0.65); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px);">
+    <div style="background: #FFFFFF; border-radius: 8px; width: 100%; max-width: 460px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); overflow: hidden;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-linea); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--color-noche);">Autorización de Supervisor (Descuadre)</strong>
+            <button type="button" class="btn-close-supervisor-modal" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--color-piedra);">&times;</button>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="background: #FFF4E5; border-left: 4px solid #D97706; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: #92400E; font-size: 0.9rem;">Diferencia en Arqueo:</span>
+                    <strong id="modal-diff-display" style="font-size: 1.15rem; font-family: monospace;">$ 0.00</strong>
+                </div>
+                <small id="modal-diff-type" style="color: #B45309; display: block; margin-top: 2px;">Faltante en caja</small>
+            </div>
+
+            <p class="muted" style="font-size: 0.85rem; margin-bottom: 1rem;">
+                Por política de seguridad de la joyería, todo cierre con descuadre exige una justificación y la validación presencial del Gerente o Dueño con su PIN de 4 dígitos.
+            </p>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label" for="modal_close_note" style="font-size: 0.85rem;">Nota explicativa de la diferencia <span style="color: var(--color-error);">*</span></label>
+                <input type="text" id="modal_close_note" class="form-control" placeholder="Ej: Faltante de $50 por error en cambio con cliente" maxlength="255">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label" for="modal_supervisor_pin" style="font-size: 0.85rem;">PIN de Supervisor (Gerente / Dueño) <span style="color: var(--color-error);">*</span></label>
+                <input type="password" id="modal_supervisor_pin" class="form-control" maxlength="4" placeholder="••••" style="letter-spacing: 6px; text-align: center; font-size: 1.3rem;">
+            </div>
+
+            <div id="cash-pin-error" style="display: none; padding: 0.5rem 0.75rem; background: #FDEDED; border-radius: 4px; color: var(--color-error); font-size: 0.82rem; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline btn-close-supervisor-modal">Volver a contar</button>
+                <button type="button" id="btn-submit-supervisor-close" class="btn btn-gold">Autorizar y Cerrar Turno</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const validatePinUrl = @json(route('admin.pos.authorization.pin'));
+    const el = (id) => document.getElementById(id);
+    const money = (n) => '$ ' + (Math.round((Number(n) || 0) * 100) / 100).toFixed(2);
+
+    // --- 1. Confirmación de Apertura ---
+    const btnTriggerOpen = el('btn-trigger-open');
+    if (btnTriggerOpen) {
+        btnTriggerOpen.addEventListener('click', () => {
+            const amountInput = el('opening_amount');
+            const val = Number(amountInput.value) || 0;
+            if (val < 0) {
+                alert('El efectivo inicial no puede ser negativo.');
+                amountInput.focus();
+                return;
+            }
+            el('open-amount-display').textContent = money(val);
+            el('modal-confirm-open').style.display = 'flex';
+        });
+
+        document.querySelectorAll('.btn-close-open-modal').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                el('modal-confirm-open').style.display = 'none';
+            });
+        });
+
+        el('btn-submit-open-confirmed')?.addEventListener('click', () => {
+            el('form-open-cash').submit();
+        });
+    }
+
+    // --- 2. Confirmación / Supervisión de Cierre ---
+    const btnTriggerClose = el('btn-trigger-close');
+    if (btnTriggerClose) {
+        @if ($session)
+        const expCash = Number(@json((float) ($expected['cash'] ?? 0)));
+        const expCard = Number(@json((float) ($expected['card'] ?? 0)));
+        const expTrans = Number(@json((float) ($expected['transfer'] ?? 0)));
+
+        btnTriggerClose.addEventListener('click', () => {
+            const cntCash = Number(el('counted_cash').value) || 0;
+            const cntCard = Number(el('counted_card').value) || 0;
+            const cntTrans = Number(el('counted_transfer').value) || 0;
+
+            const diff = (cntCash - expCash) + (cntCard - expCard) + (cntTrans - expTrans);
+
+            if (Math.abs(diff) < 0.005) {
+                // Arqueo exacto
+                el('modal-confirm-close-exact').style.display = 'flex';
+            } else {
+                // Hay descuadre: requiere nota y PIN de supervisor
+                const isShortage = diff < 0;
+                el('modal-diff-display').textContent = (isShortage ? '-' : '+') + money(Math.abs(diff));
+                el('modal-diff-display').style.color = isShortage ? 'var(--color-error)' : '#D97706';
+                el('modal-diff-type').textContent = isShortage ? 'Faltante de dinero en el arqueo' : 'Sobrante de dinero en el arqueo';
+
+                // Pre-llenar nota si ya escribió algo
+                el('modal_close_note').value = el('close_note').value.trim();
+                el('modal_supervisor_pin').value = '';
+                el('cash-pin-error').style.display = 'none';
+
+                el('modal-supervisor-cash-close').style.display = 'flex';
+                el('modal_supervisor_pin').focus();
+            }
+        });
+
+        // Modales cerrar
+        document.querySelectorAll('.btn-close-exact-modal').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                el('modal-confirm-close-exact').style.display = 'none';
+            });
+        });
+
+        el('btn-submit-close-exact')?.addEventListener('click', () => {
+            el('form-close-cash').submit();
+        });
+
+        document.querySelectorAll('.btn-close-supervisor-modal').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                el('modal-supervisor-cash-close').style.display = 'none';
+            });
+        });
+
+        el('btn-submit-supervisor-close')?.addEventListener('click', async () => {
+            const note = el('modal_close_note').value.trim();
+            const pin = el('modal_supervisor_pin').value.trim();
+            const errorBox = el('cash-pin-error');
+            errorBox.style.display = 'none';
+
+            if (!note) {
+                errorBox.textContent = 'Debes ingresar la nota explicativa de la diferencia.';
+                errorBox.style.display = 'block';
+                el('modal_close_note').focus();
+                return;
+            }
+
+            if (!pin || pin.length !== 4) {
+                errorBox.textContent = 'El PIN de supervisor debe contener exactamente 4 dígitos.';
+                errorBox.style.display = 'block';
+                el('modal_supervisor_pin').focus();
+                return;
+            }
+
+            // Validar PIN en el backend
+            try {
+                const response = await fetch(validatePinUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({ pin: pin }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.valid) {
+                    errorBox.textContent = data.message || 'PIN incorrecto o el usuario no tiene permisos de supervisor.';
+                    errorBox.style.display = 'block';
+                    el('modal_supervisor_pin').select();
+                    return;
+                }
+
+                // PIN válido: transferir datos al formulario principal y enviar
+                el('close_note').value = note;
+                el('close_supervisor_pin').value = pin;
+                el('form-close-cash').submit();
+            } catch (err) {
+                errorBox.textContent = 'Error al verificar el PIN. Intenta nuevamente.';
+                errorBox.style.display = 'block';
+            }
+        });
+        @endif
+    }
+})();
+</script>
+@endpush

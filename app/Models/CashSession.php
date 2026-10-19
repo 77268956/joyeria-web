@@ -40,6 +40,7 @@ class CashSession extends Model
         'counted_transfer',
         'difference_total',
         'close_note',
+        'supervisor_id',
     ];
 
     /**
@@ -78,6 +79,14 @@ class CashSession extends Model
     public function closedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by');
+    }
+
+    /**
+     * The supervisor who authorized the shift close when there was a discrepancy.
+     */
+    public function supervisor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
     }
 
     /**

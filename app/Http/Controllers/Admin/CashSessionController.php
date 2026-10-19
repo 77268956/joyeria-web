@@ -32,7 +32,7 @@ class CashSessionController extends Controller
             'expected' => $session ? $this->cash->expectedTotals($session) : null,
             'movementTypes' => CashMovementType::cases(),
             'history' => CashSession::query()
-                ->with(['user', 'closedBy'])
+                ->with(['user', 'closedBy', 'supervisor'])
                 ->where('status', 'closed')
                 ->latest('closed_at')
                 ->paginate(10),
@@ -122,16 +122,26 @@ class CashSessionController extends Controller
                 ],
                 Auth::user(),
                 $validated['close_note'] ?? null,
+                $validated['supervisor_pin'] ?? null,
             );
         } catch (RuntimeException|InvalidArgumentException $exception) {
             return back()->withInput()->withErrors(['error' => $exception->getMessage()]);
         }
 
-        activity('caja')
+        $log = activity('caja')
             ->performedOn($closed)
             ->causedBy(Auth::user())
-            ->withProperties(['difference_total' => (string) $closed->difference_total])
-            ->log('Cierre de turno de caja');
+            ->withProperties([
+                'difference_total' => (string) $closed->difference_total,
+                'supervisor_id' => $closed->supervisor_id,
+                'supervisor_name' => $closed->supervisor?->name,
+            ]);
+
+        if ($closed->supervisor) {
+            $log->log("Cierre de turno con diferencia de {$closed->difference_total} autorizado por {$closed->supervisor->name}");
+        } else {
+            $log->log('Cierre de turno de caja');
+        }
 
         return redirect()->route('admin.cash.index')
             ->with('status', 'Turno cerrado. Diferencia: '.number_format((float) $closed->difference_total, 2).'.');
