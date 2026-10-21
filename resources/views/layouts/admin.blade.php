@@ -65,25 +65,48 @@
         }
 
         .sidebar-brand {
-            padding: 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.9rem 0.75rem;
             border-bottom: 1px solid rgba(228, 223, 211, 0.1);
-            text-align: center;
+        }
+
+        .sidebar-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid rgba(184, 154, 94, 0.45);
+            background-color: var(--color-blanco);
+        }
+
+        .sidebar-brand-text {
+            flex: 1;
+            min-width: 0;
         }
 
         .sidebar-brand h1 {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 500;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.03em;
             color: #FDFCF9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .sidebar-brand span {
-            font-size: 0.7rem;
+            font-size: 0.56rem;
             text-transform: uppercase;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.08em;
             color: var(--color-dorado);
             display: block;
-            margin-top: 0.25rem;
+            margin-top: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .sidebar-nav {
@@ -127,6 +150,70 @@
             flex-shrink: 0;
             color: var(--color-dorado);
             opacity: 0.85;
+        }
+
+        /* ------------------ SIDEBAR RETRÁCTIL ------------------ */
+        .sidebar,
+        .main-wrapper {
+            transition: width 0.25s ease, margin-left 0.25s ease;
+        }
+
+        .sidebar-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: 1px solid rgba(228, 223, 211, 0.15);
+            border-radius: 4px;
+            color: #B3B0A6;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            border-color: var(--color-dorado);
+            color: var(--color-dorado);
+        }
+
+        body.sidebar-collapsed .sidebar {
+            width: 68px;
+        }
+
+        body.sidebar-collapsed .main-wrapper {
+            margin-left: 68px;
+        }
+
+        body.sidebar-collapsed .sidebar-brand {
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.85rem 0.35rem;
+        }
+
+        body.sidebar-collapsed .sidebar-brand-text {
+            display: none;
+        }
+
+        body.sidebar-collapsed .sidebar-toggle {
+            display: none;
+        }
+
+        body.sidebar-collapsed .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        body.sidebar-collapsed .nav-link {
+            justify-content: center;
+            padding: 0.75rem 0;
+            gap: 0;
+        }
+
+        body.sidebar-collapsed .nav-link span {
+            display: none;
         }
 
         /* ------------------ MAIN WRAPPER ------------------ */
@@ -559,11 +646,25 @@
     @stack('styles')
 </head>
 <body class="@yield('body_class')">
+    <script>
+        if (localStorage.getItem('sidebar-collapsed') === '1') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+    </script>
+
     <!-- Sidebar / Menú Lateral -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h1>Joyería Web</h1>
-            <span>Alta Gama & Control</span>
+            <img src="{{ asset('images/logo-placeholder.svg') }}" alt="Logo de la joyería" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <h1>Joyería Web</h1>
+                <span>Alta Gama &amp; Control</span>
+            </div>
+            <button type="button" id="sidebar-toggle" class="sidebar-toggle" title="Mostrar u ocultar menú" aria-label="Mostrar u ocultar menú">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
         </div>
 
         <ul class="sidebar-nav">
@@ -960,5 +1061,41 @@
     })();
     </script>
     @endcan
+
+    <script>
+        (function () {
+            document.querySelectorAll('.sidebar .nav-link').forEach(function (link) {
+                var label = link.querySelector('span');
+                if (label) {
+                    link.title = label.textContent.trim();
+                }
+            });
+
+            function toggleSidebar() {
+                var collapsed = document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0');
+
+                // Forzar redimensionamiento de gráficas y vistas tras la transición
+                setTimeout(function () {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            }
+
+            var toggle = document.getElementById('sidebar-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', toggleSidebar);
+            }
+
+            // Con el menú colapsado, el logo reemplaza a la flecha como botón para expandir
+            var logo = document.querySelector('.sidebar-logo');
+            if (logo) {
+                logo.addEventListener('click', function () {
+                    if (document.body.classList.contains('sidebar-collapsed')) {
+                        toggleSidebar();
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

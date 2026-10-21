@@ -37,7 +37,7 @@
 
     .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 0.75rem;
     }
 
@@ -50,6 +50,7 @@
         flex-direction: column;
         justify-content: space-between;
         min-height: 0;
+        min-width: 0;
     }
 
     .metric-header {
@@ -90,7 +91,7 @@
 
     .dashboard-main {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
         gap: 1rem;
         flex: 1;
         min-height: 0;
@@ -102,6 +103,7 @@
         flex-direction: column;
         gap: 1rem;
         min-height: 0;
+        min-width: 0;
     }
 
     .charts-col .card,
@@ -151,6 +153,7 @@
         padding-bottom: 0;
         justify-content: flex-start;
         gap: 0.25rem;
+        flex-wrap: wrap;
     }
 
     .tab-btn {
@@ -228,6 +231,7 @@
 
     .dashboard-grid .card.stock-banner {
         display: flex;
+        flex-direction: row;
         align-items: center;
         gap: 0.4rem;
         height: 40px;
@@ -249,6 +253,7 @@
         font-size: 0.68rem;
         overflow: hidden;
         text-overflow: ellipsis;
+        min-width: 0;
     }
 
     @media (max-width: 1024px) {
@@ -265,7 +270,7 @@
         }
 
         .dashboard-main {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .charts-col,
