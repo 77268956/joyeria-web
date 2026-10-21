@@ -2,129 +2,515 @@
 
 @section('title', 'Punto de Venta')
 
+@section('body_class', 'full-viewport')
+
 @section('content')
-<div class="page-header">
-    <div>
-        <h1 class="page-title font-serif">Punto de Venta</h1>
-        <p class="page-subtitle">
-            Escanea o busca una pieza, arma el carrito y cobra.
-            @if ($session)
-                Turno abierto desde {{ $session->opened_at?->format('H:i') }}.
-            @else
-                <span style="color: var(--color-error);">No hay un turno de caja abierto.</span>
-            @endif
-        </p>
+<style>
+    .pos-page {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        gap: 0.85rem;
+    }
+
+    .pos-header {
+        margin-bottom: 0;
+    }
+
+    .pos-header .page-title {
+        font-size: 1.5rem;
+    }
+
+    .pos-header .page-subtitle {
+        font-size: 0.82rem;
+        margin-top: 0.1rem;
+    }
+
+    .pos-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 0.85rem;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .pos-card-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.45rem;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .pos-search-card,
+    .pos-cart-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0;
+    }
+
+    .pos-results {
+        margin-top: 0.6rem;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .pos-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+        flex-shrink: 0;
+    }
+
+    .pos-filters .form-select,
+    .pos-filters .form-control {
+        height: 36px;
+        font-size: 0.85rem;
+        min-width: 0;
+    }
+
+    .pos-cards {
+        margin-top: 0.75rem;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+        gap: 0.75rem;
+        align-content: start;
+    }
+
+    .pos-product-card {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        background-color: #fff;
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        padding: 0;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+        font: inherit;
+        color: inherit;
+    }
+
+    .pos-product-card:hover {
+        border-color: var(--color-dorado);
+        box-shadow: 0 4px 14px rgba(184, 154, 94, 0.18);
+        transform: translateY(-2px);
+    }
+
+    .pos-product-card.is-added {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: var(--color-exito);
+        box-shadow: none;
+        transform: none;
+    }
+
+    .pos-product-media {
+        height: 96px;
+        background-color: var(--color-crema);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .pos-product-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pos-product-placeholder {
+        color: var(--color-dorado);
+        font-family: var(--font-serif);
+        font-size: 1.6rem;
+    }
+
+    .pos-product-badge {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background-color: var(--color-dorado);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+
+    .pos-product-body {
+        padding: 0.55rem 0.65rem 0.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
+    .pos-product-cat {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--color-piedra);
+    }
+
+    .pos-product-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--color-noche);
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .pos-product-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.35rem;
+        margin-top: 0.15rem;
+    }
+
+    .pos-product-meta span:first-child {
+        font-size: 0.72rem;
+        color: var(--color-piedra);
+    }
+
+    .pos-product-price {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--color-noche);
+        white-space: nowrap;
+    }
+
+    .pos-cards-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: var(--color-piedra);
+        padding: 2rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .pos-cart-table {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .pos-cart-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: var(--color-crema);
+    }
+
+    .pos-totals {
+        margin-top: 0.75rem;
+        display: grid;
+        gap: 0.4rem;
+        flex-shrink: 0;
+    }
+
+    .pos-charge-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(0, 1.6fr);
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .pos-charge-col {
+        min-width: 0;
+    }
+
+    .pos-payments {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .pos-payment-row {
+        display: grid;
+        grid-template-columns: minmax(110px, 1fr) minmax(96px, 1fr) minmax(96px, 1fr) minmax(110px, 1.2fr) auto;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .pos-payment-head {
+        display: grid;
+        grid-template-columns: minmax(110px, 1fr) minmax(96px, 1fr) minmax(96px, 1fr) minmax(110px, 1.2fr) auto;
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--color-piedra);
+        padding: 0 0 0.35rem;
+        border-bottom: 1px solid var(--color-linea);
+        margin-bottom: 0.5rem;
+    }
+
+    .pos-payment-head span:last-child {
+        width: 34px;
+    }
+
+    .pos-payment-row .form-select,
+    .pos-payment-row .form-control {
+        height: 38px;
+        min-width: 0;
+    }
+
+    .pos-charge-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--color-linea);
+    }
+
+    #customer-results .pos-result-chip {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 0.35rem;
+        height: auto;
+        padding: 0.5rem 0.7rem;
+        text-align: left;
+    }
+
+    @media (max-width: 1024px) {
+        .pos-page {
+            display: block;
+        }
+
+        .pos-main {
+            display: block;
+        }
+
+        .pos-search-card,
+        .pos-cart-card {
+            margin-bottom: 1rem;
+        }
+
+        .pos-results,
+        .pos-cards,
+        .pos-cart-table {
+            overflow: visible;
+            max-height: none;
+        }
+
+        .pos-cart-table thead th {
+            position: static;
+        }
+
+        .pos-charge-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .pos-payment-head {
+            display: none;
+        }
+
+        .pos-payment-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div class="pos-page">
+    <div class="page-header pos-header">
+        <div>
+            <h1 class="page-title font-serif">Punto de Venta</h1>
+            <p class="page-subtitle">
+                Escanea o busca una pieza, arma el carrito y cobra.
+                @if ($session)
+                    Turno abierto desde {{ $session->opened_at?->format('H:i') }}.
+                @else
+                    <span style="color: var(--color-error);">No hay un turno de caja abierto.</span>
+                @endif
+            </p>
+        </div>
+        <div class="page-actions">
+            @can('purchases.create')
+                <a href="{{ route('admin.purchases.create') }}" class="btn btn-outline btn-sm">Comprar materiales</a>
+            @endcan
+            @can('layaways.manage')
+                <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline btn-sm">Apartar pieza</a>
+            @endcan
+            <a href="{{ route('admin.cash.index') }}" class="btn btn-outline btn-sm">Caja</a>
+            <a href="{{ route('admin.customers.create') }}" class="btn btn-outline btn-sm" target="_blank">Nuevo cliente</a>
+        </div>
     </div>
-    <div class="page-actions">
-        @can('layaways.manage')
-            <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline">Apartar pieza</a>
-        @endcan
-        <a href="{{ route('admin.cash.index') }}" class="btn btn-outline">Caja</a>
-        <a href="{{ route('admin.customers.create') }}" class="btn btn-outline" target="_blank">Nuevo cliente</a>
+
+    @include('admin.partials.alerts')
+
+    <div class="pos-main">
+        <div class="card pos-search-card">
+            <label class="form-label" for="pos-search">Buscar pieza (código de barras, SKU o nombre)</label>
+            <input type="text" id="pos-search" class="form-control" placeholder="Escanea o escribe y presiona Enter" autocomplete="off" autofocus>
+
+            <div class="pos-filters">
+                <select id="filter-metal" class="form-select">
+                    <option value="">Todos los metales</option>
+                    @foreach ($metals as $metal)
+                        <option value="{{ $metal->id }}">{{ $metal->name }}</option>
+                    @endforeach
+                </select>
+                <select id="filter-category" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                <input type="number" id="filter-price-min" class="form-control" min="0" step="0.01" placeholder="Precio mín.">
+                <input type="number" id="filter-price-max" class="form-control" min="0" step="0.01" placeholder="Precio máx.">
+                <button type="button" class="btn btn-outline btn-sm" id="filter-clear">Limpiar</button>
+            </div>
+
+            <div id="pos-results" class="pos-cards"></div>
+        </div>
+
+        <div class="card pos-cart-card">
+            <h2 class="font-serif pos-card-title">Carrito</h2>
+            <div class="table-wrap pos-cart-table">
+                <table class="data-table" id="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Pieza</th>
+                            <th class="text-right">Precio</th>
+                            <th style="width: 110px;">Descuento</th>
+                            <th class="text-right">Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-body">
+                        <tr id="cart-empty"><td colspan="5" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pos-totals">
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="muted">Subtotal</span>
+                    <span class="num" id="sum-subtotal">$ 0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="muted">Descuento total</span>
+                    <span class="num" id="sum-discount">$ 0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--color-linea); padding-top: 0.5rem;">
+                    <strong class="font-serif" style="font-size: 1.1rem;">Total</strong>
+                    <strong class="font-serif num" style="font-size: 1.3rem;" id="sum-total">$ 0.00</strong>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-gold" id="open-charge" style="margin-top: 0.75rem; width: 100%; height: 46px; font-size: 1rem;">Cobrar</button>
+
+            <p id="cart-error" class="alert alert-error" style="display: none; margin-top: 0.75rem;"></p>
+        </div>
     </div>
 </div>
 
-@include('admin.partials.alerts')
-
-<div class="grid-2" style="grid-template-columns: 1.15fr 1fr; align-items: start;">
-    <div class="card">
-        <label class="form-label" for="pos-search">Buscar pieza (código de barras, SKU o nombre)</label>
-        <input type="text" id="pos-search" class="form-control" placeholder="Escanea o escribe y presiona Enter" autocomplete="off" autofocus>
-        <div id="pos-results" style="margin-top: 0.75rem;"></div>
-    </div>
-
-    <div class="card">
-        <h2 class="font-serif" style="font-size: 1.2rem; margin-bottom: 1rem;">Carrito</h2>
-        <div class="table-wrap">
-            <table class="data-table" id="cart-table">
-                <thead>
-                    <tr>
-                        <th>Pieza</th>
-                        <th class="text-right">Precio</th>
-                        <th style="width: 120px;">Descuento</th>
-                        <th class="text-right">Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="cart-body">
-                    <tr id="cart-empty"><td colspan="5" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div style="margin-top: 1rem; display: grid; gap: 0.6rem;">
-            <div style="display: flex; justify-content: space-between;">
-                <span class="muted">Subtotal</span>
-                <span class="num" id="sum-subtotal">$ 0.00</span>
+<!-- Modal de Cobro -->
+<div id="modal-charge" class="modal-backdrop" style="display: none;">
+    <div class="modal" style="max-width: 980px; max-height: 92vh; overflow-y: auto;">
+        <div class="modal-header">
+            <div>
+                <h3 class="font-serif" style="font-size: 1.35rem; margin: 0; color: var(--color-noche);">Cobro</h3>
+                <span class="muted" style="font-size: 0.8rem;">Cliente, descuentos y pagos antes de registrar la venta</span>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span class="muted">Descuento total</span>
-                <span class="num" id="sum-discount">$ 0.00</span>
+            <button type="button" class="modal-close" id="btn-close-charge">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="pos-charge-grid">
+                <div class="pos-charge-col">
+                    <div class="form-group" style="position: relative;">
+                        <label class="form-label" for="customer-search">Cliente (opcional)</label>
+                        <input type="text" id="customer-search" class="form-control" placeholder="Busca por nombre, documento o teléfono" autocomplete="off">
+                        <input type="hidden" id="customer_id">
+                        <div id="customer-results" class="pos-results" style="margin-top: 0.35rem; max-height: 190px;"></div>
+                        <div id="customer-selected" style="display: none; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; padding: 0.5rem 0.75rem; background-color: var(--color-crema); border: 1px solid var(--color-linea); border-radius: 4px;">
+                            <span id="customer-selected-text" style="font-size: 0.88rem;"></span>
+                            <button type="button" class="btn btn-outline btn-sm" id="customer-clear">Quitar</button>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="discount_total">Descuento global</label>
+                            <input type="number" step="0.01" min="0" id="discount_total" class="form-control" value="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="discount_reason">Motivo del descuento</label>
+                            <input type="text" id="discount_reason" class="form-control" maxlength="255" placeholder="Obligatorio si hay descuento">
+                        </div>
+                    </div>
+
+                    <div id="discount-warning" style="display: none; background-color: #FEF3C7; border-left: 4px solid var(--color-aviso); color: #92400E; padding: 0.6rem 0.85rem; border-radius: 4px; font-size: 0.82rem; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>⚠️</span>
+                            <span id="discount-warning-text">El descuento supera el límite autorizado para tu rol. Requerirá autorización de Gerencia para cobrar.</span>
+                        </div>
+                        <span class="badge" style="background-color: var(--color-aviso); color: #fff;">Autorización requerida</span>
+                    </div>
+                </div>
+
+                <div class="pos-charge-col">
+                    <label class="form-label">Pagos</label>
+                    <div class="pos-payment-head">
+                        <span>Método</span>
+                        <span>Monto</span>
+                        <span>Recibido</span>
+                        <span>Referencia</span>
+                        <span></span>
+                    </div>
+                    <div id="payments" class="pos-payments"></div>
+                    <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem;">Agregar pago</button>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--color-linea); padding-top: 0.6rem;">
-                <strong class="font-serif" style="font-size: 1.2rem;">Total</strong>
-                <strong class="font-serif num" style="font-size: 1.4rem;" id="sum-total">$ 0.00</strong>
+
+            <div class="pos-charge-footer">
+                <div class="form-hint">
+                    Total pagado: <span class="num" id="sum-paid">$ 0.00</span> ·
+                    <span id="pay-status" class="muted">Faltante $ 0.00</span>
+                    @if (! $canOverrideDiscount)
+                        <br>Descuento máximo para tu rol: {{ number_format((float) $maxDiscountPercent, 2) }}%
+                    @endif
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-charge">Cancelar</button>
+                    <button type="button" class="btn btn-gold" id="confirm-sale">Registrar venta</button>
+                </div>
             </div>
+
+            <p id="pos-error" class="alert alert-error" style="display: none; margin-top: 0.75rem;"></p>
         </div>
     </div>
-</div>
-
-<div class="card">
-    <h2 class="font-serif" style="font-size: 1.2rem; margin-bottom: 1rem;">Cobro</h2>
-
-    <div class="grid-2">
-        <div class="form-group">
-            <label class="form-label" for="customer_id">Cliente (opcional)</label>
-            <select id="customer_id" class="form-select">
-                <option value="">Consumidor final</option>
-                @foreach ($customers as $customer)
-                    <option value="{{ $customer->id }}">{{ $customer->full_name }} — {{ $customer->document_type }} {{ $customer->document_number }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="grid-2">
-            <div class="form-group">
-                <label class="form-label" for="discount_total">Descuento global</label>
-                <input type="number" step="0.01" min="0" id="discount_total" class="form-control" value="0.00">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="discount_reason">Motivo del descuento</label>
-                <input type="text" id="discount_reason" class="form-control" maxlength="255" placeholder="Obligatorio si hay descuento">
-            </div>
-        </div>
-    </div>
-
-    <div id="discount-warning" style="display: none; background-color: #FEF3C7; border-left: 4px solid var(--color-aviso); color: #92400E; padding: 0.75rem 1rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 0.5rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span>⚠️</span>
-            <span id="discount-warning-text">El descuento supera el límite autorizado para tu rol. Requerirá autorización de Gerencia para cobrar.</span>
-        </div>
-        <span class="badge" style="background-color: var(--color-aviso); color: #fff;">Autorización requerida</span>
-    </div>
-
-    <div style="margin-bottom: 1rem;">
-        <label class="form-label">Pagos</label>
-        <div id="payments"></div>
-        <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem;">Agregar pago</button>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div class="form-hint">
-            Total pagado: <span class="num" id="sum-paid">$ 0.00</span> ·
-            <span id="pay-status" class="muted">Faltante $ 0.00</span>
-            @if (! $canOverrideDiscount)
-                <br>Descuento máximo para tu rol: {{ number_format((float) $maxDiscountPercent, 2) }}%
-            @endif
-        </div>
-        <button type="button" class="btn btn-gold" id="confirm-sale">Registrar venta</button>
-    </div>
-
-    <p id="pos-error" class="alert alert-error" style="display: none; margin-top: 1rem;"></p>
 </div>
 
 <!-- Modal de Autorización Híbrida de Descuento (PIN Mostrador o Remoto) -->
 <div id="modal-supervisor-auth" class="modal-backdrop" style="display: none;">
-    <div class="modal" style="max-width: 480px;">
+    <div class="modal" style="max-width: 480px; max-height: 92vh; overflow-y: auto;">
         <div class="modal-header">
             <div>
                 <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Autorización de Descuento</h3>
@@ -228,6 +614,7 @@
         validatePin: @json(route('admin.pos.authorization.pin')),
         requestRemote: @json(route('admin.pos.authorization.store')),
         checkStatus: @json(url('admin/pos/autorizacion')),
+        customerSearch: @json(route('admin.customers.search')),
     };
 
     const maxDiscountPercent = Number(@json((float) $maxDiscountPercent)) || 10;
@@ -348,7 +735,7 @@
     function addPaymentRow(method, amount) {
         const row = document.createElement('div');
         row.setAttribute('data-payment', '');
-        row.style.cssText = 'display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;';
+        row.className = 'pos-payment-row';
         row.innerHTML =
             '<select class="form-select" data-method>' +
                 '<option value="cash">Efectivo</option>' +
@@ -356,7 +743,7 @@
                 '<option value="transfer">Transferencia</option>' +
             '</select>' +
             '<input type="number" step="0.01" min="0" class="form-control" data-amount placeholder="Monto">' +
-            '<input type="number" step="0.01" min="0" class="form-control" data-received placeholder="Recibido (efectivo)">' +
+            '<input type="number" step="0.01" min="0" class="form-control" data-received placeholder="Recibido">' +
             '<input type="text" class="form-control" data-reference placeholder="Referencia">' +
             '<button type="button" class="btn btn-danger btn-sm" data-drop>×</button>';
 
@@ -384,8 +771,8 @@
 
     function addProductChip(product) {
         if (cart.some((item) => item.id === product.id)) {
-            el('pos-error').textContent = 'Esa pieza ya está en el carrito.';
-            el('pos-error').style.display = 'flex';
+            el('cart-error').textContent = 'Esa pieza ya está en el carrito.';
+            el('cart-error').style.display = 'flex';
             return;
         }
 
@@ -397,25 +784,82 @@
             discount: 0,
         });
 
-        el('pos-search').value = '';
-        el('pos-results').innerHTML = '';
-        el('pos-error').style.display = 'none';
+        el('cart-error').style.display = 'none';
         resetAuthorizations();
         renderCart();
+        renderAddedState();
+    }
+
+    function renderAddedState() {
+        el('pos-results').querySelectorAll('[data-product-id]').forEach((card) => {
+            const inCart = cart.some((item) => item.id === Number(card.dataset.productId));
+            card.classList.toggle('is-added', inCart);
+            card.disabled = inCart;
+        });
+    }
+
+    function buildSearchQuery(term) {
+        const params = new URLSearchParams();
+        if (term) {
+            params.set('q', term);
+        }
+        const metal = el('filter-metal').value;
+        const category = el('filter-category').value;
+        const priceMin = el('filter-price-min').value;
+        const priceMax = el('filter-price-max').value;
+        if (metal) {
+            params.set('metal_id', metal);
+        }
+        if (category) {
+            params.set('category_id', category);
+        }
+        if (priceMin) {
+            params.set('price_min', priceMin);
+        }
+        if (priceMax) {
+            params.set('price_max', priceMax);
+        }
+        return params.toString();
+    }
+
+    function productCard(product) {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'pos-product-card';
+        card.dataset.productId = product.id;
+
+        const media = product.photo_url
+            ? '<img src="' + product.photo_url + '" alt="" loading="lazy">'
+            : '<span class="pos-product-placeholder">' + (product.name || '?').charAt(0) + '</span>';
+        const badge = product.is_featured ? '<span class="pos-product-badge">Destacada</span>' : '';
+        const spec = [product.purity || product.metal, (product.weight_g ? product.weight_g.replace(/0+$/, '').replace(/\.$/, '') + ' g' : '')]
+            .filter(Boolean)
+            .join(' · ');
+
+        card.innerHTML =
+            '<div class="pos-product-media">' + media + badge + '</div>' +
+            '<div class="pos-product-body">' +
+                '<span class="pos-product-cat">' + (product.category || '') + '</span>' +
+                '<span class="pos-product-name">' + product.name + '</span>' +
+                '<div class="pos-product-meta">' +
+                    '<span>' + spec + '</span>' +
+                    '<span class="pos-product-price">' + money(product.price) + '</span>' +
+                '</div>' +
+            '</div>';
+
+        card.addEventListener('click', () => addProductChip(product));
+        return card;
     }
 
     function runSearch(term) {
-        if (!term) {
-            el('pos-results').innerHTML = '';
-            return;
-        }
-
         if (searchController) {
             searchController.abort();
         }
         searchController = new AbortController();
 
-        fetch(routes.search + '?q=' + encodeURIComponent(term), {
+        const query = buildSearchQuery(term);
+
+        fetch(routes.search + (query ? '?' + query : ''), {
             headers: { 'Accept': 'application/json' },
             signal: searchController.signal,
         })
@@ -425,19 +869,12 @@
                 box.innerHTML = '';
 
                 if (!data.products || data.products.length === 0) {
-                    box.innerHTML = '<p class="muted">Sin resultados disponibles.</p>';
+                    box.innerHTML = '<p class="pos-cards-empty">Sin resultados. Ajusta la búsqueda o los filtros.</p>';
                     return;
                 }
 
-                data.products.forEach((product) => {
-                    const chip = document.createElement('button');
-                    chip.type = 'button';
-                    chip.className = 'btn btn-outline';
-                    chip.style.cssText = 'display: flex; justify-content: space-between; width: 100%; margin-bottom: 0.4rem; height: auto; padding: 0.6rem 0.8rem; text-align: left;';
-                    chip.innerHTML = '<span>' + product.name + '<br><small class="muted">' + product.sku + ' · ' + (product.weight_g) + ' g</small></span><strong class="num">' + money(product.price) + '</strong>';
-                    chip.addEventListener('click', () => addProductChip(product));
-                    box.appendChild(chip);
-                });
+                data.products.forEach((product) => box.appendChild(productCard(product)));
+                renderAddedState();
             })
             .catch(() => {});
     }
@@ -454,11 +891,127 @@
         }
     });
 
+    ['filter-metal', 'filter-category'].forEach((id) => {
+        el(id).addEventListener('change', () => runSearch(el('pos-search').value.trim()));
+    });
+
+    let priceDebounce = null;
+    ['filter-price-min', 'filter-price-max'].forEach((id) => {
+        el(id).addEventListener('input', () => {
+            clearTimeout(priceDebounce);
+            priceDebounce = setTimeout(() => runSearch(el('pos-search').value.trim()), 300);
+        });
+    });
+
+    el('filter-clear').addEventListener('click', () => {
+        el('filter-metal').value = '';
+        el('filter-category').value = '';
+        el('filter-price-min').value = '';
+        el('filter-price-max').value = '';
+        runSearch(el('pos-search').value.trim());
+    });
+
+    runSearch('');
+
     el('discount_total').addEventListener('input', () => {
         resetAuthorizations();
         recalc();
     });
     el('add-payment').addEventListener('click', () => addPaymentRow());
+
+    // --- Modal de Cobro ---
+    function openChargeModal() {
+        const error = el('cart-error');
+        error.style.display = 'none';
+
+        if (cart.length === 0) {
+            error.textContent = 'Agrega al menos una pieza.';
+            error.style.display = 'flex';
+            return;
+        }
+
+        el('modal-charge').style.display = 'flex';
+        recalc();
+        el('customer-search').focus();
+    }
+
+    function closeChargeModal() {
+        el('modal-charge').style.display = 'none';
+    }
+
+    el('open-charge').addEventListener('click', openChargeModal);
+    el('btn-close-charge').addEventListener('click', closeChargeModal);
+    el('btn-cancel-charge').addEventListener('click', closeChargeModal);
+    el('modal-charge').addEventListener('click', (event) => {
+        if (event.target === el('modal-charge')) {
+            closeChargeModal();
+        }
+    });
+
+    // --- Búsqueda de Cliente (typeahead) ---
+    let customerController = null;
+    let customerDebounce = null;
+
+    function selectCustomer(customer) {
+        el('customer_id').value = customer.id;
+        el('customer-search').value = '';
+        el('customer-search').style.display = 'none';
+        el('customer-results').innerHTML = '';
+        el('customer-selected-text').textContent = customer.full_name + (customer.document ? ' — ' + customer.document : '');
+        el('customer-selected').style.display = 'flex';
+    }
+
+    function clearCustomer() {
+        el('customer_id').value = '';
+        el('customer-selected').style.display = 'none';
+        el('customer-search').style.display = 'block';
+        el('customer-search').value = '';
+        el('customer-search').focus();
+    }
+
+    el('customer-clear').addEventListener('click', clearCustomer);
+
+    function runCustomerSearch(term) {
+        if (!term) {
+            el('customer-results').innerHTML = '';
+            return;
+        }
+
+        if (customerController) {
+            customerController.abort();
+        }
+        customerController = new AbortController();
+
+        fetch(routes.customerSearch + '?q=' + encodeURIComponent(term), {
+            headers: { 'Accept': 'application/json' },
+            signal: customerController.signal,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const box = el('customer-results');
+                box.innerHTML = '';
+
+                if (!data.customers || data.customers.length === 0) {
+                    box.innerHTML = '<p class="muted" style="font-size:0.85rem;">Sin resultados. Puedes dejarlo como consumidor final.</p>';
+                    return;
+                }
+
+                data.customers.forEach((customer) => {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'btn btn-outline pos-result-chip';
+                    chip.innerHTML = '<span>' + customer.full_name + '<br><small class="muted">' + (customer.document || '') + (customer.phone ? ' · ' + customer.phone : '') + '</small></span>';
+                    chip.addEventListener('click', () => selectCustomer(customer));
+                    box.appendChild(chip);
+                });
+            })
+            .catch(() => {});
+    }
+
+    el('customer-search').addEventListener('input', (event) => {
+        clearTimeout(customerDebounce);
+        customerDebounce = setTimeout(() => runCustomerSearch(event.target.value.trim()), 250);
+    });
 
     // --- Modal de Autorización Híbrida ---
     function openAuthModal(subtotal, discountTotal, total, percent) {

@@ -618,6 +618,10 @@
             50% { opacity: 0.35; }
         }
 
+        @keyframes spin-loader {
+            to { transform: rotate(360deg); }
+        }
+
         .scale-reading {
             display: inline-flex;
             align-items: baseline;

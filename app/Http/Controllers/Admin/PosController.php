@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSaleRequest;
-use App\Models\Customer;
+use App\Models\Category;
+use App\Models\Metal;
 use App\Models\Product;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
@@ -33,14 +34,15 @@ class PosController extends Controller
 
         return view('admin.pos.index', [
             'session' => $this->cash->currentSession($user),
-            'customers' => Customer::orderBy('full_name')->get(['id', 'full_name', 'document_type', 'document_number']),
             'maxDiscountPercent' => (string) $settings->max_discount_percent,
             'canOverrideDiscount' => $user->can('products.edit_price'),
+            'metals' => Metal::orderBy('name')->get(['id', 'name']),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     /**
-     * Search available pieces by barcode, SKU or name.
+     * Search available pieces by barcode, SKU or name, with optional filters.
      */
     public function search(Request $request): JsonResponse
     {
@@ -49,7 +51,12 @@ class PosController extends Controller
         $products = Product::query()
             ->search($term)
             ->where('status', ProductStatus::Available->value)
-            ->with(['metal', 'purity'])
+            ->when($request->filled('metal_id'), fn ($query) => $query->where('metal_id', $request->integer('metal_id')))
+            ->when($request->filled('category_id'), fn ($query) => $query->where('category_id', $request->integer('category_id')))
+            ->when($request->filled('price_min'), fn ($query) => $query->where('price', '>=', (float) $request->input('price_min')))
+            ->when($request->filled('price_max'), fn ($query) => $query->where('price', '<=', (float) $request->input('price_max')))
+            ->when($request->filled('origin'), fn ($query) => $query->where('origin', $request->string('origin')->value()))
+            ->with(['metal', 'purity', 'category', 'primaryPhoto'])
             ->orderBy('name')
             ->limit(20)
             ->get()
@@ -58,10 +65,13 @@ class PosController extends Controller
                 'sku' => $product->sku,
                 'barcode' => $product->barcode,
                 'name' => $product->name,
+                'category' => $product->category?->name,
                 'metal' => $product->metal?->name,
                 'purity' => $product->purity?->label,
                 'weight_g' => (string) $product->weight_g,
                 'price' => (string) $product->price,
+                'is_featured' => $product->is_featured,
+                'photo_url' => $product->primaryPhoto?->url,
             ]);
 
         return response()->json(['products' => $products]);
