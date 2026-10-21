@@ -259,6 +259,40 @@
             padding: 2.25rem 2rem;
         }
 
+        /* ------------------ FULL VIEWPORT (one-screen pages) ------------------ */
+        body.full-viewport {
+            overflow: hidden;
+        }
+
+        .full-viewport .main-wrapper {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .full-viewport .content-area {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 1.25rem 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            body.full-viewport {
+                overflow: auto;
+            }
+
+            .full-viewport .main-wrapper {
+                height: auto;
+                overflow: visible;
+            }
+
+            .full-viewport .content-area {
+                display: block;
+                overflow: visible;
+                padding: 2.25rem 2rem;
+            }
+        }
+
         .page-header {
             display: flex;
             align-items: center;
@@ -524,7 +558,7 @@
 
     @stack('styles')
 </head>
-<body>
+<body class="@yield('body_class')">
     <!-- Sidebar / Menú Lateral -->
     <aside class="sidebar">
         <div class="sidebar-brand">
