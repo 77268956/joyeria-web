@@ -226,75 +226,395 @@
         flex-shrink: 0;
     }
 
-    .pos-charge-grid {
-        display: grid;
-        grid-template-columns: minmax(280px, 1fr) minmax(0, 1.6fr);
-        gap: 1.25rem;
-        align-items: start;
+    /* --- Selector de Cliente en Vista Principal --- */
+    .pos-cart-customer-section {
+        background-color: var(--color-crema);
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        padding: 0.6rem 0.75rem;
+        margin-bottom: 0.75rem;
+        position: relative;
+        flex-shrink: 0;
     }
 
-    .pos-charge-col {
+    .pos-cart-customer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.35rem;
+    }
+
+    .pos-cart-customer-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-noche);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .pos-cart-customer-new {
+        font-size: 0.75rem;
+        color: var(--color-dorado);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.15s;
+    }
+    .pos-cart-customer-new:hover {
+        text-decoration: underline;
+        color: var(--color-noche);
+    }
+
+    .pos-cart-customer-search-wrap {
+        position: relative;
+    }
+
+    .pos-cart-customer-search-wrap .form-control {
+        height: 36px;
+        font-size: 0.85rem;
+        background-color: #fff;
+    }
+
+    .pos-cart-customer-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid var(--color-linea);
+        border-radius: 4px;
+        box-shadow: 0 8px 24px rgba(18, 22, 31, 0.12);
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 50;
+        padding: 0.35rem;
+    }
+
+    .pos-cart-customer-dropdown .pos-result-chip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 0.25rem;
+        padding: 0.45rem 0.65rem;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        font: inherit;
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+    .pos-cart-customer-dropdown .pos-result-chip:hover {
+        background-color: var(--color-crema);
+        border-color: var(--color-dorado);
+    }
+
+    .pos-cart-customer-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--color-dorado);
+        border-radius: 4px;
+        padding: 0.4rem 0.65rem;
+    }
+
+    .pos-cart-customer-card-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         min-width: 0;
     }
 
-    .pos-payments {
+    .pos-cart-customer-badge-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: var(--color-crema);
+        color: var(--color-dorado);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .pos-cart-customer-fullname {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--color-noche);
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pos-cart-customer-meta {
+        font-size: 0.74rem;
+        display: block;
+        line-height: 1.2;
+    }
+
+    .pos-cart-customer-remove {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+        height: 28px;
+        flex-shrink: 0;
+    }
+
+    /* --- Modal de Cobro (Diseño fiel a la imagen) --- */
+    #modal-charge .modal {
+        max-width: 880px;
+        width: 95%;
+        border-radius: 6px;
+        box-shadow: 0 16px 40px rgba(18, 22, 31, 0.22);
+        border: 1px solid var(--color-linea);
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    #modal-charge .modal-header {
+        background-color: #EDE8DF;
+        border-bottom: 1px solid var(--color-linea);
+        padding: 1.15rem 1.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    #modal-charge .modal-header h3 {
+        font-family: var(--font-serif);
+        font-size: 1.45rem;
+        margin: 0;
+        color: var(--color-noche);
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+    }
+
+    #modal-charge .modal-header .muted {
+        font-size: 0.82rem;
+        color: var(--color-piedra);
+        margin-top: 0.2rem;
+        display: block;
+    }
+
+    #modal-charge .modal-body {
+        padding: 1.5rem 1.75rem;
+        background-color: #fff;
+    }
+
+    .pos-modal-section-tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-piedra);
+        margin-bottom: 0.85rem;
+    }
+
+    .pos-modal-info-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 1.35rem;
+    }
+
+    .pos-modal-info-row {
+        font-size: 0.95rem;
+        color: var(--color-noche);
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .pos-modal-info-label {
+        font-weight: 700;
+        color: var(--color-noche);
+    }
+
+    .pos-modal-info-val {
+        font-weight: 500;
+        color: #1e2430;
+    }
+
+    .pos-modal-change-link {
+        font-size: 0.78rem;
+        color: var(--color-dorado);
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 0.35rem;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .pos-modal-method-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--color-noche);
+        margin-bottom: 0.6rem;
+    }
+
+    .pos-modal-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.85rem;
+        margin-bottom: 1.35rem;
+    }
+
+    .pos-method-btn {
+        height: 48px;
+        border: 1px solid var(--color-linea);
+        background-color: #fff;
+        border-radius: 4px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--color-noche);
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pos-method-btn:hover {
+        border-color: var(--color-dorado);
+        background-color: var(--color-hueso);
+    }
+
+    .pos-method-btn.active {
+        border: 2px solid var(--color-dorado);
+        background-color: #FAF7F0;
+        font-weight: 700;
+        color: var(--color-noche);
+        box-shadow: 0 2px 8px rgba(184, 154, 94, 0.18);
+    }
+
+    /* Grilla de campos: Pagos (Izquierda) vs Descuento (Derecha) */
+    .pos-modal-fields-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+        gap: 1.5rem;
+        align-items: start;
+        margin-top: 0.5rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .pos-payment-subhead {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 34px;
+        gap: 0.45rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-piedra);
+    }
+
+    .pos-payments-box {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        max-height: 200px;
-        overflow-y: auto;
     }
 
-    .pos-payment-row {
+    .pos-payment-input-row {
         display: grid;
-        grid-template-columns: minmax(110px, 1fr) minmax(96px, 1fr) minmax(96px, 1fr) minmax(110px, 1.2fr) auto;
+        grid-template-columns: 1fr 1fr 1fr 34px;
+        gap: 0.45rem;
+        align-items: center;
+    }
+
+    .pos-payment-input-row .form-control {
+        height: 38px;
+        font-size: 0.88rem;
+    }
+
+    .pos-payment-del {
+        height: 38px;
+        width: 34px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        line-height: 1;
+        color: var(--color-piedra);
+        border-color: var(--color-linea);
+    }
+    .pos-payment-del:hover {
+        color: var(--color-error);
+        border-color: var(--color-error);
+        background-color: #FDF2F2;
+    }
+
+    .pos-discount-subhead {
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 0.5rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-piedra);
+    }
+
+    .pos-discount-input-row {
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
         gap: 0.5rem;
         align-items: center;
     }
 
-    .pos-payment-head {
-        display: grid;
-        grid-template-columns: minmax(110px, 1fr) minmax(96px, 1fr) minmax(96px, 1fr) minmax(110px, 1.2fr) auto;
-        gap: 0.5rem;
-        font-size: 0.72rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--color-piedra);
-        padding: 0 0 0.35rem;
-        border-bottom: 1px solid var(--color-linea);
-        margin-bottom: 0.5rem;
-    }
-
-    .pos-payment-head span:last-child {
-        width: 34px;
-    }
-
-    .pos-payment-row .form-select,
-    .pos-payment-row .form-control {
+    .pos-discount-input-row .form-control {
         height: 38px;
-        min-width: 0;
+        font-size: 0.88rem;
     }
 
-    .pos-charge-footer {
+    /* Footer de Cobro */
+    .pos-charge-footer-bar {
+        border-top: 1px solid var(--color-linea);
+        padding-top: 1.15rem;
+        margin-top: 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--color-linea);
+        gap: 1rem;
     }
 
-    #customer-results .pos-result-chip {
+    .pos-footer-totals {
         display: flex;
-        justify-content: space-between;
-        width: 100%;
-        margin-bottom: 0.35rem;
-        height: auto;
-        padding: 0.5rem 0.7rem;
-        text-align: left;
+        align-items: baseline;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .pos-footer-total-item {
+        color: var(--color-noche);
+    }
+
+    .pos-footer-total-val {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    .pos-footer-actions {
+        display: flex;
+        gap: 0.65rem;
+    }
+
+    .pos-footer-actions .btn {
+        height: 42px;
+        padding: 0 1.5rem;
+        font-size: 0.92rem;
+        font-weight: 600;
+        border-radius: 4px;
     }
 
     @media (max-width: 1024px) {
@@ -322,16 +642,38 @@
             position: static;
         }
 
-        .pos-charge-grid {
-            grid-template-columns: minmax(0, 1fr);
+        .pos-modal-fields-row {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .pos-modal-methods-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
 
-        .pos-payment-head {
-            display: none;
-        }
-
-        .pos-payment-row {
+        .pos-payment-subhead,
+        .pos-payment-input-row {
             grid-template-columns: 1fr 1fr;
+        }
+
+        .pos-discount-subhead,
+        .pos-discount-input-row {
+            grid-template-columns: 1fr;
+        }
+
+        .pos-charge-footer-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pos-footer-actions {
+            width: 100%;
+        }
+
+        .pos-footer-actions .btn {
+            flex: 1;
         }
     }
 </style>
@@ -357,7 +699,6 @@
                 <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline btn-sm">Apartar pieza</a>
             @endcan
             <a href="{{ route('admin.cash.index') }}" class="btn btn-outline btn-sm">Caja</a>
-            <a href="{{ route('admin.customers.create') }}" class="btn btn-outline btn-sm" target="_blank">Nuevo cliente</a>
         </div>
     </div>
 
@@ -391,6 +732,40 @@
 
         <div class="card pos-cart-card">
             <h2 class="font-serif pos-card-title">Carrito</h2>
+
+            <!-- Selector de Cliente en Vista Principal (desde el inicio) -->
+            <div class="pos-cart-customer-section">
+                <div class="pos-cart-customer-header">
+                    <span class="pos-cart-customer-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Cliente
+                    </span>
+                    <a href="{{ route('admin.customers.create') }}" class="pos-cart-customer-new" target="_blank" title="Registrar un nuevo cliente">+ Nuevo</a>
+                </div>
+
+                <input type="hidden" id="customer_id" value="">
+
+                <!-- Input de búsqueda de clientes con autocompletado desplegable -->
+                <div id="main-customer-search-wrap" class="pos-cart-customer-search-wrap">
+                    <input type="text" id="main-customer-search" class="form-control" placeholder="Buscar cliente por nombre, documento o teléfono..." autocomplete="off">
+                    <div id="main-customer-results" class="pos-cart-customer-dropdown" style="display: none;"></div>
+                </div>
+
+                <!-- Tarjeta con el cliente seleccionado -->
+                <div id="main-customer-selected" class="pos-cart-customer-card" style="display: none;">
+                    <div class="pos-cart-customer-card-content">
+                        <div class="pos-cart-customer-badge-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <strong id="main-customer-name" class="pos-cart-customer-fullname"></strong>
+                            <span id="main-customer-details" class="pos-cart-customer-meta muted"></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm pos-cart-customer-remove" id="main-customer-clear" title="Quitar cliente">✕ Quitar</button>
+                </div>
+            </div>
+
             <div class="table-wrap pos-cart-table">
                 <table class="data-table" id="cart-table">
                     <thead>
@@ -432,72 +807,92 @@
 
 <!-- Modal de Cobro -->
 <div id="modal-charge" class="modal-backdrop" style="display: none;">
-    <div class="modal" style="max-width: 980px; max-height: 92vh; overflow-y: auto;">
+    <div class="modal">
         <div class="modal-header">
             <div>
-                <h3 class="font-serif" style="font-size: 1.35rem; margin: 0; color: var(--color-noche);">Cobro</h3>
-                <span class="muted" style="font-size: 0.8rem;">Cliente, descuentos y pagos antes de registrar la venta</span>
+                <h3 class="font-serif">Cobro</h3>
+                <span class="muted">Cliente, descuento y pagos antes de registrar la venta</span>
             </div>
             <button type="button" class="modal-close" id="btn-close-charge">✕</button>
         </div>
 
         <div class="modal-body">
-            <div class="pos-charge-grid">
-                <div class="pos-charge-col">
-                    <div class="form-group" style="position: relative;">
-                        <label class="form-label" for="customer-search">Cliente (opcional)</label>
-                        <input type="text" id="customer-search" class="form-control" placeholder="Busca por nombre, documento o teléfono" autocomplete="off">
-                        <input type="hidden" id="customer_id">
-                        <div id="customer-results" class="pos-results" style="margin-top: 0.35rem; max-height: 190px;"></div>
-                        <div id="customer-selected" style="display: none; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; padding: 0.5rem 0.75rem; background-color: var(--color-crema); border: 1px solid var(--color-linea); border-radius: 4px;">
-                            <span id="customer-selected-text" style="font-size: 0.88rem;"></span>
-                            <button type="button" class="btn btn-outline btn-sm" id="customer-clear">Quitar</button>
-                        </div>
-                    </div>
+            <div class="pos-modal-section-tag">PAGOS</div>
 
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label class="form-label" for="discount_total">Descuento global</label>
-                            <input type="number" step="0.01" min="0" id="discount_total" class="form-control" value="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="discount_reason">Motivo del descuento</label>
-                            <input type="text" id="discount_reason" class="form-control" maxlength="255" placeholder="Obligatorio si hay descuento">
-                        </div>
-                    </div>
-
-                    <div id="discount-warning" style="display: none; background-color: #FEF3C7; border-left: 4px solid var(--color-aviso); color: #92400E; padding: 0.6rem 0.85rem; border-radius: 4px; font-size: 0.82rem; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>⚠️</span>
-                            <span id="discount-warning-text">El descuento supera el límite autorizado para tu rol. Requerirá autorización de Gerencia para cobrar.</span>
-                        </div>
-                        <span class="badge" style="background-color: var(--color-aviso); color: #fff;">Autorización requerida</span>
-                    </div>
+            <!-- Resumen superior: Cliente y Productos -->
+            <div class="pos-modal-info-summary">
+                <div class="pos-modal-info-row">
+                    <span class="pos-modal-info-label">Cliente:</span>
+                    <span id="modal-customer-display" class="pos-modal-info-val">Público general</span>
+                    <button type="button" id="modal-change-customer-btn" class="pos-modal-change-link" title="Cambiar cliente en la pantalla principal">(cambiar)</button>
                 </div>
+                <div class="pos-modal-info-row">
+                    <span class="pos-modal-info-label">Producto:</span>
+                    <span id="modal-products-display" class="pos-modal-info-val">Sin piezas</span>
+                </div>
+            </div>
 
-                <div class="pos-charge-col">
-                    <label class="form-label">Pagos</label>
-                    <div class="pos-payment-head">
-                        <span>Método</span>
+            <!-- Botones de Método de Pago (Efectivo, Tarjeta, Transferencia, Otro) -->
+            <div class="pos-modal-method-title">Metodo de pago:</div>
+            <div class="pos-modal-methods-grid">
+                <button type="button" class="pos-method-btn active" data-method-btn="cash">Efectivo</button>
+                <button type="button" class="pos-method-btn" data-method-btn="card">Tarjeta</button>
+                <button type="button" class="pos-method-btn" data-method-btn="transfer">Transferencia</button>
+                <button type="button" class="pos-method-btn" data-method-btn="other">Otro</button>
+            </div>
+
+            <!-- Fila de Campos: Pagos (Izquierda) y Descuentos (Derecha) -->
+            <div class="pos-modal-fields-row">
+                <!-- Columna Izquierda: Pagos -->
+                <div>
+                    <div class="pos-payment-subhead">
                         <span>Monto</span>
                         <span>Recibido</span>
                         <span>Referencia</span>
                         <span></span>
                     </div>
-                    <div id="payments" class="pos-payments"></div>
-                    <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem;">Agregar pago</button>
+                    <div id="payments" class="pos-payments-box"></div>
+                    <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem; font-size: 0.78rem;">+ Agregar otro método</button>
+                </div>
+
+                <!-- Columna Derecha: Descuentos -->
+                <div>
+                    <div class="pos-discount-subhead">
+                        <span>Descuento global</span>
+                        <span>Motivo del descuento</span>
+                    </div>
+                    <div class="pos-discount-input-row">
+                        <input type="number" step="0.01" min="0" id="discount_total" class="form-control" value="0.00" placeholder="0.00">
+                        <input type="text" id="discount_reason" class="form-control" maxlength="255" placeholder="Obligatorio si hay desc">
+                    </div>
+
+                    <div id="discount-warning" style="display: none; background-color: #FEF3C7; border-left: 4px solid var(--color-aviso); color: #92400E; padding: 0.6rem 0.85rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.65rem; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <span>⚠️</span>
+                            <span id="discount-warning-text">El descuento supera el límite autorizado para tu rol. Requerirá autorización.</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="pos-charge-footer">
-                <div class="form-hint">
-                    Total pagado: <span class="num" id="sum-paid">$ 0.00</span> ·
-                    <span id="pay-status" class="muted">Faltante $ 0.00</span>
+            <!-- Footer con totales y botones de acción -->
+            <div class="pos-charge-footer-bar">
+                <div class="pos-footer-totals">
+                    <div class="pos-footer-total-item">
+                        <span>Total pagado:</span>
+                        <span class="num pos-footer-total-val" id="sum-paid">$ 0.00</span>
+                    </div>
+                    <div class="pos-footer-total-item">
+                        <span id="pay-status" class="pos-footer-total-val" style="color: var(--color-error);">Faltante: $ 0.00</span>
+                    </div>
                     @if (! $canOverrideDiscount)
-                        <br>Descuento máximo para tu rol: {{ number_format((float) $maxDiscountPercent, 2) }}%
+                        <div class="muted" style="font-size: 0.75rem;">
+                            (Límite desc: {{ number_format((float) $maxDiscountPercent, 2) }}%)
+                        </div>
                     @endif
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
+
+                <div class="pos-footer-actions">
                     <button type="button" class="btn btn-outline" id="btn-cancel-charge">Cancelar</button>
                     <button type="button" class="btn btn-gold" id="confirm-sale">Registrar venta</button>
                 </div>
@@ -693,12 +1088,21 @@
         el('sum-discount').textContent = money(discountTotal);
         el('sum-total').textContent = money(total);
 
+        // Auto-fill first payment row amount with the total (if only one row and empty)
+        const rows = paymentRows();
+        if (rows.length === 1) {
+            const amountInput = rows[0].querySelector('[data-amount]');
+            if (!amountInput.value || Number(amountInput.value) === 0) {
+                amountInput.value = total.toFixed(2);
+            }
+        }
+
         // Warning banner for seller when discount exceeds limit
         const discountPercent = subtotal > 0 ? (discountTotal / subtotal) * 100 : 0;
         const warning = el('discount-warning');
         if (discountPercent > maxDiscountPercent && !canOverrideDiscount && !approvedAuthorizationId && !supervisorPinCode) {
             warning.style.display = 'flex';
-            el('discount-warning-text').textContent = 'El descuento (' + discountPercent.toFixed(1) + '%) supera tu límite permitido (' + maxDiscountPercent + '%). Requerirá autorización de Gerencia para cobrar.';
+            el('discount-warning-text').textContent = 'El descuento (' + discountPercent.toFixed(1) + '%) supera tu límite permitido (' + maxDiscountPercent + '%). Requerirá autorización de Gerencia.';
         } else {
             warning.style.display = 'none';
         }
@@ -708,6 +1112,22 @@
 
     function paymentRows() {
         return Array.from(el('payments').querySelectorAll('[data-payment]'));
+    }
+
+    let activePaymentRow = null;
+
+    function setMethodButtonActive(method) {
+        document.querySelectorAll('[data-method-btn]').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.methodBtn === method);
+        });
+    }
+
+    function setRowMethod(row, method) {
+        const methodInput = row.querySelector('[data-method]');
+        if (methodInput) {
+            methodInput.value = method;
+        }
+        setMethodButtonActive(method);
     }
 
     function updatePaid(total) {
@@ -724,45 +1144,84 @@
             status.textContent = 'Pago exacto';
             status.style.color = 'var(--color-exito)';
         } else if (diff < 0) {
-            status.textContent = 'Faltante ' + money(-diff);
+            status.textContent = 'Faltante: ' + money(-diff);
             status.style.color = 'var(--color-error)';
         } else {
-            status.textContent = 'Cambio ' + money(diff);
+            status.textContent = 'Cambio: ' + money(diff);
             status.style.color = 'var(--color-info)';
         }
     }
 
-    function addPaymentRow(method, amount) {
+    function addPaymentRow(method = 'cash', amount = null) {
         const row = document.createElement('div');
         row.setAttribute('data-payment', '');
-        row.className = 'pos-payment-row';
+        row.className = 'pos-payment-input-row';
+
+        // Si no se especifica monto, calcular el faltante restante
+        if (amount === null) {
+            let currentPaid = 0;
+            paymentRows().forEach((r) => {
+                currentPaid += Number(r.querySelector('[data-amount]').value) || 0;
+            });
+            const remaining = Math.max(0, currentTotal() - currentPaid);
+            amount = remaining > 0 ? remaining.toFixed(2) : currentTotal().toFixed(2);
+        }
+
         row.innerHTML =
-            '<select class="form-select" data-method>' +
-                '<option value="cash">Efectivo</option>' +
-                '<option value="card">Tarjeta</option>' +
-                '<option value="transfer">Transferencia</option>' +
-            '</select>' +
-            '<input type="number" step="0.01" min="0" class="form-control" data-amount placeholder="Monto">' +
+            '<input type="hidden" data-method value="' + (method || 'cash') + '">' +
+            '<input type="number" step="0.01" min="0" class="form-control" data-amount placeholder="Monto" value="' + (amount ? Number(amount).toFixed(2) : '') + '">' +
             '<input type="number" step="0.01" min="0" class="form-control" data-received placeholder="Recibido">' +
             '<input type="text" class="form-control" data-reference placeholder="Referencia">' +
-            '<button type="button" class="btn btn-danger btn-sm" data-drop>×</button>';
+            '<button type="button" class="btn btn-outline btn-sm pos-payment-del" data-drop title="Eliminar pago">×</button>';
 
-        if (method) {
-            row.querySelector('[data-method]').value = method;
-        }
-        if (amount) {
-            row.querySelector('[data-amount]').value = amount;
-        }
+        row.querySelectorAll('input').forEach((input) => {
+            input.addEventListener('focus', () => {
+                activePaymentRow = row;
+                const m = row.querySelector('[data-method]').value;
+                setMethodButtonActive(m);
+            });
+        });
 
-        row.querySelector('[data-method]').addEventListener('change', recalc);
         row.querySelector('[data-amount]').addEventListener('input', () => updatePaid(currentTotal()));
+        row.querySelector('[data-received]').addEventListener('input', () => updatePaid(currentTotal()));
         row.querySelector('[data-drop]').addEventListener('click', () => {
-            row.remove();
+            if (paymentRows().length > 1) {
+                row.remove();
+            } else {
+                row.querySelector('[data-amount]').value = currentTotal().toFixed(2);
+                row.querySelector('[data-received]').value = '';
+                row.querySelector('[data-reference]').value = '';
+                setRowMethod(row, 'cash');
+            }
             updatePaid(currentTotal());
         });
 
         el('payments').appendChild(row);
+        activePaymentRow = row;
+        setMethodButtonActive(method || 'cash');
     }
+
+    // Botones de selección rápida de Método de Pago
+    document.querySelectorAll('[data-method-btn]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const selectedMethod = btn.dataset.methodBtn;
+            const rows = paymentRows();
+            let targetRow = null;
+            if (rows.length === 0) {
+                addPaymentRow(selectedMethod, currentTotal());
+                return;
+            }
+            targetRow = activePaymentRow && rows.includes(activePaymentRow) ? activePaymentRow : rows[rows.length - 1];
+            setRowMethod(targetRow, selectedMethod);
+
+            if (selectedMethod === 'cash') {
+                targetRow.querySelector('[data-received]').focus();
+            } else {
+                targetRow.querySelector('[data-reference]').focus();
+            }
+            updatePaid(currentTotal());
+        });
+    });
 
     function currentTotal() {
         const raw = el('sum-total').textContent.replace(/[^0-9.]/g, '');
@@ -925,14 +1384,48 @@
         error.style.display = 'none';
 
         if (cart.length === 0) {
-            error.textContent = 'Agrega al menos una pieza.';
+            error.textContent = 'Agrega al menos una pieza al carrito.';
             error.style.display = 'flex';
             return;
         }
 
+        // Sincronizar Cliente en el Modal
+        const custName = el('main-customer-name').textContent.trim();
+        const custId = el('customer_id').value;
+        if (custId && custName) {
+            el('modal-customer-display').textContent = custName;
+        } else {
+            el('modal-customer-display').textContent = 'Público general';
+        }
+
+        // Sincronizar Resumen de Productos en el Modal
+        const productNames = cart.map((item) => item.name);
+        el('modal-products-display').textContent = productNames.length > 0 ? productNames.join(', ') : 'Sin piezas';
+
+        // Asegurar fila de pago inicial con el total
+        const rows = paymentRows();
+        if (rows.length === 0) {
+            addPaymentRow('cash', currentTotal());
+        } else if (rows.length === 1 && (!rows[0].querySelector('[data-amount]').value || Number(rows[0].querySelector('[data-amount]').value) === 0)) {
+            rows[0].querySelector('[data-amount]').value = currentTotal().toFixed(2);
+        }
+
+        const freshRows = paymentRows();
+        const activeMethod = freshRows[0] ? freshRows[0].querySelector('[data-method]').value : 'cash';
+        setMethodButtonActive(activeMethod);
+
         el('modal-charge').style.display = 'flex';
         recalc();
-        el('customer-search').focus();
+
+        // Enfoque inmediato al campo adecuado (recibido si es efectivo, referencia si tarjeta)
+        const primaryRow = paymentRows()[0];
+        if (primaryRow) {
+            if (activeMethod === 'cash') {
+                primaryRow.querySelector('[data-received]').focus();
+            } else {
+                primaryRow.querySelector('[data-reference]').focus();
+            }
+        }
     }
 
     function closeChargeModal() {
@@ -948,32 +1441,51 @@
         }
     });
 
-    // --- Búsqueda de Cliente (typeahead) ---
+    // Enlace para cambiar cliente desde el modal
+    const changeCustomerBtn = el('modal-change-customer-btn');
+    if (changeCustomerBtn) {
+        changeCustomerBtn.addEventListener('click', () => {
+            closeChargeModal();
+            clearCustomer();
+        });
+    }
+
+    // --- Búsqueda y Selección de Cliente en la Vista Principal (desde el inicio) ---
     let customerController = null;
     let customerDebounce = null;
 
     function selectCustomer(customer) {
         el('customer_id').value = customer.id;
-        el('customer-search').value = '';
-        el('customer-search').style.display = 'none';
-        el('customer-results').innerHTML = '';
-        el('customer-selected-text').textContent = customer.full_name + (customer.document ? ' — ' + customer.document : '');
-        el('customer-selected').style.display = 'flex';
+        el('main-customer-search-wrap').style.display = 'none';
+        el('main-customer-results').innerHTML = '';
+        el('main-customer-results').style.display = 'none';
+
+        el('main-customer-name').textContent = customer.full_name;
+        el('main-customer-details').textContent = (customer.document || '') + (customer.phone ? ' · ' + customer.phone : '');
+        el('main-customer-selected').style.display = 'flex';
+
+        el('modal-customer-display').textContent = customer.full_name;
     }
 
     function clearCustomer() {
         el('customer_id').value = '';
-        el('customer-selected').style.display = 'none';
-        el('customer-search').style.display = 'block';
-        el('customer-search').value = '';
-        el('customer-search').focus();
+        el('main-customer-selected').style.display = 'none';
+        el('main-customer-search-wrap').style.display = 'block';
+        el('main-customer-search').value = '';
+        el('main-customer-results').innerHTML = '';
+        el('main-customer-results').style.display = 'none';
+        el('main-customer-search').focus();
+
+        el('modal-customer-display').textContent = 'Público general';
     }
 
-    el('customer-clear').addEventListener('click', clearCustomer);
+    el('main-customer-clear').addEventListener('click', clearCustomer);
 
     function runCustomerSearch(term) {
+        const resultsBox = el('main-customer-results');
         if (!term) {
-            el('customer-results').innerHTML = '';
+            resultsBox.innerHTML = '';
+            resultsBox.style.display = 'none';
             return;
         }
 
@@ -988,29 +1500,54 @@
         })
             .then((response) => response.json())
             .then((data) => {
-                const box = el('customer-results');
-                box.innerHTML = '';
+                resultsBox.innerHTML = '';
 
                 if (!data.customers || data.customers.length === 0) {
-                    box.innerHTML = '<p class="muted" style="font-size:0.85rem;">Sin resultados. Puedes dejarlo como consumidor final.</p>';
+                    resultsBox.innerHTML = '<div class="muted" style="font-size:0.8rem; padding:0.5rem 0.65rem;">Sin clientes coincidentes. Puedes registrar uno con "+ Nuevo".</div>';
+                    resultsBox.style.display = 'block';
                     return;
                 }
 
                 data.customers.forEach((customer) => {
                     const chip = document.createElement('button');
                     chip.type = 'button';
-                    chip.className = 'btn btn-outline pos-result-chip';
-                    chip.innerHTML = '<span>' + customer.full_name + '<br><small class="muted">' + (customer.document || '') + (customer.phone ? ' · ' + customer.phone : '') + '</small></span>';
+                    chip.className = 'pos-result-chip';
+                    chip.innerHTML =
+                        '<div>' +
+                            '<strong style="font-size:0.85rem; color:var(--color-noche);">' + customer.full_name + '</strong><br>' +
+                            '<small class="muted" style="font-size:0.75rem;">' + (customer.document || '') + (customer.phone ? ' · ' + customer.phone : '') + '</small>' +
+                        '</div>' +
+                        '<span style="font-size:0.75rem; color:var(--color-dorado); font-weight:600;">Elegir →</span>';
+
                     chip.addEventListener('click', () => selectCustomer(customer));
-                    box.appendChild(chip);
+                    resultsBox.appendChild(chip);
                 });
+                resultsBox.style.display = 'block';
             })
             .catch(() => {});
     }
 
-    el('customer-search').addEventListener('input', (event) => {
+    el('main-customer-search').addEventListener('input', (event) => {
         clearTimeout(customerDebounce);
-        customerDebounce = setTimeout(() => runCustomerSearch(event.target.value.trim()), 250);
+        customerDebounce = setTimeout(() => runCustomerSearch(event.target.value.trim()), 200);
+    });
+
+    el('main-customer-search').addEventListener('focus', () => {
+        const val = el('main-customer-search').value.trim();
+        if (val) {
+            runCustomerSearch(val);
+        }
+    });
+
+    // Cerrar dropdown al hacer click afuera
+    document.addEventListener('click', (event) => {
+        const searchWrap = el('main-customer-search-wrap');
+        if (searchWrap && !searchWrap.contains(event.target)) {
+            const results = el('main-customer-results');
+            if (results) {
+                results.style.display = 'none';
+            }
+        }
     });
 
     // --- Modal de Autorización Híbrida ---
@@ -1358,7 +1895,7 @@
             });
     }
 
-    addPaymentRow('cash');
+    addPaymentRow('cash', null);
     renderCart();
 })();
 </script>
