@@ -38,7 +38,7 @@ class PublicSiteController extends Controller
         $featured = Product::query()
             ->when($store, fn ($query) => $query->where('store_id', $store->id))
             ->publiclyVisible()
-            ->with(['metal', 'category', 'primaryPhoto'])
+            ->with(['metal', 'purity', 'category', 'primaryPhoto'])
             ->orderByDesc('is_featured')
             ->latest('id')
             ->limit(8)
@@ -63,7 +63,7 @@ class PublicSiteController extends Controller
         $products = Product::query()
             ->when($store, fn ($query) => $query->where('store_id', $store->id))
             ->publiclyVisible()
-            ->with(['metal', 'category', 'primaryPhoto'])
+            ->with(['metal', 'purity', 'category', 'primaryPhoto'])
             ->when($selectedMetal, function ($query) use ($selectedMetal) {
                 $query->whereHas('metal', fn ($metal) => $metal->where('code', $selectedMetal));
             })

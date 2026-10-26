@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Models\User;
 use App\Services\CashSessionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class CashSessionTest extends TestCase
@@ -169,7 +170,7 @@ class CashSessionTest extends TestCase
 
         // With valid supervisor PIN: succeeds
         $manager = User::where('email', 'gerente@joyeriaweb.com')->first();
-        $manager->update(['supervisor_pin' => \Illuminate\Support\Facades\Hash::make('5678')]);
+        $manager->update(['supervisor_pin' => Hash::make('5678')]);
 
         $response = $this->actingAs($seller)->post(route('admin.cash.close'), [
             'counted_cash' => '95.00',
@@ -197,5 +198,34 @@ class CashSessionTest extends TestCase
         $this->actingAs($user)
             ->post(route('admin.cash.open'), ['opening_amount' => '10.00'])
             ->assertForbidden();
+    }
+
+    public function test_cash_index_renders_open_shift_modal_when_no_session_is_active(): void
+    {
+        $seller = $this->seller();
+
+        $response = $this->actingAs($seller)->get(route('admin.cash.index'));
+
+        $response->assertOk();
+        $response->assertSee('Sin turno abierto');
+        $response->assertSee('Abrir turno de caja');
+        $response->assertSee('modal-open-shift');
+        $response->assertSee('Historial de turnos cerrados');
+    }
+
+    public function test_cash_index_renders_shift_container_and_action_modals_when_session_is_open(): void
+    {
+        $seller = $this->seller();
+        $this->open($seller, '150.00');
+
+        $response = $this->actingAs($seller)->get(route('admin.cash.index'));
+
+        $response->assertOk();
+        $response->assertSee('Turno abierto');
+        $response->assertSee('Movimientos de turno');
+        $response->assertSee('Cerrar turno');
+        $response->assertSee('modal-movements');
+        $response->assertSee('modal-close-shift');
+        $response->assertSee('Historial de turnos cerrados');
     }
 }
