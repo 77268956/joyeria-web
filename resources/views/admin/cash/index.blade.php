@@ -2,193 +2,546 @@
 
 @section('title', 'Caja y Turnos')
 
+@section('body_class', 'full-viewport')
+
 @section('content')
-<div class="page-header">
-    <div>
-        <h1 class="page-title font-serif">Caja y Turnos</h1>
-        <p class="page-subtitle">Apertura y cierre de turno, movimientos de efectivo y arqueo comparativo</p>
+<style>
+    .cash-page {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        gap: 0.85rem;
+    }
+
+    .cash-header .page-title {
+        font-size: 1.5rem;
+    }
+
+    .cash-header .page-subtitle {
+        font-size: 0.82rem;
+        margin-top: 0.1rem;
+    }
+
+    .cash-session {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0.7rem 1rem;
+        margin-bottom: 0;
+    }
+
+    .cash-session-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.25rem;
+        text-align: right;
+    }
+
+    .cash-metric-label {
+        font-size: 0.72rem;
+        color: var(--color-piedra);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .cash-metric-value {
+        font-size: 1.15rem;
+        font-family: var(--font-serif);
+        font-variant-numeric: tabular-nums;
+        color: var(--color-noche);
+    }
+
+    .cash-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+        gap: 0.85rem;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .cash-left,
+    .cash-right {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        min-height: 0;
+        min-width: 0;
+    }
+
+    .cash-left {
+        overflow-y: auto;
+    }
+
+    .cash-card {
+        padding: 0.9rem 1rem;
+        margin-bottom: 0;
+    }
+
+    .cash-card-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.45rem;
+        border-bottom: 1px solid var(--color-linea);
+    }
+
+    .cash-card form {
+        margin: 0;
+    }
+
+    .cash-panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        min-height: 0;
+        padding: 0;
+        margin-bottom: 0;
+        overflow: hidden;
+    }
+
+    .cash-panel-head {
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .cash-panel-head h2 {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* --- Panel de historial de turnos --- */
+    .cash-panel-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .cash-panel-thead {
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .cash-panel-tbody {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .cash-panel-thead table,
+    .cash-panel-tbody table {
+        table-layout: fixed;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+    /* Anchos fijos de cada columna — mismos en thead y tbody */
+    .cash-col-cajero    { width: 160px; }
+    .cash-col-apertura  { width: 145px; }
+    .cash-col-cierre    { width: 145px; }
+    .cash-col-esperado  { width: 105px; }
+    .cash-col-contado   { width: 105px; }
+    .cash-col-dif       { width: 110px; }
+
+    .cash-panel-thead table th {
+        padding: 0.75rem 0.75rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-noche);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: var(--color-crema);
+        border-bottom: 1px solid var(--color-linea);
+    }
+
+    .cash-panel-tbody table td {
+        padding: 0.85rem 0.75rem;
+        font-size: 0.88rem;
+        border-bottom: 1px solid var(--color-linea);
+        color: var(--color-noche);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cash-panel-tbody table tbody tr:hover td {
+        background-color: #FBF9F5;
+    }
+
+    .cash-history-footer {
+        flex-shrink: 0;
+        border-top: 1px solid var(--color-linea);
+        padding: 0.5rem 0.75rem;
+    }
+
+    .cash-open {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
+        gap: 0.85rem;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .cash-open-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1.5rem;
+        margin-bottom: 0;
+        text-align: center;
+    }
+
+    .cash-open-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: var(--color-crema);
+        color: var(--color-dorado);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .cash-open-title {
+        font-size: 1.4rem;
+        margin-bottom: 0.4rem;
+        color: var(--color-noche);
+    }
+
+    .cash-open-input {
+        height: 48px;
+        font-size: 1.4rem;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        font-family: var(--font-serif);
+    }
+
+    @media (max-width: 1024px) {
+        .cash-page,
+        .cash-main,
+        .cash-left,
+        .cash-right,
+        .cash-open {
+            display: block;
+        }
+
+        .cash-main > *,
+        .cash-open > * {
+            margin-bottom: 1rem;
+        }
+
+        .cash-panel-body,
+        .cash-left {
+            overflow: visible;
+        }
+
+        .cash-session-metrics {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="cash-page">
+    <div class="page-header cash-header">
+        <div>
+            <h1 class="page-title font-serif">Caja y Turnos</h1>
+            <p class="page-subtitle">Apertura y cierre de turno, movimientos de efectivo y arqueo comparativo</p>
+        </div>
     </div>
-</div>
 
-@include('admin.partials.alerts')
+    @include('admin.partials.alerts')
 
-@if ($session)
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    @if ($session)
+        <div class="card cash-session">
             <div>
                 <span class="badge badge-success">Turno abierto</span>
-                <p class="page-subtitle" style="margin-top: 0.6rem;">
+                <p class="page-subtitle" style="margin-top: 0.4rem;">
                     Abierto por <strong>{{ $session->user?->name }}</strong>
                     el {{ $session->opened_at?->format('d/m/Y H:i') }}
                 </p>
             </div>
-            <div style="text-align: right;">
-                <div class="form-hint">Efectivo inicial</div>
-                <div class="font-serif" style="font-size: 1.6rem; font-variant-numeric: tabular-nums;">
-                    $ {{ number_format((float) $session->opening_amount, 2) }}
+            <div class="cash-session-metrics">
+                <div>
+                    <div class="cash-metric-label">Efectivo inicial</div>
+                    <div class="cash-metric-value">$ {{ number_format((float) $session->opening_amount, 2) }}</div>
+                </div>
+                <div>
+                    <div class="cash-metric-label">Esperado efectivo</div>
+                    <div class="cash-metric-value">$ {{ number_format((float) $expected['cash'], 2) }}</div>
+                </div>
+                <div>
+                    <div class="cash-metric-label">Esperado tarjeta / transf.</div>
+                    <div class="cash-metric-value">$ {{ number_format((float) $expected['card'] + (float) $expected['transfer'], 2) }}</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="grid-3">
-        <div class="card">
-            <div class="form-hint">Esperado en efectivo</div>
-            <div class="font-serif" style="font-size: 1.7rem; font-variant-numeric: tabular-nums;">$ {{ number_format((float) $expected['cash'], 2) }}</div>
-        </div>
-        <div class="card">
-            <div class="form-hint">Esperado en tarjeta</div>
-            <div class="font-serif" style="font-size: 1.7rem; font-variant-numeric: tabular-nums;">$ {{ number_format((float) $expected['card'], 2) }}</div>
-        </div>
-        <div class="card">
-            <div class="form-hint">Esperado en transferencia</div>
-            <div class="font-serif" style="font-size: 1.7rem; font-variant-numeric: tabular-nums;">$ {{ number_format((float) $expected['transfer'], 2) }}</div>
-        </div>
-    </div>
+        <div class="cash-main">
+            <div class="cash-left">
+                <div class="card cash-card">
+                    <h2 class="font-serif cash-card-title">Registrar movimiento</h2>
+                    <form action="{{ route('admin.cash.movement') }}" method="POST">
+                        @csrf
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label class="form-label" for="type">Tipo</label>
+                                <select name="type" id="type" class="form-select" required>
+                                    @foreach ($movementTypes as $type)
+                                        <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="amount">Monto</label>
+                                <input type="number" step="0.01" min="0.01" name="amount" id="amount" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="reason">Motivo</label>
+                                <input type="text" name="reason" id="reason" class="form-control" maxlength="255" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-sm">Registrar movimiento</button>
+                    </form>
+                </div>
 
-    <div class="grid-2">
-        <div class="card">
-            <h2 class="font-serif" style="font-size: 1.2rem; margin-bottom: 1rem;">Registrar movimiento</h2>
-            <form action="{{ route('admin.cash.movement') }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label" for="type">Tipo</label>
-                    <select name="type" id="type" class="form-select" required>
-                        @foreach ($movementTypes as $type)
-                            <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                        @endforeach
-                    </select>
+                <div class="card cash-card">
+                    <h2 class="font-serif cash-card-title">Cerrar turno (arqueo)</h2>
+                    <form action="{{ route('admin.cash.close') }}" method="POST" id="form-close-cash">
+                        @csrf
+                        <input type="hidden" name="supervisor_pin" id="close_supervisor_pin">
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label class="form-label" for="counted_cash">Efectivo contado</label>
+                                <input type="number" step="0.01" min="0" name="counted_cash" id="counted_cash" class="form-control" value="{{ number_format((float) $expected['cash'], 2, '.', '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="counted_card">Tarjeta contada</label>
+                                <input type="number" step="0.01" min="0" name="counted_card" id="counted_card" class="form-control" value="{{ number_format((float) $expected['card'], 2, '.', '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="counted_transfer">Transferencia contada</label>
+                                <input type="number" step="0.01" min="0" name="counted_transfer" id="counted_transfer" class="form-control" value="{{ number_format((float) $expected['transfer'], 2, '.', '') }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="close_note">Nota de cierre (obligatoria si hay diferencia)</label>
+                            <input type="text" name="close_note" id="close_note" class="form-control" maxlength="255">
+                        </div>
+                        <button type="button" id="btn-trigger-close" class="btn btn-gold btn-sm">Cerrar turno</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="amount">Monto</label>
-                    <input type="number" step="0.01" min="0.01" name="amount" id="amount" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="reason">Motivo</label>
-                    <input type="text" name="reason" id="reason" class="form-control" maxlength="255" required>
-                </div>
-                <button type="submit" class="btn btn-dark">Registrar movimiento</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2 class="font-serif" style="font-size: 1.2rem; margin-bottom: 1rem;">Cerrar turno (arqueo)</h2>
-            <form action="{{ route('admin.cash.close') }}" method="POST" id="form-close-cash">
-                @csrf
-                <input type="hidden" name="supervisor_pin" id="close_supervisor_pin">
-                <div class="grid-3">
-                    <div class="form-group">
-                        <label class="form-label" for="counted_cash">Efectivo contado</label>
-                        <input type="number" step="0.01" min="0" name="counted_cash" id="counted_cash" class="form-control" value="{{ number_format((float) $expected['cash'], 2, '.', '') }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="counted_card">Tarjeta contada</label>
-                        <input type="number" step="0.01" min="0" name="counted_card" id="counted_card" class="form-control" value="{{ number_format((float) $expected['card'], 2, '.', '') }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="counted_transfer">Transferencia contada</label>
-                        <input type="number" step="0.01" min="0" name="counted_transfer" id="counted_transfer" class="form-control" value="{{ number_format((float) $expected['transfer'], 2, '.', '') }}" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="close_note">Nota de cierre (obligatoria si hay diferencia)</label>
-                    <input type="text" name="close_note" id="close_note" class="form-control" maxlength="255">
-                </div>
-                <button type="button" id="btn-trigger-close" class="btn btn-gold">Cerrar turno</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="card" style="padding: 0; overflow: hidden;">
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>Tipo</th>
-                        <th>Motivo</th>
-                        <th>Usuario</th>
-                        <th class="text-right">Monto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($session->movements as $movement)
-                        <tr>
-                            <td class="num">{{ $movement->created_at?->format('H:i') }}</td>
-                            <td>
-                                <span class="badge {{ $movement->type->value === 'in' ? 'badge-success' : 'badge-danger' }}">
-                                    {{ $movement->type->label() }}
-                                </span>
-                            </td>
-                            <td>{{ $movement->reason }}</td>
-                            <td>{{ $movement->user?->name }}</td>
-                            <td class="text-right num">$ {{ number_format((float) $movement->amount, 2) }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="5" class="muted" style="text-align: center; padding: 1.5rem;">Sin movimientos registrados.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-@else
-    <div class="card" style="max-width: 520px;">
-        <h2 class="font-serif" style="font-size: 1.3rem; margin-bottom: 0.5rem;">Abrir turno de caja</h2>
-        <p class="page-subtitle" style="margin-bottom: 1.25rem;">Declara el efectivo inicial con el que comienzas el turno.</p>
-        <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash">
-            @csrf
-            <div class="form-group">
-                <label class="form-label" for="opening_amount">Efectivo inicial</label>
-                <input type="number" step="0.01" min="0" name="opening_amount" id="opening_amount" class="form-control" value="0.00" required autofocus>
             </div>
-            <button type="button" id="btn-trigger-open" class="btn btn-gold">Abrir turno</button>
-        </form>
-    </div>
-@endif
 
-<div class="card" style="padding: 0; overflow: hidden;">
-    <div style="padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--color-linea);">
-        <h2 class="font-serif" style="font-size: 1.2rem;">Historial de turnos cerrados</h2>
-    </div>
-    <div class="table-wrap">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Cajero</th>
-                    <th>Apertura</th>
-                    <th>Cierre</th>
-                    <th class="text-right">Esperado</th>
-                    <th class="text-right">Contado</th>
-                    <th class="text-right">Diferencia</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($history as $closed)
-                    <tr>
-                        <td>{{ $closed->user?->name }}</td>
-                        <td class="num">{{ $closed->opened_at?->format('d/m/Y H:i') }}</td>
-                        <td class="num">{{ $closed->closed_at?->format('d/m/Y H:i') }}</td>
-                        <td class="text-right num">$ {{ number_format((float) $closed->expected_cash, 2) }}</td>
-                        <td class="text-right num">$ {{ number_format((float) $closed->counted_cash, 2) }}</td>
-                        <td class="text-right num" style="color: {{ (float) $closed->difference_total == 0.0 ? 'inherit' : 'var(--color-error)' }};">
-                            $ {{ number_format((float) $closed->difference_total, 2) }}
-                            @if ($closed->supervisor)
-                                <div class="muted" style="font-size: 0.72rem; line-height: 1.1; margin-top: 2px;">
-                                    Aut: {{ $closed->supervisor->name }}
-                                </div>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="6" class="muted" style="text-align: center; padding: 1.5rem;">Aún no hay turnos cerrados.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+            <div class="cash-right">
+                <div class="card cash-panel">
+                    <div class="cash-panel-head">
+                        <h2 class="font-serif">Movimientos del turno</h2>
+                    </div>
+                    <div class="cash-panel-body">
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Tipo</th>
+                                        <th>Motivo</th>
+                                        <th>Usuario</th>
+                                        <th class="text-right">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($session->movements as $movement)
+                                        <tr>
+                                            <td class="num">{{ $movement->created_at?->format('H:i') }}</td>
+                                            <td>
+                                                <span class="badge {{ $movement->type->value === 'in' ? 'badge-success' : 'badge-danger' }}">
+                                                    {{ $movement->type->label() }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $movement->reason }}</td>
+                                            <td>{{ $movement->user?->name }}</td>
+                                            <td class="text-right num">$ {{ number_format((float) $movement->amount, 2) }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="5" class="muted" style="text-align: center; padding: 1.5rem;">Sin movimientos registrados.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-<div style="margin-top: 1rem;">
-    {{ $history->links() }}
+                <div class="card cash-panel">
+                    <div class="cash-panel-head">
+                        <h2 class="font-serif">Historial de turnos cerrados</h2>
+                    </div>
+                    <div class="cash-panel-body">
+                        {{-- Encabezado fijo --}}
+                        <div class="cash-panel-thead">
+                            <table>
+                                <colgroup>
+                                    <col class="cash-col-cajero">
+                                    <col class="cash-col-apertura">
+                                    <col class="cash-col-cierre">
+                                    <col class="cash-col-esperado">
+                                    <col class="cash-col-contado">
+                                    <col class="cash-col-dif">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Cajero</th>
+                                        <th>Apertura</th>
+                                        <th>Cierre</th>
+                                        <th style="text-align:right">Esperado</th>
+                                        <th style="text-align:right">Contado</th>
+                                        <th style="text-align:right">Diferencia</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        {{-- Cuerpo con scroll vertical --}}
+                        <div class="cash-panel-tbody">
+                            <table>
+                                <colgroup>
+                                    <col class="cash-col-cajero">
+                                    <col class="cash-col-apertura">
+                                    <col class="cash-col-cierre">
+                                    <col class="cash-col-esperado">
+                                    <col class="cash-col-contado">
+                                    <col class="cash-col-dif">
+                                </colgroup>
+                                <tbody>
+                                    @forelse ($history as $closed)
+                                        <tr>
+                                            <td>{{ $closed->user?->name }}</td>
+                                            <td class="num">{{ $closed->opened_at?->format('d/m/Y H:i') }}</td>
+                                            <td class="num">{{ $closed->closed_at?->format('d/m/Y H:i') }}</td>
+                                            <td class="num" style="text-align:right">$ {{ number_format((float) $closed->expected_cash, 2) }}</td>
+                                            <td class="num" style="text-align:right">$ {{ number_format((float) $closed->counted_cash, 2) }}</td>
+                                            <td class="num" style="text-align:right; color: {{ (float) $closed->difference_total == 0.0 ? 'inherit' : 'var(--color-error)' }};">
+                                                $ {{ number_format((float) $closed->difference_total, 2) }}
+                                                @if ($closed->supervisor)
+                                                    <div class="muted" style="font-size: 0.72rem; line-height: 1.1; margin-top: 2px;">
+                                                        Aut: {{ $closed->supervisor->name }}
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="muted" style="text-align: center; padding: 1.5rem;">Aún no hay turnos cerrados.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @if ($history->hasPages())
+                        <div class="cash-history-footer">
+                            {{ $history->links('vendor.pagination.admin') }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="cash-open">
+            <div class="card cash-open-card">
+                <div class="cash-open-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M3 11h18"></path><circle cx="12" cy="15" r="1.4"></circle></svg>
+                </div>
+                <h2 class="font-serif cash-open-title">Abrir turno de caja</h2>
+                <p class="page-subtitle" style="margin-bottom: 1.25rem;">Declara el efectivo inicial con el que comienzas el turno.</p>
+                <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash">
+                    @csrf
+                    <div class="form-group">
+                        <label class="form-label" for="opening_amount">Efectivo inicial</label>
+                        <input type="number" step="0.01" min="0" name="opening_amount" id="opening_amount" class="form-control cash-open-input" value="0.00" required autofocus>
+                    </div>
+                    <button type="button" id="btn-trigger-open" class="btn btn-gold" style="width: 100%; height: 46px; font-size: 1rem;">Abrir turno</button>
+                </form>
+            </div>
+
+            <div class="card cash-panel">
+                <div class="cash-panel-head">
+                    <h2 class="font-serif">Historial de turnos cerrados</h2>
+                </div>
+                <div class="cash-panel-body">
+                    {{-- Encabezado fijo --}}
+                    <div class="cash-panel-thead">
+                        <table>
+                            <colgroup>
+                                <col class="cash-col-cajero">
+                                <col class="cash-col-apertura">
+                                <col class="cash-col-cierre">
+                                <col class="cash-col-esperado">
+                                <col class="cash-col-contado">
+                                <col class="cash-col-dif">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Cajero</th>
+                                    <th>Apertura</th>
+                                    <th>Cierre</th>
+                                    <th style="text-align:right">Esperado</th>
+                                    <th style="text-align:right">Contado</th>
+                                    <th style="text-align:right">Diferencia</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    {{-- Cuerpo con scroll vertical --}}
+                    <div class="cash-panel-tbody">
+                        <table>
+                            <colgroup>
+                                <col class="cash-col-cajero">
+                                <col class="cash-col-apertura">
+                                <col class="cash-col-cierre">
+                                <col class="cash-col-esperado">
+                                <col class="cash-col-contado">
+                                <col class="cash-col-dif">
+                            </colgroup>
+                            <tbody>
+                                @forelse ($history as $closed)
+                                    <tr>
+                                        <td>{{ $closed->user?->name }}</td>
+                                        <td class="num">{{ $closed->opened_at?->format('d/m/Y H:i') }}</td>
+                                        <td class="num">{{ $closed->closed_at?->format('d/m/Y H:i') }}</td>
+                                        <td class="num" style="text-align:right">$ {{ number_format((float) $closed->expected_cash, 2) }}</td>
+                                        <td class="num" style="text-align:right">$ {{ number_format((float) $closed->counted_cash, 2) }}</td>
+                                        <td class="num" style="text-align:right; color: {{ (float) $closed->difference_total == 0.0 ? 'inherit' : 'var(--color-error)' }};">
+                                            $ {{ number_format((float) $closed->difference_total, 2) }}
+                                            @if ($closed->supervisor)
+                                                <div class="muted" style="font-size: 0.72rem; line-height: 1.1; margin-top: 2px;">
+                                                    Aut: {{ $closed->supervisor->name }}
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="muted" style="text-align: center; padding: 1.5rem;">Aún no hay turnos cerrados.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @if ($history->hasPages())
+                    <div class="cash-history-footer">
+                        {{ $history->links('vendor.pagination.admin') }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
 
 {{-- Modal Confirmar Apertura --}}

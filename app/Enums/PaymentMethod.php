@@ -7,6 +7,7 @@ enum PaymentMethod: string
     case Cash = 'cash';
     case Card = 'card';
     case Transfer = 'transfer';
+    case Other = 'other';
 
     /**
      * Human readable label shown in the admin panel (Spanish).
@@ -17,6 +18,7 @@ enum PaymentMethod: string
             self::Cash => 'Efectivo',
             self::Card => 'Tarjeta',
             self::Transfer => 'Transferencia',
+            self::Other => 'Otro',
         };
     }
 }
