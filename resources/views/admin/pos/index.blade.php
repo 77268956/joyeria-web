@@ -29,7 +29,7 @@
 
     .pos-main {
         display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
         gap: 0.85rem;
         flex: 1;
         min-height: 0;
@@ -217,6 +217,15 @@
         top: 0;
         z-index: 1;
         background-color: var(--color-crema);
+    }
+
+    .pos-cart-table table.data-table {
+        font-size: 0.82rem;
+    }
+
+    .pos-cart-table table.data-table th,
+    .pos-cart-table table.data-table td {
+        padding: 0.55rem 0.5rem;
     }
 
     .pos-totals {
@@ -730,8 +739,12 @@
             <div id="pos-results" class="pos-cards"></div>
         </div>
 
-        <div class="card pos-cart-card">
-            <h2 class="font-serif pos-card-title">Carrito</h2>
+
+
+
+
+        <div class="card pos-cart-card ">
+            <h2 class="font-serif pos-card-title bg-[#343]">Carrito</h2>
 
             <!-- Selector de Cliente en Vista Principal (desde el inicio) -->
             <div class="pos-cart-customer-section">
@@ -802,6 +815,11 @@
 
             <p id="cart-error" class="alert alert-error" style="display: none; margin-top: 0.75rem;"></p>
         </div>
+
+
+        
+
+        
     </div>
 </div>
 
