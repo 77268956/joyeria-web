@@ -11,7 +11,7 @@
         flex-direction: column;
         flex: 1;
         min-height: 0;
-        gap: 0.65rem;
+        gap: 0.5rem;
     }
 
     /* --- Contenedor Unificado Superior (Título + Turno + Métricas + Acciones) --- */
@@ -20,8 +20,8 @@
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 1rem;
-        padding: 0.65rem 1.15rem;
+        gap: 0.35rem 0.85rem;
+        padding: 0.4rem 0.9rem;
         margin-bottom: 0;
         flex-shrink: 0;
         background-color: var(--color-blanco);
@@ -32,23 +32,23 @@
     .cash-header-main {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
-        min-width: 210px;
+        gap: 0.05rem;
+        min-width: 180px;
     }
 
     .cash-title {
-        font-size: 1.35rem;
+        font-size: 1.1rem;
         font-weight: 600;
         margin: 0;
         color: var(--color-noche);
-        line-height: 1.2;
+        line-height: 1.15;
     }
 
     .cash-meta {
-        font-size: 0.78rem;
+        font-size: 0.7rem;
         color: var(--color-piedra);
         margin: 0;
-        line-height: 1.2;
+        line-height: 1.15;
     }
 
     .cash-meta strong {
@@ -58,7 +58,7 @@
     .cash-header-metrics {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1rem;
         flex-wrap: wrap;
     }
 
@@ -69,7 +69,7 @@
     }
 
     .cash-metric-label {
-        font-size: 0.68rem;
+        font-size: 0.6rem;
         color: var(--color-piedra);
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -77,19 +77,37 @@
     }
 
     .cash-metric-value {
-        font-size: 1.15rem;
+        font-size: 0.95rem;
         font-family: var(--font-serif);
         font-variant-numeric: tabular-nums;
         font-weight: 600;
         color: var(--color-noche);
-        line-height: 1.2;
+        line-height: 1.15;
     }
 
     .cash-header-actions {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.35rem;
         flex-shrink: 0;
+    }
+
+    .cash-header-actions .btn {
+        height: 28px;
+        padding: 0 0.6rem;
+        font-size: 0.72rem;
+        gap: 0.3rem;
+    }
+
+    .cash-header-actions .btn svg {
+        width: 12px;
+        height: 12px;
+        margin-right: 0 !important;
+    }
+
+    .cash-unified-header .badge {
+        font-size: 0.62rem;
+        padding: 0.16rem 0.45rem;
     }
 
     /* --- Panel inferior: Tabla de Historial a pantalla completa --- */
@@ -152,6 +170,106 @@
         border-top: 1px solid var(--color-linea);
         padding: 0.65rem 1.15rem;
         background-color: var(--color-blanco);
+    }
+
+    /* --- Panel lateral (Offcanvas) de Historial del Día --- */
+    .history-offcanvas {
+        position: fixed;
+        inset: 0;
+        z-index: 1060;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .history-offcanvas.is-active {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .history-offcanvas__backdrop {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(18, 22, 31, 0.55);
+        backdrop-filter: blur(2px);
+    }
+
+    .history-offcanvas__panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(560px, 100%);
+        background-color: var(--color-blanco);
+        display: flex;
+        flex-direction: column;
+        box-shadow: -10px 0 30px rgba(18, 22, 31, 0.18);
+        transform: translateX(100%);
+        transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .history-offcanvas.is-active .history-offcanvas__panel {
+        transform: translateX(0);
+    }
+
+    .history-offcanvas__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.15rem 1.35rem;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .history-offcanvas__body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 1.25rem 1.35rem;
+    }
+
+    .history-offcanvas__footer {
+        padding: 0.85rem 1.35rem;
+        border-top: 1px solid var(--color-linea);
+        display: flex;
+        justify-content: flex-end;
+        flex-shrink: 0;
+    }
+
+    .history-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 1.35rem;
+    }
+
+    .history-summary-card {
+        background-color: var(--color-crema);
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        padding: 0.7rem 0.85rem;
+    }
+
+    .history-table-wrap {
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        overflow-x: auto;
+        margin-bottom: 1.35rem;
+    }
+
+    .history-table-wrap table {
+        width: 100%;
+        min-width: 460px;
+        border-collapse: collapse;
+    }
+
+    @media (max-width: 640px) {
+        .history-summary-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* --- Modales --- */
@@ -241,11 +359,18 @@
         {{-- Acciones (Modales) --}}
         <div class="cash-header-actions">
             @if ($session)
+                <button type="button" class="btn btn-outline btn-sm" id="btn-open-day-history">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v5l3 2"></path>
+                    </svg>
+                    Historial del día
+                </button>
                 <button type="button" class="btn btn-outline btn-sm" id="btn-open-movements">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;">
                         <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                     </svg>
-                    Movimientos de turno ({{ $session->movements->count() }})
+                    Movimientos ({{ $session->movements->count() }})
                 </button>
                 <button type="button" class="btn btn-gold btn-sm" id="btn-open-close">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;">
@@ -287,6 +412,7 @@
             <table class="cash-table-full data-table">
                 <thead>
                     <tr>
+                        <th></th>  
                         <th>Cajero</th>
                         <th>Apertura</th>
                         <th>Cierre</th>
@@ -571,9 +697,218 @@
         </div>
     </div>
 </div>
+
+{{-- PANEL LATERAL (Offcanvas): Historial del Día del Turno Abierto --}}
+@php
+    $day = $dayHistory ?? ['sales' => [], 'layaway_payments' => [], 'purchase_payouts' => [], 'movements' => [], 'totals' => ['sales_count' => 0, 'sales_total' => '0.00', 'layaway_total' => '0.00', 'purchases_transfer' => '0.00', 'cash_in' => '0.00', 'cash_out' => '0.00']];
+@endphp
+<div id="offcanvas-day-history" class="history-offcanvas" aria-hidden="true">
+    <div class="history-offcanvas__backdrop" data-close-drawer></div>
+    <aside class="history-offcanvas__panel" role="dialog" aria-modal="true" aria-labelledby="day-history-title">
+        <div class="history-offcanvas__header">
+            <div>
+                <h3 id="day-history-title" class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Historial del Día</h3>
+                <p class="muted" style="font-size: 0.8rem; margin: 0;">
+                    Turno abierto por {{ $session->user?->name }} · Iniciado el {{ $session->opened_at?->format('d/m/Y H:i') }}
+                </p>
+            </div>
+            <button type="button" class="modal-close" data-close-drawer aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="history-offcanvas__body">
+            {{-- Resumen del día --}}
+            <div class="history-summary-grid">
+                <div class="history-summary-card">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Ventas del día</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $day['totals']['sales_total'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">{{ $day['totals']['sales_count'] }} {{ $day['totals']['sales_count'] === 1 ? 'venta' : 'ventas' }}</div>
+                </div>
+                <div class="history-summary-card">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Abonos de apartados</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $day['totals']['layaway_total'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">{{ count($day['layaway_payments']) }} {{ count($day['layaway_payments']) === 1 ? 'abono' : 'abonos' }}</div>
+                </div>
+                <div class="history-summary-card">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Compras metal (transf.)</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $day['totals']['purchases_transfer'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">{{ count($day['purchase_payouts']) }} {{ count($day['purchase_payouts']) === 1 ? 'compra' : 'compras' }}</div>
+                </div>
+                <div class="history-summary-card">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Efectivo esperado</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $expected['cash'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">Fondo + movimientos</div>
+                </div>
+                <div class="history-summary-card" style="background: #F3FAF4; border-color: #A7D7B5;">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Ingresos de efectivo</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-exito);">$ {{ number_format((float) $day['totals']['cash_in'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">Ajustes e inyecciones</div>
+                </div>
+                <div class="history-summary-card" style="background: #FEF2F2; border-color: #FCA5A5;">
+                    <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Retiros de efectivo</div>
+                    <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-error);">$ {{ number_format((float) $day['totals']['cash_out'], 2) }}</div>
+                    <div class="muted" style="font-size: 0.75rem;">Compras y retiros</div>
+                </div>
+            </div>
+
+            {{-- Ventas --}}
+            <h4 class="font-serif" style="font-size: 1.05rem; margin-bottom: 0.6rem; color: var(--color-noche); display: flex; align-items: center; gap: 0.5rem;">
+                Ventas
+                <span class="badge" style="background: var(--color-crema); color: var(--color-noche);">{{ count($day['sales']) }}</span>
+            </h4>
+            <div class="history-table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Hora</th>
+                            <th>Folio</th>
+                            <th>Cliente</th>
+                            <th>Pago</th>
+                            <th class="text-right">Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($day['sales'] as $sale)
+                            <tr style="{{ $sale['is_voided'] ? 'opacity: 0.55;' : '' }}">
+                                <td class="num">{{ $sale['time'] }}</td>
+                                <td>{{ $sale['number'] }}</td>
+                                <td>{{ $sale['customer'] }}</td>
+                                <td>
+                                    @forelse ($sale['payments'] as $payment)
+                                        <span class="badge" style="background: var(--color-crema); color: var(--color-noche); font-weight: 500;">
+                                            {{ $payment['method'] }}: $ {{ number_format((float) $payment['amount'], 2) }}
+                                        </span>
+                                    @empty
+                                        <span class="muted">—</span>
+                                    @endforelse
+                                </td>
+                                <td class="text-right num" style="font-weight: 600;">$ {{ number_format((float) $sale['total'], 2) }}</td>
+                                <td>
+                                    <span class="badge {{ $sale['is_voided'] ? 'badge-danger' : 'badge-success' }}">{{ $sale['status'] }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="muted" style="text-align: center; padding: 1.5rem;">No hay ventas registradas en este turno.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Abonos de apartados --}}
+            <h4 class="font-serif" style="font-size: 1.05rem; margin-bottom: 0.6rem; color: var(--color-noche); display: flex; align-items: center; gap: 0.5rem;">
+                Abonos de apartados
+                <span class="badge" style="background: var(--color-crema); color: var(--color-noche);">{{ count($day['layaway_payments']) }}</span>
+            </h4>
+            <div class="history-table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Hora</th>
+                            <th>Apartado</th>
+                            <th>Cliente</th>
+                            <th>Método</th>
+                            <th class="text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($day['layaway_payments'] as $payment)
+                            <tr>
+                                <td class="num">{{ $payment['time'] }}</td>
+                                <td>{{ $payment['number'] }}</td>
+                                <td>{{ $payment['customer'] }}</td>
+                                <td>{{ $payment['method'] }}</td>
+                                <td class="text-right num" style="font-weight: 600;">$ {{ number_format((float) $payment['amount'], 2) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="muted" style="text-align: center; padding: 1.5rem;">No hay abonos de apartados en este turno.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Compras de metal pagadas por transferencia --}}
+            @if (count($day['purchase_payouts']) > 0)
+                <h4 class="font-serif" style="font-size: 1.05rem; margin-bottom: 0.6rem; color: var(--color-noche); display: flex; align-items: center; gap: 0.5rem;">
+                    Compras de metal por transferencia
+                    <span class="badge" style="background: var(--color-crema); color: var(--color-noche);">{{ count($day['purchase_payouts']) }}</span>
+                </h4>
+                <div class="history-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Hora</th>
+                                <th>Folio</th>
+                                <th>Cliente</th>
+                                <th class="text-right">Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($day['purchase_payouts'] as $purchase)
+                                <tr>
+                                    <td class="num">{{ $purchase['time'] }}</td>
+                                    <td>{{ $purchase['number'] }}</td>
+                                    <td>{{ $purchase['customer'] }}</td>
+                                    <td class="text-right num" style="font-weight: 600;">$ {{ number_format((float) $purchase['amount'], 2) }}</td>
+                                    <td><span class="badge badge-success">{{ $purchase['status'] }}</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            {{-- Movimientos de efectivo --}}
+            <h4 class="font-serif" style="font-size: 1.05rem; margin-bottom: 0.6rem; color: var(--color-noche); display: flex; align-items: center; gap: 0.5rem;">
+                Movimientos de efectivo
+                <span class="badge" style="background: var(--color-crema); color: var(--color-noche);">{{ count($day['movements']) }}</span>
+            </h4>
+            <div class="history-table-wrap" style="margin-bottom: 0;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Hora</th>
+                            <th>Tipo</th>
+                            <th>Motivo</th>
+                            <th>Usuario</th>
+                            <th class="text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($day['movements'] as $movement)
+                            <tr>
+                                <td class="num">{{ $movement['time'] }}</td>
+                                <td>
+                                    <span class="badge {{ $movement['is_in'] ? 'badge-success' : 'badge-danger' }}">{{ $movement['type'] }}</span>
+                                </td>
+                                <td>{{ $movement['reason'] }}</td>
+                                <td>{{ $movement['user'] }}</td>
+                                <td class="text-right num" style="font-weight: 600; color: {{ $movement['is_in'] ? 'var(--color-exito)' : 'var(--color-error)' }};">
+                                    {{ $movement['is_in'] ? '+' : '-' }}$ {{ number_format((float) $movement['amount'], 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="muted" style="text-align: center; padding: 1.5rem;">No hay movimientos de efectivo en este turno.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-offcanvas__footer">
+            <button type="button" class="btn btn-outline" data-close-drawer>Cerrar</button>
+        </div>
+    </aside>
+</div>
 @endif
 
-{{-- MODAL 3: Abrir Turno de Caja (Cuando no hay turno abierto) --}}
+{{-- MODAL 4: Abrir Turno de Caja (Cuando no hay turno abierto) --}}
 @if (!$session)
 <div id="modal-open-shift" class="modal-backdrop">
     <div class="modal" style="max-width: 440px;">
@@ -615,7 +950,7 @@
 </div>
 @endif
 
-{{-- MODAL 4: Detalle de Arqueo de Turno Cerrado --}}
+{{-- MODAL 5: Detalle de Arqueo de Turno Cerrado --}}
 <div id="modal-shift-details" class="modal-backdrop">
     <div class="modal" style="max-width: 580px; max-height: 90vh; display: flex; flex-direction: column;">
         <div class="modal-header">
@@ -740,6 +1075,36 @@
         }
     }
 
+    // --- Panel lateral del Historial del Día (Offcanvas) ---
+    const dayHistoryDrawer = el('offcanvas-day-history');
+
+    function openDrawer() {
+        if (!dayHistoryDrawer) {
+            return;
+        }
+
+        dayHistoryDrawer.classList.add('is-active');
+        dayHistoryDrawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+        if (!dayHistoryDrawer) {
+            return;
+        }
+
+        dayHistoryDrawer.classList.remove('is-active');
+        dayHistoryDrawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    dayHistoryDrawer?.querySelectorAll('[data-close-drawer]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeDrawer();
+        });
+    });
+
     // Botones con data-close-modal
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -761,11 +1126,13 @@
     // Cerrar con Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            closeDrawer();
             document.querySelectorAll('.modal-backdrop.is-active').forEach(m => closeModal(m.id));
         }
     });
 
     // --- Disparadores de Modales Superiores ---
+    el('btn-open-day-history')?.addEventListener('click', openDrawer);
     el('btn-open-movements')?.addEventListener('click', () => openModal('modal-movements'));
     el('btn-open-close')?.addEventListener('click', () => {
         openModal('modal-close-shift');

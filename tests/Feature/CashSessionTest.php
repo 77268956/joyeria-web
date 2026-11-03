@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CashMovementType;
 use App\Models\CashSession;
 use App\Models\Store;
 use App\Models\User;
@@ -222,10 +223,33 @@ class CashSessionTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Turno abierto');
-        $response->assertSee('Movimientos de turno');
+        $response->assertSee('Movimientos (');
+        $response->assertSee('Historial del día');
         $response->assertSee('Cerrar turno');
+        $response->assertSee('offcanvas-day-history');
         $response->assertSee('modal-movements');
         $response->assertSee('modal-close-shift');
         $response->assertSee('Historial de turnos cerrados');
+    }
+
+    public function test_day_history_lists_the_movements_of_the_open_shift(): void
+    {
+        $seller = $this->seller();
+        $session = $this->open($seller, '100.00');
+
+        app(CashSessionService::class)->registerMovement(
+            $session,
+            CashMovementType::In,
+            '25.00',
+            'Cambio de sencillo',
+            $seller,
+        );
+
+        $history = app(CashSessionService::class)->dayHistory($session);
+
+        $this->assertCount(1, $history['movements']);
+        $this->assertSame('Cambio de sencillo', $history['movements'][0]['reason']);
+        $this->assertSame('25.00', $history['totals']['cash_in']);
+        $this->assertSame('0.00', $history['totals']['cash_out']);
     }
 }

@@ -5,6 +5,7 @@
 @section('body_class', 'full-viewport')
 
 @section('content')
+<button type="button" id="pos-kiosk-exit" class="pos-kiosk-exit" style="position: fixed; top: 0.4rem; left: 0.6rem; z-index: 2000; background: rgba(18,22,31,0.4); color: #fff; border: none; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.72rem; line-height: 1; cursor: pointer; backdrop-filter: blur(2px); opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.5'" title="Salir de modo POS (Esc)">×</button>
 <style>
     .pos-page {
         display: flex;
@@ -708,6 +709,7 @@
                 <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline btn-sm">Apartar pieza</a>
             @endcan
             <a href="{{ route('admin.cash.index') }}" class="btn btn-outline btn-sm">Caja</a>
+            <button type="button" id="pos-kiosk-toggle" class="btn btn-outline btn-sm" title="Modo mostrador (solo venta)">Modo POS</button>
         </div>
     </div>
 
@@ -1915,6 +1917,37 @@
 
     addPaymentRow('cash', null);
     renderCart();
+
+    const kioskToggle = document.getElementById('pos-kiosk-toggle');
+    const kioskExit = document.getElementById('pos-kiosk-exit');
+
+    function enterKiosk() {
+        document.body.classList.add('pos-kiosk');
+    }
+
+    function exitKiosk() {
+        document.body.classList.remove('pos-kiosk');
+    }
+
+    if (kioskToggle) {
+        kioskToggle.addEventListener('click', function () {
+            if (document.body.classList.contains('pos-kiosk')) {
+                exitKiosk();
+            } else {
+                enterKiosk();
+            }
+        });
+    }
+
+    if (kioskExit) {
+        kioskExit.addEventListener('click', exitKiosk);
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && document.body.classList.contains('pos-kiosk')) {
+            exitKiosk();
+        }
+    });
 })();
 </script>
 @endpush

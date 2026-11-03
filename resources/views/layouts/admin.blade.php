@@ -356,12 +356,54 @@
             overflow: hidden;
         }
 
-        .full-viewport .content-area {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 1.25rem 1.5rem;
-        }
+    .full-viewport .content-area {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Modo POS (kiosco): solo terminal de venta */
+    body.pos-kiosk .sidebar {
+        display: none !important;
+    }
+
+    body.pos-kiosk .topbar {
+        display: none !important;
+    }
+
+    body.pos-kiosk .main-wrapper {
+        margin-left: 0 !important;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    body.pos-kiosk .content-area {
+        padding: 0.5rem 0.7rem !important;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    body.pos-kiosk.full-viewport {
+        overflow: hidden;
+    }
+
+    body.pos-kiosk .page-header {
+        display: none !important;
+    }
+
+    .pos-kiosk-exit {
+        position: fixed !important;
+        top: 0.4rem !important;
+        left: 0.6rem !important;
+        z-index: 2000 !important;
+        display: none !important;
+        pointer-events: auto !important;
+    }
+
+    body.pos-kiosk .pos-kiosk-exit {
+        display: inline-flex !important;
+    }
 
         @media (max-width: 1024px) {
             body.full-viewport {

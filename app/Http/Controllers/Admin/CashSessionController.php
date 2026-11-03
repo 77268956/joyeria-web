@@ -30,6 +30,7 @@ class CashSessionController extends Controller
         return view('admin.cash.index', [
             'session' => $session?->load(['movements.user', 'user']),
             'expected' => $session ? $this->cash->expectedTotals($session) : null,
+            'dayHistory' => $session ? $this->cash->dayHistory($session) : null,
             'movementTypes' => CashMovementType::cases(),
             'history' => CashSession::query()
                 ->with(['user', 'closedBy', 'supervisor'])

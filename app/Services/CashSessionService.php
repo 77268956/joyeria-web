@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Enums\CashMovementType;
 use App\Enums\CashSessionStatus;
+use App\Enums\MetalPurchaseStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\PayoutMethod;
 use App\Enums\SaleStatus;
 use App\Models\CashMovement;
 use App\Models\CashSession;
 use App\Models\LayawayPayment;
+use App\Models\MetalPurchase;
 use App\Models\Payment;
+use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +135,140 @@ class CashSessionService
                 $this->money($layawayPayments[PaymentMethod::Transfer->value] ?? '0'),
                 2,
             ),
+        ];
+    }
+
+    /**
+     * Chronological record of every operation that moved money during a shift.
+     *
+     * Used by the cash view to show the day's history of the open shift,
+     * including sales, layaway instalments, transfer payouts of metal
+     * purchases and justified cash movements.
+     *
+     * @return array{
+     *     sales: array<int, array{time: string, number: string, customer: string, total: string, status: string, is_voided: bool, payments: array<int, array{method: string, amount: string}>}>,
+     *     layaway_payments: array<int, array{time: string, number: string, customer: string, method: string, amount: string}>,
+     *     purchase_payouts: array<int, array{time: string, number: string, customer: string, amount: string, status: string}>,
+     *     movements: array<int, array{time: string, type: string, reason: string, user: string, amount: string, is_in: bool}>,
+     *     totals: array{sales_count: int, sales_total: string, layaway_total: string, purchases_transfer: string, cash_in: string, cash_out: string}
+     * }
+     */
+    public function dayHistory(CashSession $session): array
+    {
+        $sales = Sale::query()
+            ->where('cash_session_id', $session->id)
+            ->with(['customer', 'payments'])
+            ->orderBy('created_at')
+            ->get();
+
+        $layawayPayments = LayawayPayment::query()
+            ->where('cash_session_id', $session->id)
+            ->with(['layaway.customer'])
+            ->orderBy('created_at')
+            ->get();
+
+        $purchasePayouts = MetalPurchase::query()
+            ->where('cash_session_id', $session->id)
+            ->where('payout_method', PayoutMethod::Transfer->value)
+            ->whereIn('status', [MetalPurchaseStatus::Paid->value, MetalPurchaseStatus::Adjusted->value])
+            ->with('customer')
+            ->orderBy('created_at')
+            ->get();
+
+        $movements = CashMovement::query()
+            ->where('cash_session_id', $session->id)
+            ->with('user')
+            ->orderBy('created_at')
+            ->get();
+
+        $salesCount = 0;
+        $salesTotal = '0.00';
+
+        $salesRows = $sales->map(function (Sale $sale) use (&$salesCount, &$salesTotal): array {
+            $isVoided = $sale->status === SaleStatus::Voided;
+
+            if (! $isVoided) {
+                $salesCount++;
+                $salesTotal = bcadd($salesTotal, $this->money($sale->total), 2);
+            }
+
+            return [
+                'time' => $sale->created_at?->format('H:i') ?? '—',
+                'number' => $sale->number,
+                'customer' => $sale->customer?->full_name ?? 'Público general',
+                'total' => $this->money($sale->total),
+                'status' => $sale->status?->label() ?? '—',
+                'is_voided' => $isVoided,
+                'payments' => $sale->payments->map(fn (Payment $payment): array => [
+                    'method' => $payment->method?->label() ?? '—',
+                    'amount' => $this->money($payment->amount),
+                ])->all(),
+            ];
+        })->all();
+
+        $layawayTotal = '0.00';
+
+        $layawayRows = $layawayPayments->map(function (LayawayPayment $payment) use (&$layawayTotal): array {
+            $layawayTotal = bcadd($layawayTotal, $this->money($payment->amount), 2);
+
+            return [
+                'time' => $payment->created_at?->format('H:i') ?? '—',
+                'number' => $payment->layaway?->number ?? '—',
+                'customer' => $payment->layaway?->customer?->full_name ?? '—',
+                'method' => $payment->method?->label() ?? '—',
+                'amount' => $this->money($payment->amount),
+            ];
+        })->all();
+
+        $purchaseTotal = '0.00';
+
+        $purchaseRows = $purchasePayouts->map(function (MetalPurchase $purchase) use (&$purchaseTotal): array {
+            $purchaseTotal = bcadd($purchaseTotal, $this->money($purchase->total_amount), 2);
+
+            return [
+                'time' => $purchase->created_at?->format('H:i') ?? '—',
+                'number' => $purchase->number,
+                'customer' => $purchase->customer?->full_name ?? '—',
+                'amount' => $this->money($purchase->total_amount),
+                'status' => $purchase->status?->label() ?? '—',
+            ];
+        })->all();
+
+        $cashIn = '0.00';
+        $cashOut = '0.00';
+
+        $movementRows = $movements->map(function (CashMovement $movement) use (&$cashIn, &$cashOut): array {
+            $isIn = $movement->type === CashMovementType::In;
+
+            if ($isIn) {
+                $cashIn = bcadd($cashIn, $this->money($movement->amount), 2);
+            } else {
+                $cashOut = bcadd($cashOut, $this->money($movement->amount), 2);
+            }
+
+            return [
+                'time' => $movement->created_at?->format('H:i') ?? '—',
+                'type' => $movement->type?->label() ?? '—',
+                'reason' => $movement->reason,
+                'user' => $movement->user?->name ?? '—',
+                'amount' => $this->money($movement->amount),
+                'is_in' => $isIn,
+            ];
+        })->all();
+
+        return [
+            'sales' => $salesRows,
+            'layaway_payments' => $layawayRows,
+            'purchase_payouts' => $purchaseRows,
+            'movements' => $movementRows,
+            'totals' => [
+                'sales_count' => $salesCount,
+                'sales_total' => $salesTotal,
+                'layaway_total' => $layawayTotal,
+                'purchases_transfer' => $purchaseTotal,
+                'cash_in' => $cashIn,
+                'cash_out' => $cashOut,
+            ],
         ];
     }
 

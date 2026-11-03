@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -53,32 +54,54 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $user = $request->user();
+        $storeId = $user?->store_id;
 
         try {
-            $customer = Customer::create([
-                'full_name' => $validated['full_name'],
-                'document_type' => $validated['document_type'],
-                'document_number' => $validated['document_number'],
-                'phone' => $validated['phone'] ?? null,
-                'email' => $validated['email'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'birth_date' => $validated['birth_date'] ?? null,
-                'id_photo_path' => $request->hasFile('id_photo')
-                    ? $request->file('id_photo')->store('customer-ids', 'local')
-                    : null,
-                'notes' => $validated['notes'] ?? null,
-            ]);
+            $customer = DB::transaction(function () use ($validated, $request, $storeId) {
+                $existing = Customer::query()
+                    ->where('store_id', $storeId)
+                    ->where('document_type', $validated['document_type'])
+                    ->where('document_number', $validated['document_number'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existing) {
+                    return $existing;
+                }
+
+                return Customer::create([
+                    'full_name' => $validated['full_name'],
+                    'document_type' => $validated['document_type'],
+                    'document_number' => $validated['document_number'],
+                    'phone' => $validated['phone'] ?? null,
+                    'email' => $validated['email'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'birth_date' => $validated['birth_date'] ?? null,
+                    'id_photo_path' => $request->hasFile('id_photo')
+                        ? $request->file('id_photo')->store('customer-ids', 'local')
+                        : null,
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+            });
         } catch (Throwable $exception) {
             return back()->withInput()->withErrors(['error' => 'No se pudo registrar el cliente: '.$exception->getMessage()]);
         }
 
-        activity('clientes')
-            ->performedOn($customer)
-            ->causedBy($request->user())
-            ->log("Cliente registrado: {$customer->full_name}");
+        $wasRecentlyCreated = $customer->wasRecentlyCreated;
+
+        if ($wasRecentlyCreated) {
+            activity('clientes')
+                ->performedOn($customer)
+                ->causedBy($user)
+                ->log("Cliente registrado: {$customer->full_name}");
+
+            return redirect()->route('admin.customers.show', $customer)
+                ->with('status', "El cliente '{$customer->full_name}' se registró correctamente.");
+        }
 
         return redirect()->route('admin.customers.show', $customer)
-            ->with('status', "El cliente '{$customer->full_name}' se registró correctamente.");
+            ->with('status', "El cliente '{$customer->full_name}' ya existe en esta sucursal.");
     }
 
     /**
