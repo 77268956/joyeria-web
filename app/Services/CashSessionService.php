@@ -146,10 +146,10 @@ class CashSessionService
      * purchases and justified cash movements.
      *
      * @return array{
-     *     sales: array<int, array{time: string, number: string, customer: string, total: string, status: string, is_voided: bool, payments: array<int, array{method: string, amount: string}>}>,
-     *     layaway_payments: array<int, array{time: string, number: string, customer: string, method: string, amount: string}>,
+     *     sales: array<int, array{time: string, at: int, number: string, customer: string, total: string, status: string, is_voided: bool, payments: array<int, array{method: string, method_value: string|null, amount: string}>}>,
+     *     layaway_payments: array<int, array{time: string, at: int, number: string, customer: string, method: string, method_value: string|null, amount: string}>,
      *     purchase_payouts: array<int, array{time: string, number: string, customer: string, amount: string, status: string}>,
-     *     movements: array<int, array{time: string, type: string, reason: string, user: string, amount: string, is_in: bool}>,
+     *     movements: array<int, array{time: string, at: int, type: string, reason: string, user: string, amount: string, is_in: bool}>,
      *     totals: array{sales_count: int, sales_total: string, layaway_total: string, purchases_transfer: string, cash_in: string, cash_out: string}
      * }
      */
@@ -194,6 +194,7 @@ class CashSessionService
 
             return [
                 'time' => $sale->created_at?->format('H:i') ?? '—',
+                'at' => $sale->created_at?->timestamp ?? 0,
                 'number' => $sale->number,
                 'customer' => $sale->customer?->full_name ?? 'Público general',
                 'total' => $this->money($sale->total),
@@ -201,6 +202,7 @@ class CashSessionService
                 'is_voided' => $isVoided,
                 'payments' => $sale->payments->map(fn (Payment $payment): array => [
                     'method' => $payment->method?->label() ?? '—',
+                    'method_value' => $payment->method?->value,
                     'amount' => $this->money($payment->amount),
                 ])->all(),
             ];
@@ -213,9 +215,11 @@ class CashSessionService
 
             return [
                 'time' => $payment->created_at?->format('H:i') ?? '—',
+                'at' => $payment->created_at?->timestamp ?? 0,
                 'number' => $payment->layaway?->number ?? '—',
                 'customer' => $payment->layaway?->customer?->full_name ?? '—',
                 'method' => $payment->method?->label() ?? '—',
+                'method_value' => $payment->method?->value,
                 'amount' => $this->money($payment->amount),
             ];
         })->all();
@@ -248,6 +252,7 @@ class CashSessionService
 
             return [
                 'time' => $movement->created_at?->format('H:i') ?? '—',
+                'at' => $movement->created_at?->timestamp ?? 0,
                 'type' => $movement->type?->label() ?? '—',
                 'reason' => $movement->reason,
                 'user' => $movement->user?->name ?? '—',

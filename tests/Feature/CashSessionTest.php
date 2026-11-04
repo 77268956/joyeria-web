@@ -227,6 +227,10 @@ class CashSessionTest extends TestCase
         $response->assertSee('Historial del día');
         $response->assertSee('Cerrar turno');
         $response->assertSee('offcanvas-day-history');
+        $response->assertSee('offcanvas-method-history');
+        $response->assertSee('data-method-history="cash"', false);
+        $response->assertSee('data-method-history="card"', false);
+        $response->assertSee('data-method-history="transfer"', false);
         $response->assertSee('modal-movements');
         $response->assertSee('modal-close-shift');
         $response->assertSee('Historial de turnos cerrados');

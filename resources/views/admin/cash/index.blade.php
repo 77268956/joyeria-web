@@ -272,6 +272,85 @@
         }
     }
 
+    /* --- Ojito de historial por método en el arqueo --- */
+    .expected-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .expected-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.35rem;
+    }
+
+    .expected-eye {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border-radius: 50%;
+        border: 1px solid var(--color-linea);
+        background-color: var(--color-blanco);
+        color: var(--color-piedra);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    .expected-eye:hover,
+    .expected-eye:focus-visible {
+        color: var(--color-noche);
+        border-color: var(--color-dorado);
+        background-color: #FBF9F5;
+        outline: none;
+    }
+
+    .method-history-tabs {
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.65rem 1.35rem 0;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+        overflow-x: auto;
+    }
+
+    .method-history-tab {
+        padding: 0.5rem 0.85rem;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        background-color: transparent;
+        color: var(--color-piedra);
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .method-history-tab:hover {
+        color: var(--color-noche);
+    }
+
+    .method-history-tab.is-active {
+        background-color: var(--color-crema);
+        border-color: var(--color-linea);
+        color: var(--color-noche);
+        font-weight: 600;
+    }
+
+    .method-history-pane {
+        display: none;
+    }
+
+    .method-history-pane.is-active {
+        display: block;
+    }
+
     /* --- Modales --- */
     .modal-backdrop {
         display: none;
@@ -617,16 +696,40 @@
         <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.25rem;">
             {{-- Resumen esperado por el sistema --}}
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; background: var(--color-crema); padding: 0.85rem 1rem; border-radius: 6px; margin-bottom: 1.25rem; border: 1px solid var(--color-linea);">
-                <div>
-                    <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Efectivo</div>
+                <div class="expected-card">
+                    <div class="expected-card__head">
+                        <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Efectivo</div>
+                        <button type="button" class="expected-eye" data-method-history="cash" title="Ver movimientos en efectivo" aria-label="Ver movimientos en efectivo">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
                     <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $expected['cash'], 2) }}</div>
                 </div>
-                <div>
-                    <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Tarjeta</div>
+                <div class="expected-card">
+                    <div class="expected-card__head">
+                        <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Tarjeta</div>
+                        <button type="button" class="expected-eye" data-method-history="card" title="Ver movimientos con tarjeta" aria-label="Ver movimientos con tarjeta">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
                     <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $expected['card'], 2) }}</div>
                 </div>
-                <div>
-                    <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Transf.</div>
+                <div class="expected-card">
+                    <div class="expected-card__head">
+                        <div style="font-size: 0.72rem; color: var(--color-piedra); text-transform: uppercase;">Esperado Transf.</div>
+                        <button type="button" class="expected-eye" data-method-history="transfer" title="Ver movimientos por transferencia" aria-label="Ver movimientos por transferencia">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
                     <div class="font-serif" style="font-size: 1.2rem; font-weight: 600; color: var(--color-noche);">$ {{ number_format((float) $expected['transfer'], 2) }}</div>
                 </div>
             </div>
@@ -906,6 +1009,159 @@
         </div>
     </aside>
 </div>
+
+{{-- PANEL LATERAL (Offcanvas): Detalle de transacciones por método de pago --}}
+@php
+    $methodTabs = [
+        'cash' => ['label' => 'Efectivo', 'expected' => (float) $expected['cash'], 'rows' => []],
+        'card' => ['label' => 'Tarjeta', 'expected' => (float) $expected['card'], 'rows' => []],
+        'transfer' => ['label' => 'Transferencia', 'expected' => (float) $expected['transfer'], 'rows' => []],
+    ];
+
+    $methodTabs['cash']['rows'][] = [
+        'at' => $session->opened_at?->timestamp ?? 0,
+        'time' => $session->opened_at?->format('H:i') ?? '—',
+        'concept' => 'Fondo inicial',
+        'reference' => 'Apertura de turno',
+        'detail' => 'Efectivo declarado',
+        'amount' => number_format((float) $session->opening_amount, 2),
+        'sign' => 1,
+    ];
+
+    foreach ($day['sales'] as $sale) {
+        if ($sale['is_voided']) {
+            continue;
+        }
+
+        foreach ($sale['payments'] as $payment) {
+            $method = $payment['method_value'] ?? null;
+
+            if (! isset($methodTabs[$method])) {
+                continue;
+            }
+
+            $methodTabs[$method]['rows'][] = [
+                'at' => $sale['at'] ?? 0,
+                'time' => $sale['time'],
+                'concept' => 'Venta',
+                'reference' => $sale['number'],
+                'detail' => $sale['customer'],
+                'amount' => number_format((float) $payment['amount'], 2),
+                'sign' => 1,
+            ];
+        }
+    }
+
+    foreach ($day['layaway_payments'] as $payment) {
+        $method = $payment['method_value'] ?? null;
+
+        if (! isset($methodTabs[$method])) {
+            continue;
+        }
+
+        $methodTabs[$method]['rows'][] = [
+            'at' => $payment['at'] ?? 0,
+            'time' => $payment['time'],
+            'concept' => 'Abono de apartado',
+            'reference' => $payment['number'],
+            'detail' => $payment['customer'],
+            'amount' => number_format((float) $payment['amount'], 2),
+            'sign' => 1,
+        ];
+    }
+
+    foreach ($day['movements'] as $movement) {
+        $methodTabs['cash']['rows'][] = [
+            'at' => $movement['at'] ?? 0,
+            'time' => $movement['time'],
+            'concept' => $movement['is_in'] ? 'Ingreso de efectivo' : 'Retiro de efectivo',
+            'reference' => $movement['reason'],
+            'detail' => $movement['user'],
+            'amount' => number_format((float) $movement['amount'], 2),
+            'sign' => $movement['is_in'] ? 1 : -1,
+        ];
+    }
+
+    foreach ($methodTabs as &$methodTab) {
+        usort($methodTab['rows'], fn (array $a, array $b): int => ($a['at'] ?? 0) <=> ($b['at'] ?? 0));
+    }
+    unset($methodTab);
+@endphp
+<div id="offcanvas-method-history" class="history-offcanvas" aria-hidden="true">
+    <div class="history-offcanvas__backdrop" data-close-method-history></div>
+    <aside class="history-offcanvas__panel" role="dialog" aria-modal="true" aria-labelledby="method-history-title">
+        <div class="history-offcanvas__header">
+            <div>
+                <h3 id="method-history-title" class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Transacciones del turno</h3>
+                <p class="muted" style="font-size: 0.8rem; margin: 0;">
+                    Movimientos que forman el monto esperado de esta apertura de caja
+                </p>
+            </div>
+            <button type="button" class="modal-close" data-close-method-history aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="method-history-tabs" role="tablist">
+            @foreach ($methodTabs as $key => $methodTab)
+                <button type="button" class="method-history-tab {{ $loop->first ? 'is-active' : '' }}" data-method-tab="{{ $key }}" role="tab">
+                    {{ $methodTab['label'] }}
+                </button>
+            @endforeach
+        </div>
+
+        <div class="history-offcanvas__body">
+            @foreach ($methodTabs as $key => $methodTab)
+                <div class="method-history-pane {{ $loop->first ? 'is-active' : '' }}" data-method-pane="{{ $key }}">
+                    <div class="history-summary-card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-size: 0.7rem; color: var(--color-piedra); text-transform: uppercase; letter-spacing: 0.04em;">Esperado {{ $methodTab['label'] }}</div>
+                            <div class="muted" style="font-size: 0.78rem;">
+                                {{ count($methodTab['rows']) }} {{ count($methodTab['rows']) === 1 ? 'transacción' : 'transacciones' }}
+                            </div>
+                        </div>
+                        <div class="font-serif" style="font-size: 1.35rem; font-weight: 600; color: var(--color-noche);">
+                            $ {{ number_format($methodTab['expected'], 2) }}
+                        </div>
+                    </div>
+
+                    <div class="history-table-wrap" style="margin-bottom: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Hora</th>
+                                    <th>Concepto</th>
+                                    <th>Referencia</th>
+                                    <th>Detalle</th>
+                                    <th class="text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($methodTab['rows'] as $row)
+                                    <tr>
+                                        <td class="num">{{ $row['time'] }}</td>
+                                        <td>{{ $row['concept'] }}</td>
+                                        <td>{{ $row['reference'] }}</td>
+                                        <td>{{ $row['detail'] }}</td>
+                                        <td class="text-right num" style="font-weight: 600; color: {{ $row['sign'] < 0 ? 'var(--color-error)' : 'var(--color-noche)' }};">
+                                            {{ $row['sign'] < 0 ? '-' : '' }}$ {{ $row['amount'] }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="muted" style="text-align: center; padding: 1.5rem;">No hay transacciones de {{ $methodTab['label'] }} durante este turno.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="history-offcanvas__footer">
+            <button type="button" class="btn btn-outline" data-close-method-history>Cerrar</button>
+        </div>
+    </aside>
+</div>
 @endif
 
 {{-- MODAL 4: Abrir Turno de Caja (Cuando no hay turno abierto) --}}
@@ -1105,6 +1361,65 @@
         });
     });
 
+    // --- Panel lateral de transacciones por método de pago ---
+    const methodHistoryDrawer = el('offcanvas-method-history');
+
+    function activateMethodTab(method) {
+        if (!methodHistoryDrawer) {
+            return;
+        }
+
+        methodHistoryDrawer.querySelectorAll('[data-method-tab]').forEach(tab => {
+            tab.classList.toggle('is-active', tab.dataset.methodTab === method);
+        });
+
+        methodHistoryDrawer.querySelectorAll('[data-method-pane]').forEach(pane => {
+            pane.classList.toggle('is-active', pane.dataset.methodPane === method);
+        });
+    }
+
+    function openMethodHistory(method) {
+        if (!methodHistoryDrawer) {
+            return;
+        }
+
+        activateMethodTab(method || 'cash');
+        methodHistoryDrawer.classList.add('is-active');
+        methodHistoryDrawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMethodHistory() {
+        if (!methodHistoryDrawer) {
+            return;
+        }
+
+        methodHistoryDrawer.classList.remove('is-active');
+        methodHistoryDrawer.setAttribute('aria-hidden', 'true');
+
+        if (!dayHistoryDrawer?.classList.contains('is-active')) {
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.querySelectorAll('[data-method-history]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openMethodHistory(btn.dataset.methodHistory);
+        });
+    });
+
+    methodHistoryDrawer?.querySelectorAll('[data-method-tab]').forEach(tab => {
+        tab.addEventListener('click', () => activateMethodTab(tab.dataset.methodTab));
+    });
+
+    methodHistoryDrawer?.querySelectorAll('[data-close-method-history]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMethodHistory();
+        });
+    });
+
     // Botones con data-close-modal
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1127,6 +1442,7 @@
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeDrawer();
+            closeMethodHistory();
             document.querySelectorAll('.modal-backdrop.is-active').forEach(m => closeModal(m.id));
         }
     });
