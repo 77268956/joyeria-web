@@ -67,7 +67,11 @@ class PosSaleTest extends TestCase
         $seller = $this->seller();
         $this->openSession($seller);
 
-        $this->actingAs($seller)->get(route('admin.pos.index'))->assertOk()->assertSee('Punto de Venta');
+        $this->actingAs($seller)->get(route('admin.pos.index'))
+            ->assertOk()
+            ->assertSee('Punto de Venta')
+            ->assertSee('Modo POS (F11)')
+            ->assertSee("e.key === 'F11'", false);
     }
 
     public function test_search_returns_available_products(): void

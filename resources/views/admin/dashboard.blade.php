@@ -122,6 +122,128 @@
         min-height: 150px;
     }
 
+    .chart-carousel-card {
+        overflow: hidden;
+        gap: 0.5rem;
+    }
+
+    .chart-carousel-label {
+        font-family: var(--font-serif);
+        font-size: 0.95rem;
+        color: var(--color-noche);
+        letter-spacing: 0.01em;
+    }
+
+    .carousel-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-shrink: 0;
+    }
+
+    .carousel-counter {
+        font-size: 0.7rem;
+        color: var(--color-piedra);
+        font-variant-numeric: tabular-nums;
+        margin-right: 0.15rem;
+    }
+
+    .carousel-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid var(--color-linea);
+        background: var(--color-blanco);
+        color: var(--color-noche);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    }
+
+    .carousel-btn:hover {
+        border-color: var(--color-dorado);
+        background: var(--color-dorado-claro);
+        color: var(--color-noche);
+    }
+
+    .carousel-btn:focus-visible {
+        outline: 2px solid var(--color-dorado);
+        outline-offset: 2px;
+    }
+
+    .chart-carousel-viewport {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .chart-carousel-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .chart-slide {
+        flex: 0 0 100%;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-slide-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.35rem;
+        flex-shrink: 0;
+    }
+
+    .chart-slide-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--color-noche);
+    }
+
+    .chart-slide-hint {
+        font-size: 0.7rem;
+        color: var(--color-piedra);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.35rem;
+        padding-top: 0.4rem;
+        flex-shrink: 0;
+    }
+
+    .carousel-dot {
+        width: 6px;
+        height: 6px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: var(--color-linea);
+        cursor: pointer;
+        transition: width 0.2s, background-color 0.2s;
+    }
+
+    .carousel-dot.active {
+        width: 18px;
+        border-radius: 3px;
+        background: var(--color-dorado);
+    }
+
     .info-card-title {
         font-size: 1.05rem;
         color: var(--color-noche);
@@ -149,51 +271,38 @@
         overflow-y: auto;
     }
 
-    .card-head.tabs-head {
-        padding-bottom: 0;
-        justify-content: flex-start;
-        gap: 0.25rem;
-        flex-wrap: wrap;
-    }
-
-    .tab-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        background: none;
-        border: none;
-        border-bottom: 2px solid transparent;
-        padding: 0.35rem 0.7rem;
-        font-family: var(--font-serif);
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: var(--color-piedra);
-        cursor: pointer;
-        margin-bottom: -1px;
-        transition: color 0.2s, border-color 0.2s;
-    }
-
-    .tab-btn:hover {
-        color: var(--color-noche);
-    }
-
-    .tab-btn.active {
-        color: var(--color-noche);
-        border-bottom-color: var(--color-dorado);
-    }
-
-    .tab-pane {
-        display: none;
-    }
-
-    .tab-pane.active {
-        display: block;
-    }
-
     .quick-actions {
         display: flex;
         gap: 0.6rem;
         flex-wrap: wrap;
+    }
+
+    .activity-panel .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        overflow: hidden;
+    }
+
+    .quick-actions-row {
+        flex-wrap: nowrap;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding-bottom: 0.15rem;
+        flex-shrink: 0;
+    }
+
+    .quick-actions-row .btn-action {
+        flex: 0 0 auto;
+        padding: 0.45rem 0.6rem;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+
+    .activity-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
 
     .btn-action {
@@ -288,11 +397,27 @@
             flex: none;
         }
 
+        .chart-carousel-track {
+            height: auto;
+        }
+
+        .chart-slide-hint {
+            display: none;
+        }
+
         .dashboard-grid .card {
             display: block;
         }
 
         .card-body {
+            overflow: visible;
+        }
+
+        .activity-panel .card-body {
+            overflow: visible;
+        }
+
+        .activity-list {
             overflow: visible;
         }
     }
@@ -303,25 +428,6 @@
         <div>
             <h1 class="page-title font-serif">Bienvenido, {{ Auth::user()->name }}</h1>
             <p class="page-subtitle">{{ $store->name ?? 'Joyería Web' }} — Resumen General del Día</p>
-        </div>
-
-        <div class="quick-actions">
-            <a href="{{ route('admin.pos.index') }}" class="btn-action btn-action-primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-                <span>Nueva Venta (POS)</span>
-            </a>
-
-            <a href="{{ route('admin.cash.index') }}" class="btn-action btn-action-secondary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                </svg>
-                <span>Turno de Caja</span>
-            </a>
         </div>
     </div>
 
@@ -415,20 +521,91 @@
 
     <!-- Zona principal: gráficas a la izquierda, alerta + paneles a la derecha -->
     <div class="dashboard-main">
-        <!-- Columna izquierda: gráficas apiladas -->
+        <!-- Columna izquierda: carrusel de gráficas -->
         <div class="charts-col">
-            <div class="card">
-                <h2 class="info-card-title font-serif">Ventas de los últimos 7 días</h2>
-                <div class="chart-wrap">
-                    <canvas id="sales-chart"></canvas>
+            <div class="card chart-carousel-card" data-chart-carousel tabindex="0" aria-roledescription="carrusel" aria-label="Gráficas del negocio">
+                <div class="card-head chart-carousel-head">
+                    <span class="chart-carousel-label">Gráficas del negocio</span>
+                    <div class="carousel-controls">
+                        <span class="carousel-counter" data-carousel-counter>1 / 6</span>
+                        <button type="button" class="carousel-btn" data-carousel-prev aria-label="Gráfica anterior">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button type="button" class="carousel-btn" data-carousel-next aria-label="Gráfica siguiente">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <h2 class="info-card-title font-serif">Inventario por metal (gramos)</h2>
-                <div class="chart-wrap">
-                    <canvas id="metals-chart"></canvas>
+                <div class="chart-carousel-viewport">
+                    <div class="chart-carousel-track" data-carousel-track>
+                        <div class="chart-slide" data-chart-slide aria-label="Ventas de los últimos 7 días">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Ventas de los últimos 7 días</h2>
+                                <span class="chart-slide-hint">Cobrado por día</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="sales-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-slide" data-chart-slide aria-label="Ventas por método de pago">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Ventas por método de pago</h2>
+                                <span class="chart-slide-hint">Cobros de los últimos 7 días</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="payment-methods-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-slide" data-chart-slide aria-label="Inventario por metal">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Inventario por metal (gramos)</h2>
+                                <span class="chart-slide-hint">Peso disponible</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="metals-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-slide" data-chart-slide aria-label="Inventario por estado">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Inventario por estado</h2>
+                                <span class="chart-slide-hint">Piezas registradas</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="inventory-status-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-slide" data-chart-slide aria-label="Compras de metal de los últimos 7 días">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Compras de metal (7 días)</h2>
+                                <span class="chart-slide-hint">Inversión diaria</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="purchases-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-slide" data-chart-slide aria-label="Flujo de caja de los últimos 7 días">
+                            <div class="chart-slide-head">
+                                <h2 class="chart-slide-title font-serif">Flujo de caja (7 días)</h2>
+                                <span class="chart-slide-hint">Ingresos y retiros manuales</span>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="cash-flow-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="carousel-dots" data-carousel-dots aria-label="Seleccionar gráfica"></div>
             </div>
         </div>
 
@@ -450,82 +627,39 @@
                 </div>
             @endif
 
-            <!-- Panel con tabs: Estado del Sistema / Actividad Reciente -->
-            <div class="card">
-                <div class="card-head tabs-head">
-                    <button type="button" class="tab-btn active" data-tab="tab-estado">
-                        Estado del Sistema
-                        <span class="badge badge-info">Sistema</span>
-                    </button>
-                    <button type="button" class="tab-btn" data-tab="tab-actividad">
-                        Actividad Reciente
-                        <span class="badge badge-gold">Bitácora</span>
-                    </button>
-                </div>
-
+            <!-- Acciones rápidas + mini bitácora -->
+            <div class="card activity-panel">
                 <div class="card-body">
-                    <div class="tab-pane active" id="tab-estado">
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.85rem;">
-                            <!-- Store info -->
-                            <div style="display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.75rem; background: var(--color-crema); border-radius: 4px; border: 1px solid var(--color-linea);">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="2" style="flex-shrink: 0;">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    <div class="quick-actions quick-actions-row">
+                        @can('sales.create')
+                            <a href="{{ route('admin.pos.index') }}" class="btn-action btn-action-primary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                                 </svg>
-                                <div style="min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.82rem;">{{ $store->name }}</div>
-                                    <div style="font-size: 0.72rem; color: var(--color-piedra); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $store->address ?? 'Sin dirección registrada' }} &bull; Moneda: {{ $store->currency }}</div>
-                                </div>
-                            </div>
-
-                            <!-- Role info -->
-                            <div style="display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.75rem; background: var(--color-crema); border-radius: 4px; border: 1px solid var(--color-linea);">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="2" style="flex-shrink: 0;">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
+                                Nueva Venta (POS)
+                            </a>
+                        @endcan
+                        @can('cash.open')
+                            <a href="{{ route('admin.cash.index') }}" class="btn-action btn-action-secondary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    <line x1="2" y1="10" x2="22" y2="10"></line>
                                 </svg>
-                                <div style="min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.82rem;">{{ $user->name }}</div>
-                                    <div style="font-size: 0.72rem; color: var(--color-piedra); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Rol: {{ $user->roles->first()?->name ?? 'Sin rol asignado' }} &bull; Último acceso: {{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Primer ingreso' }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <p style="color: var(--color-piedra); font-size: 0.82rem; line-height: 1.5; margin-bottom: 0.85rem;">
-                            Para realizar cobros o registrar compras de metales, debes contar con un <strong>turno de caja abierto</strong>.
-                        </p>
-
-                        <div class="quick-actions">
-                            @can('sales.create')
-                                <a href="{{ route('admin.pos.index') }}" class="btn-action btn-action-primary">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                                    </svg>
-                                    Nueva Venta (POS)
-                                </a>
-                            @endcan
-                            @can('cash.open')
-                                <a href="{{ route('admin.cash.index') }}" class="btn-action btn-action-secondary">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                                        <line x1="2" y1="10" x2="22" y2="10"></line>
-                                    </svg>
-                                    Turno de Caja
-                                </a>
-                            @endcan
-                            @can('inventory.view')
-                                <a href="{{ route('admin.inventory.index') }}" class="btn-action btn-action-secondary">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                    </svg>
-                                    Inventario
-                                </a>
-                            @endcan
-                        </div>
+                                Turno de Caja
+                            </a>
+                        @endcan
+                        @can('inventory.view')
+                            <a href="{{ route('admin.inventory.index') }}" class="btn-action btn-action-secondary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                </svg>
+                                Inventario
+                            </a>
+                        @endcan
                     </div>
 
-                    <div class="tab-pane" id="tab-actividad">
+                    <div class="activity-list">
                         @forelse ($recentActivity as $activity)
                             <div style="display: flex; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid var(--color-linea);">
                                 <div style="width: 26px; height: 26px; border-radius: 50%; background: rgba(184,154,94,0.12); border: 1px solid var(--color-dorado-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -558,25 +692,15 @@
     </div>
 </div>
 
-<script>
-    document.querySelectorAll('.tab-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var card = btn.closest('.card');
-            card.querySelectorAll('.tab-btn').forEach(function (b) {
-                b.classList.toggle('active', b === btn);
-            });
-            card.querySelectorAll('.tab-pane').forEach(function (pane) {
-                pane.classList.toggle('active', pane.id === btn.dataset.tab);
-            });
-        });
-    });
-</script>
-
 @push('scripts')
     <script>
         window.dashboardData = {
             sales: @json($salesChart),
+            paymentMethods: @json($paymentMethodsChart),
             metals: @json($inventoryChart),
+            inventoryStatus: @json($inventoryStatusChart),
+            purchases: @json($purchasesChart),
+            cashFlow: @json($cashFlowChart),
         };
     </script>
     @vite('resources/js/dashboard.js')

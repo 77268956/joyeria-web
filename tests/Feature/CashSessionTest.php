@@ -186,7 +186,48 @@ class CashSessionTest extends TestCase
             'user_id' => $seller->id,
             'status' => 'closed',
             'difference_total' => -5.00,
+            'difference_cash' => -5.00,
+            'difference_card' => 0.00,
+            'difference_transfer' => 0.00,
             'close_note' => 'Faltante de cambio',
+            'supervisor_id' => $manager->id,
+        ]);
+    }
+
+    public function test_offsetting_method_differences_still_require_note_and_supervisor_pin(): void
+    {
+        $seller = $this->seller();
+        $this->actingAs($seller)->post(route('admin.cash.open'), ['opening_amount' => '100.00']);
+
+        // Cash is short 10 but card is over 10: the total is 0, yet each method is off.
+        $failResponse = $this->actingAs($seller)->post(route('admin.cash.close'), [
+            'counted_cash' => '90.00',
+            'counted_card' => '10.00',
+            'counted_transfer' => '0.00',
+        ]);
+
+        $failResponse->assertSessionHasErrors('error');
+        $this->assertDatabaseHas('cash_sessions', ['user_id' => $seller->id, 'status' => 'open']);
+
+        $manager = User::where('email', 'gerente@joyeriaweb.com')->first();
+        $manager->update(['supervisor_pin' => Hash::make('5678')]);
+
+        $response = $this->actingAs($seller)->post(route('admin.cash.close'), [
+            'counted_cash' => '90.00',
+            'counted_card' => '10.00',
+            'counted_transfer' => '0.00',
+            'close_note' => 'Cobro con tarjeta registrado en efectivo',
+            'supervisor_pin' => '5678',
+        ]);
+
+        $response->assertRedirect(route('admin.cash.index'));
+        $this->assertDatabaseHas('cash_sessions', [
+            'user_id' => $seller->id,
+            'status' => 'closed',
+            'difference_total' => 0.00,
+            'difference_cash' => -10.00,
+            'difference_card' => 10.00,
+            'difference_transfer' => 0.00,
             'supervisor_id' => $manager->id,
         ]);
     }

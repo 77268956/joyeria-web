@@ -292,31 +292,37 @@ class CashSessionService
         }
 
         return DB::transaction(function () use ($session, $counted, $user, $note, $supervisorPin): CashSession {
-            $expected = $this->expectedTotals($session);
+            $locked = CashSession::query()->lockForUpdate()->findOrFail($session->getKey());
+
+            if (! $locked->isOpen()) {
+                throw new RuntimeException('El turno ya está cerrado.');
+            }
+
+            $expected = $this->expectedTotals($locked);
 
             $countedCash = $this->money($counted['counted_cash']);
             $countedCard = $this->money($counted['counted_card']);
             $countedTransfer = $this->money($counted['counted_transfer']);
 
-            $difference = bcadd(
-                bcadd(
-                    bcsub($countedCash, $expected['cash'], 2),
-                    bcsub($countedCard, $expected['card'], 2),
-                    2,
-                ),
-                bcsub($countedTransfer, $expected['transfer'], 2),
-                2,
-            );
+            $differenceCash = bcsub($countedCash, $expected['cash'], 2);
+            $differenceCard = bcsub($countedCard, $expected['card'], 2);
+            $differenceTransfer = bcsub($countedTransfer, $expected['transfer'], 2);
+
+            $difference = bcadd(bcadd($differenceCash, $differenceCard, 2), $differenceTransfer, 2);
+
+            $hasAnyDifference = bccomp($differenceCash, '0', 2) !== 0
+                || bccomp($differenceCard, '0', 2) !== 0
+                || bccomp($differenceTransfer, '0', 2) !== 0;
 
             $supervisor = null;
 
-            if (bccomp($difference, '0', 2) !== 0) {
+            if ($hasAnyDifference) {
                 if (blank($note)) {
-                    throw new InvalidArgumentException('La nota de cierre es obligatoria cuando existe una diferencia.');
+                    throw new InvalidArgumentException('La nota de cierre es obligatoria cuando existe una diferencia en cualquier método de pago.');
                 }
 
                 if (! empty($supervisorPin)) {
-                    $supervisor = app(DiscountAuthorizationService::class)->authorizeByPin($supervisorPin, $session->store_id);
+                    $supervisor = app(DiscountAuthorizationService::class)->authorizeByPin($supervisorPin, $locked->store_id);
                 } elseif (! $user->can('products.edit_price')) {
                     throw new InvalidArgumentException('El cierre con diferencia requiere el PIN de un supervisor (Gerente o Dueño).');
                 } else {
@@ -324,7 +330,7 @@ class CashSessionService
                 }
             }
 
-            $session->forceFill([
+            $locked->forceFill([
                 'status' => CashSessionStatus::Closed,
                 'closed_at' => now(),
                 'closed_by' => $user->id,
@@ -335,11 +341,14 @@ class CashSessionService
                 'counted_cash' => $countedCash,
                 'counted_card' => $countedCard,
                 'counted_transfer' => $countedTransfer,
+                'difference_cash' => $differenceCash,
+                'difference_card' => $differenceCard,
+                'difference_transfer' => $differenceTransfer,
                 'difference_total' => $difference,
                 'close_note' => $note,
             ])->save();
 
-            return $session->refresh();
+            return $locked->refresh();
         });
     }
 

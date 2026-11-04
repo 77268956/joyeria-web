@@ -5,7 +5,7 @@
 @section('body_class', 'full-viewport')
 
 @section('content')
-<button type="button" id="pos-kiosk-exit" class="pos-kiosk-exit" style="position: fixed; top: 0.4rem; left: 0.6rem; z-index: 2000; background: rgba(18,22,31,0.4); color: #fff; border: none; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.72rem; line-height: 1; cursor: pointer; backdrop-filter: blur(2px); opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.5'" title="Salir de modo POS (Esc)">×</button>
+<button type="button" id="pos-kiosk-exit" class="pos-kiosk-exit" style="position: fixed; top: 0.4rem; left: 0.6rem; z-index: 2000; background: rgba(18,22,31,0.4); color: #fff; border: none; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.72rem; line-height: 1; cursor: pointer; backdrop-filter: blur(2px); opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.5'" title="Salir de modo POS (F11, F12 o Esc)">×</button>
 <style>
     .pos-page {
         display: flex;
@@ -686,6 +686,41 @@
             flex: 1;
         }
     }
+    /* --- Modo POS a pantalla completa: interfaz más grande para mostrador --- */
+    body.pos-kiosk .pos-main {
+        grid-template-columns: minmax(0, 2.4fr) minmax(380px, 1fr);
+        gap: 0.9rem;
+    }
+
+    body.pos-kiosk #pos-search {
+        height: 48px;
+        font-size: 1.05rem;
+    }
+
+    body.pos-kiosk .pos-cards {
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 0.85rem;
+    }
+
+    body.pos-kiosk .pos-product-media {
+        height: 120px;
+    }
+
+    body.pos-kiosk .pos-product-name {
+        font-size: 0.95rem;
+    }
+
+    body.pos-kiosk .pos-product-price {
+        font-size: 1rem;
+    }
+
+    body.pos-kiosk .pos-cart-table table.data-table {
+        font-size: 0.9rem;
+    }
+
+    body.pos-kiosk .pos-card-title {
+        font-size: 1.15rem;
+    }
 </style>
 
 <div class="pos-page">
@@ -709,7 +744,7 @@
                 <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline btn-sm">Apartar pieza</a>
             @endcan
             <a href="{{ route('admin.cash.index') }}" class="btn btn-outline btn-sm">Caja</a>
-            <button type="button" id="pos-kiosk-toggle" class="btn btn-outline btn-sm" title="Modo mostrador (solo venta)">Modo POS</button>
+            <button type="button" id="pos-kiosk-toggle" class="btn btn-outline btn-sm" title="Modo mostrador a pantalla completa (F11)">Modo POS (F11)</button>
         </div>
     </div>
 
@@ -1921,22 +1956,60 @@
     const kioskToggle = document.getElementById('pos-kiosk-toggle');
     const kioskExit = document.getElementById('pos-kiosk-exit');
 
+    function syncKioskButton() {
+        if (!kioskToggle) {
+            return;
+        }
+
+        const isKiosk = document.body.classList.contains('pos-kiosk');
+        kioskToggle.textContent = isKiosk ? 'Salir de Modo POS' : 'Modo POS (F11)';
+        kioskToggle.title = isKiosk
+            ? 'Salir del modo mostrador (F11, F12 o Esc)'
+            : 'Modo mostrador a pantalla completa (F11)';
+    }
+
     function enterKiosk() {
+        if (document.body.classList.contains('pos-kiosk')) {
+            return;
+        }
+
         document.body.classList.add('pos-kiosk');
+        syncKioskButton();
+
+        const root = document.documentElement;
+
+        if (root.requestFullscreen && !document.fullscreenElement) {
+            root.requestFullscreen().catch(function () {});
+        }
+
+        setTimeout(function () {
+            el('pos-search')?.focus();
+        }, 60);
     }
 
     function exitKiosk() {
+        if (!document.body.classList.contains('pos-kiosk')) {
+            return;
+        }
+
         document.body.classList.remove('pos-kiosk');
+        syncKioskButton();
+
+        if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(function () {});
+        }
+    }
+
+    function toggleKiosk() {
+        if (document.body.classList.contains('pos-kiosk')) {
+            exitKiosk();
+        } else {
+            enterKiosk();
+        }
     }
 
     if (kioskToggle) {
-        kioskToggle.addEventListener('click', function () {
-            if (document.body.classList.contains('pos-kiosk')) {
-                exitKiosk();
-            } else {
-                enterKiosk();
-            }
-        });
+        kioskToggle.addEventListener('click', toggleKiosk);
     }
 
     if (kioskExit) {
@@ -1944,10 +2017,24 @@
     }
 
     document.addEventListener('keydown', function (e) {
+        if (e.key === 'F11' || e.key === 'F12') {
+            e.preventDefault();
+            toggleKiosk();
+            return;
+        }
+
         if (e.key === 'Escape' && document.body.classList.contains('pos-kiosk')) {
             exitKiosk();
         }
     });
+
+    document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement && document.body.classList.contains('pos-kiosk')) {
+            exitKiosk();
+        }
+    });
+
+    syncKioskButton();
 })();
 </script>
 @endpush

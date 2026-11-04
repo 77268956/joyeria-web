@@ -20,6 +20,7 @@ use App\Models\Sale;
 use App\Models\Store;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -77,7 +78,11 @@ class DashboardController extends Controller
             'netCashFlow' => $netCashFlow,
             'goldQuote' => $goldQuote,
             'salesChart' => $this->salesLastSevenDays(),
+            'paymentMethodsChart' => $this->salesByPaymentMethod(),
             'inventoryChart' => $inventoryChart,
+            'inventoryStatusChart' => $this->inventoryByStatus(),
+            'purchasesChart' => $this->purchasesLastSevenDays(),
+            'cashFlowChart' => $this->cashFlowLastSevenDays(),
             'lowStock' => $lowStock,
             'recentActivity' => $recentActivity,
         ]);
@@ -90,24 +95,38 @@ class DashboardController extends Controller
      */
     protected function salesLastSevenDays(): array
     {
-        $summary = Sale::query()
-            ->completed()
+        return $this->dailyTotals(Sale::query()->completed(), 'total');
+    }
+
+    /**
+     * Total income per payment method for completed sales in the last seven days.
+     *
+     * @return array{labels: array<int, string>, totals: array<int, float>}
+     */
+    protected function salesByPaymentMethod(): array
+    {
+        $totals = Payment::query()
             ->where('created_at', '>=', today()->subDays(6)->startOfDay())
-            ->selectRaw('DATE(created_at) as day, SUM(total) as total')
-            ->groupBy('day')
-            ->pluck('total', 'day');
+            ->whereHas('sale', fn ($query) => $query->where('status', SaleStatus::Completed->value))
+            ->selectRaw('method, SUM(amount) as total')
+            ->groupBy('method')
+            ->pluck('total', 'method');
 
         $labels = [];
-        $totals = [];
+        $values = [];
 
-        for ($daysAgo = 6; $daysAgo >= 0; $daysAgo--) {
-            $date = today()->subDays($daysAgo);
+        foreach (PaymentMethod::cases() as $method) {
+            $amount = (float) ($totals[$method->value] ?? 0);
 
-            $labels[] = $date->format('d/m');
-            $totals[] = (float) ($summary[$date->toDateString()] ?? 0);
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $labels[] = $method->label();
+            $values[] = $amount;
         }
 
-        return ['labels' => $labels, 'totals' => $totals];
+        return ['labels' => $labels, 'totals' => $values];
     }
 
     /**
@@ -134,6 +153,115 @@ class DashboardController extends Controller
         }
 
         return ['labels' => $labels, 'grams' => $values];
+    }
+
+    /**
+     * Product count per lifecycle status, for the dashboard chart.
+     *
+     * @return array{labels: array<int, string>, totals: array<int, int>}
+     */
+    protected function inventoryByStatus(): array
+    {
+        $counts = Product::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $labels = [];
+        $values = [];
+
+        foreach (ProductStatus::cases() as $status) {
+            $total = (int) ($counts[$status->value] ?? 0);
+
+            if ($total <= 0) {
+                continue;
+            }
+
+            $labels[] = $status->label();
+            $values[] = $total;
+        }
+
+        return ['labels' => $labels, 'totals' => $values];
+    }
+
+    /**
+     * Total amount spent buying metal per day for the last seven days.
+     *
+     * @return array{labels: array<int, string>, totals: array<int, float>}
+     */
+    protected function purchasesLastSevenDays(): array
+    {
+        return $this->dailyTotals(MetalPurchase::query(), 'total_amount');
+    }
+
+    /**
+     * Cash injections and withdrawals per day for the last seven days.
+     *
+     * @return array{labels: array<int, string>, incoming: array<int, float>, outgoing: array<int, float>}
+     */
+    protected function cashFlowLastSevenDays(): array
+    {
+        $rows = CashMovement::query()
+            ->where('created_at', '>=', today()->subDays(6)->startOfDay())
+            ->selectRaw('DATE(created_at) as day, type, SUM(amount) as total')
+            ->groupBy('day', 'type')
+            ->get();
+
+        $incoming = [];
+        $outgoing = [];
+
+        foreach ($rows as $row) {
+            $day = (string) $row->day;
+            $amount = (float) $row->total;
+
+            if ($row->type === CashMovementType::In) {
+                $incoming[$day] = $amount;
+            } else {
+                $outgoing[$day] = $amount;
+            }
+        }
+
+        $labels = [];
+        $incomingValues = [];
+        $outgoingValues = [];
+
+        for ($daysAgo = 6; $daysAgo >= 0; $daysAgo--) {
+            $date = today()->subDays($daysAgo);
+            $key = $date->toDateString();
+
+            $labels[] = $date->format('d/m');
+            $incomingValues[] = $incoming[$key] ?? 0;
+            $outgoingValues[] = $outgoing[$key] ?? 0;
+        }
+
+        return ['labels' => $labels, 'incoming' => $incomingValues, 'outgoing' => $outgoingValues];
+    }
+
+    /**
+     * Sum a column per day for the last seven days.
+     *
+     * @param  Builder<*>  $query
+     * @return array{labels: array<int, string>, totals: array<int, float>}
+     */
+    protected function dailyTotals(Builder $query, string $column): array
+    {
+        $summary = $query
+            ->where('created_at', '>=', today()->subDays(6)->startOfDay())
+            ->selectRaw("DATE(created_at) as day, SUM({$column}) as total")
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $labels = [];
+        $totals = [];
+
+        for ($daysAgo = 6; $daysAgo >= 0; $daysAgo--) {
+            $date = today()->subDays($daysAgo);
+
+            $labels[] = $date->format('d/m');
+            $totals[] = (float) ($summary[$date->toDateString()] ?? 0);
+        }
+
+        return ['labels' => $labels, 'totals' => $totals];
     }
 
     /**

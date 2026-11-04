@@ -38,6 +38,9 @@ class CashSession extends Model
         'counted_cash',
         'counted_card',
         'counted_transfer',
+        'difference_cash',
+        'difference_card',
+        'difference_transfer',
         'difference_total',
         'close_note',
         'supervisor_id',
@@ -61,6 +64,9 @@ class CashSession extends Model
             'counted_cash' => 'decimal:2',
             'counted_card' => 'decimal:2',
             'counted_transfer' => 'decimal:2',
+            'difference_cash' => 'decimal:2',
+            'difference_card' => 'decimal:2',
+            'difference_transfer' => 'decimal:2',
             'difference_total' => 'decimal:2',
         ];
     }

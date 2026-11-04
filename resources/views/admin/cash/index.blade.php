@@ -491,13 +491,12 @@
             <table class="cash-table-full data-table">
                 <thead>
                     <tr>
-                        <th></th>  
                         <th>Cajero</th>
                         <th>Apertura</th>
                         <th>Cierre</th>
                         <th class="text-right">Fondo Inicial</th>
-                        <th class="text-right">Esperado</th>
-                        <th class="text-right">Contado</th>
+                        <th class="text-right">Esperado efectivo</th>
+                        <th class="text-right">Contado efectivo</th>
                         <th class="text-right">Diferencia</th>
                         <th>Nota / Observación</th>
                         <th class="text-center" style="width: 110px;">Acciones</th>
@@ -559,6 +558,9 @@
                                     data-exp-trans="{{ number_format((float) $closed->expected_transfer, 2) }}"
                                     data-cnt-trans="{{ number_format((float) $closed->counted_transfer, 2) }}"
                                     data-diff="{{ number_format((float) $closed->difference_total, 2) }}"
+                                    @if ($closed->difference_cash !== null) data-diff-cash="{{ number_format((float) $closed->difference_cash, 2) }}" @endif
+                                    @if ($closed->difference_card !== null) data-diff-card="{{ number_format((float) $closed->difference_card, 2) }}" @endif
+                                    @if ($closed->difference_transfer !== null) data-diff-trans="{{ number_format((float) $closed->difference_transfer, 2) }}" @endif
                                     data-note="{{ $closed->close_note ?? '' }}"
                                     data-supervisor="{{ $closed->supervisor?->name ?? '' }}"
                                     data-closed-by="{{ $closed->closedBy?->name ?? $closed->user?->name ?? '—' }}"
@@ -742,14 +744,17 @@
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label" for="counted_cash">Efectivo contado <span style="color: var(--color-error);">*</span></label>
                         <input type="number" step="0.01" min="0" name="counted_cash" id="counted_cash" class="form-control arqueo-input" value="{{ old('counted_cash', number_format((float) $expected['cash'], 2, '.', '')) }}" required>
+                        <div id="live-diff-cash" class="arqueo-live-diff" style="font-size: 0.72rem; margin-top: 3px; color: var(--color-piedra);">Esperado: $ {{ number_format((float) $expected['cash'], 2) }}</div>
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label" for="counted_card">Tarjeta contada <span style="color: var(--color-error);">*</span></label>
                         <input type="number" step="0.01" min="0" name="counted_card" id="counted_card" class="form-control arqueo-input" value="{{ old('counted_card', number_format((float) $expected['card'], 2, '.', '')) }}" required>
+                        <div id="live-diff-card" class="arqueo-live-diff" style="font-size: 0.72rem; margin-top: 3px; color: var(--color-piedra);">Esperado: $ {{ number_format((float) $expected['card'], 2) }}</div>
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label" for="counted_transfer">Transferencia contada <span style="color: var(--color-error);">*</span></label>
                         <input type="number" step="0.01" min="0" name="counted_transfer" id="counted_transfer" class="form-control arqueo-input" value="{{ old('counted_transfer', number_format((float) $expected['transfer'], 2, '.', '')) }}" required>
+                        <div id="live-diff-trans" class="arqueo-live-diff" style="font-size: 0.72rem; margin-top: 3px; color: var(--color-piedra);">Esperado: $ {{ number_format((float) $expected['transfer'], 2) }}</div>
                     </div>
                 </div>
 
@@ -1463,12 +1468,38 @@
     const expTrans = Number(@json((float) ($expected['transfer'] ?? 0)));
     const canSelfAuthorize = @json(Auth::user()?->can('products.edit_price') ?? false);
 
+    function paintLiveDiff(id, expected, counted) {
+        const node = el(id);
+
+        if (!node) {
+            return;
+        }
+
+        const diff = counted - expected;
+        const isExact = Math.abs(diff) < 0.005;
+        const signed = isExact
+            ? '$ 0.00'
+            : (diff < 0 ? '-$' : '+$') + Math.abs(diff).toFixed(2);
+
+        node.textContent = 'Esperado: $ ' + expected.toFixed(2) + ' · Diferencia: ' + signed;
+        node.style.color = isExact ? 'var(--color-piedra)' : (diff < 0 ? 'var(--color-error)' : '#D97706');
+        node.style.fontWeight = isExact ? '400' : '600';
+    }
+
     function calculateDifference() {
         const cntCash = Number(el('counted_cash')?.value) || 0;
         const cntCard = Number(el('counted_card')?.value) || 0;
         const cntTrans = Number(el('counted_transfer')?.value) || 0;
 
-        const diffTotal = (cntCash - expCash) + (cntCard - expCard) + (cntTrans - expTrans);
+        const diffCash = cntCash - expCash;
+        const diffCard = cntCard - expCard;
+        const diffTrans = cntTrans - expTrans;
+        const diffTotal = diffCash + diffCard + diffTrans;
+
+        paintLiveDiff('live-diff-cash', expCash, cntCash);
+        paintLiveDiff('live-diff-card', expCard, cntCard);
+        paintLiveDiff('live-diff-trans', expTrans, cntTrans);
+
         const statusBox = el('arqueo-status-box');
         const statusTitle = el('arqueo-status-title');
         const statusDesc = el('arqueo-status-desc');
@@ -1476,9 +1507,21 @@
         const supSection = el('supervisor-section');
         const noteStar = el('note-required-star');
 
-        const isExact = Math.abs(diffTotal) < 0.005;
+        const affectedMethods = [];
 
-        if (isExact) {
+        if (Math.abs(diffCash) >= 0.005) {
+            affectedMethods.push('efectivo');
+        }
+        if (Math.abs(diffCard) >= 0.005) {
+            affectedMethods.push('tarjeta');
+        }
+        if (Math.abs(diffTrans) >= 0.005) {
+            affectedMethods.push('transferencia');
+        }
+
+        const hasAnyDifference = affectedMethods.length > 0;
+
+        if (!hasAnyDifference) {
             statusBox.style.background = '#F3FAF4';
             statusBox.style.borderColor = '#A7D7B5';
             statusTitle.style.color = 'var(--color-exito)';
@@ -1490,14 +1533,23 @@
             noteStar.style.display = 'none';
         } else {
             const isShortage = diffTotal < 0;
+            const isCompensated = Math.abs(diffTotal) < 0.005;
             const absDiff = Math.abs(diffTotal).toFixed(2);
+            const methodsLabel = affectedMethods.join(', ');
+
             statusBox.style.background = isShortage ? '#FEF2F2' : '#FFFBEB';
             statusBox.style.borderColor = isShortage ? '#FCA5A5' : '#FDE68A';
             statusTitle.style.color = isShortage ? 'var(--color-error)' : '#D97706';
-            statusTitle.textContent = isShortage ? '⚠ Faltante en arqueo' : '⚠ Sobrante en arqueo';
-            statusDesc.textContent = 'Existe diferencia. Se requiere nota explicativa' + (canSelfAuthorize ? '.' : ' y PIN de supervisor.');
+
+            if (isCompensated) {
+                statusTitle.textContent = '⚠ Diferencias entre métodos (total $ 0.00)';
+            } else {
+                statusTitle.textContent = (isShortage ? '⚠ Faltante en arqueo' : '⚠ Sobrante en arqueo');
+            }
+
+            statusDesc.textContent = 'Diferencia en ' + methodsLabel + '. Se requiere nota explicativa' + (canSelfAuthorize ? '.' : ' y PIN de supervisor.');
             statusDiff.style.color = isShortage ? 'var(--color-error)' : '#D97706';
-            statusDiff.textContent = (isShortage ? '-$' : '+$') + absDiff;
+            statusDiff.textContent = isCompensated ? '$ 0.00' : ((isShortage ? '-$' : '+$') + absDiff);
             noteStar.style.display = 'inline';
 
             supSection.style.display = 'block';
@@ -1506,7 +1558,7 @@
                 el('sup-desc').textContent = 'Tienes permisos de supervisor: puedes ingresar tu PIN de 4 dígitos o autorizar directamente con tu nota explicativa.';
             } else {
                 el('sup-title').textContent = 'Se requiere autorización de supervisor';
-                el('sup-desc').textContent = 'El arqueo presenta diferencia. Ingresa el PIN de 4 dígitos del Gerente o Administrador para autorizar el cierre.';
+                el('sup-desc').textContent = 'El arqueo presenta diferencia en ' + methodsLabel + '. Ingresa el PIN de 4 dígitos del Gerente o Administrador para autorizar el cierre.';
             }
         }
     }
@@ -1522,8 +1574,12 @@
         const cntCash = Number(el('counted_cash')?.value) || 0;
         const cntCard = Number(el('counted_card')?.value) || 0;
         const cntTrans = Number(el('counted_transfer')?.value) || 0;
-        const diffTotal = (cntCash - expCash) + (cntCard - expCard) + (cntTrans - expTrans);
-        const isExact = Math.abs(diffTotal) < 0.005;
+        const diffCash = cntCash - expCash;
+        const diffCard = cntCard - expCard;
+        const diffTrans = cntTrans - expTrans;
+        const hasAnyDifference = Math.abs(diffCash) >= 0.005
+            || Math.abs(diffCard) >= 0.005
+            || Math.abs(diffTrans) >= 0.005;
         const note = el('modal_close_note')?.value.trim();
         const pinInput = el('modal_supervisor_pin');
         const pinError = el('modal-pin-error');
@@ -1531,7 +1587,7 @@
 
         pinError.style.display = 'none';
 
-        if (!isExact) {
+        if (hasAnyDifference) {
             if (!note) {
                 alert('Debes ingresar la nota explicativa obligatoria de la diferencia.');
                 el('modal_close_note')?.focus();
@@ -1605,22 +1661,45 @@
             el('det-subtitle').textContent = 'Turno de ' + d.cajero + ' · Cerrado el ' + d.cierre;
 
             el('det-opening').textContent = '$ ' + d.opening;
+
+            const parseMoney = (value) => Number(String(value ?? '0').replace(/,/g, '')) || 0;
+            const paintDiff = (id, value) => {
+                const node = el(id);
+
+                if (!node) {
+                    return;
+                }
+
+                const numeric = parseMoney(value);
+                const isExact = Math.abs(numeric) < 0.005;
+
+                node.textContent = isExact
+                    ? '$ 0.00'
+                    : (numeric < 0 ? '-$' : '+$') + Math.abs(numeric).toFixed(2);
+                node.style.color = isExact
+                    ? 'var(--color-exito)'
+                    : (numeric < 0 ? 'var(--color-error)' : 'var(--color-aviso)');
+            };
+
             el('det-exp-cash').textContent = '$ ' + d.expCash;
             el('det-cnt-cash').textContent = '$ ' + d.cntCash;
-            const diffCash = (Number(d.cntCash.replace(/,/g, '')) - Number(d.expCash.replace(/,/g, ''))).toFixed(2);
-            el('det-diff-cash').textContent = (diffCash >= 0 ? '+' : '') + '$ ' + diffCash;
+            paintDiff('det-diff-cash', d.diffCash !== undefined
+                ? d.diffCash
+                : (parseMoney(d.cntCash) - parseMoney(d.expCash)));
 
             el('det-exp-card').textContent = '$ ' + d.expCard;
             el('det-cnt-card').textContent = '$ ' + d.cntCard;
-            const diffCard = (Number(d.cntCard.replace(/,/g, '')) - Number(d.expCard.replace(/,/g, ''))).toFixed(2);
-            el('det-diff-card').textContent = (diffCard >= 0 ? '+' : '') + '$ ' + diffCard;
+            paintDiff('det-diff-card', d.diffCard !== undefined
+                ? d.diffCard
+                : (parseMoney(d.cntCard) - parseMoney(d.expCard)));
 
             el('det-exp-trans').textContent = '$ ' + d.expTrans;
             el('det-cnt-trans').textContent = '$ ' + d.cntTrans;
-            const diffTrans = (Number(d.cntTrans.replace(/,/g, '')) - Number(d.expTrans.replace(/,/g, ''))).toFixed(2);
-            el('det-diff-trans').textContent = (diffTrans >= 0 ? '+' : '') + '$ ' + diffTrans;
+            paintDiff('det-diff-trans', d.diffTrans !== undefined
+                ? d.diffTrans
+                : (parseMoney(d.cntTrans) - parseMoney(d.expTrans)));
 
-            const totalDiff = Number(d.diff.replace(/,/g, ''));
+            const totalDiff = parseMoney(d.diff);
             const totalDiffEl = el('det-diff-total');
             totalDiffEl.textContent = (totalDiff >= 0 ? (totalDiff === 0 ? '' : '+') : '') + '$ ' + d.diff;
             totalDiffEl.style.color = totalDiff === 0 ? 'var(--color-exito)' : (totalDiff < 0 ? 'var(--color-error)' : 'var(--color-aviso)');
