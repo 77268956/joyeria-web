@@ -58,8 +58,8 @@ class DashboardTest extends TestCase
         $response->assertSee('purchases-chart');
         $response->assertSee('cash-flow-chart');
         $response->assertSee('data-carousel-track');
-        $response->assertDontSee('Estado del Sistema');
-        $response->assertDontSee('Actividad Reciente');
+        $response->assertSee('data-tab="tab-estado"', false);
+        $response->assertSee('data-tab="tab-actividad"', false);
     }
 
     public function test_the_dashboard_flags_a_metal_below_the_stock_threshold(): void
