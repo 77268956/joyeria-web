@@ -20,8 +20,8 @@
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 0.35rem 0.85rem;
-        padding: 0.4rem 0.9rem;
+        gap: 0.6rem 1rem;
+        padding: 1.05rem 1rem;
         margin-bottom: 0;
         flex-shrink: 0;
         background-color: var(--color-blanco);
@@ -419,6 +419,8 @@
 
         {{-- Métricas del turno activo --}}
         @if ($session)
+            {{-- Ocultas temporalmente. Descomentar para volver a mostrarlas. --}}
+            {{--
             <div class="cash-header-metrics">
                 <div class="cash-metric-item">
                     <span class="cash-metric-label">Efectivo inicial</span>
@@ -433,6 +435,7 @@
                     <span class="cash-metric-value">$ {{ number_format((float) $expected['card'] + (float) $expected['transfer'], 2) }}</span>
                 </div>
             </div>
+            --}}
         @endif
 
         {{-- Acciones (Modales) --}}
