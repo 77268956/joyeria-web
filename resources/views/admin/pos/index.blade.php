@@ -226,7 +226,14 @@
 
     .pos-cart-table table.data-table th,
     .pos-cart-table table.data-table td {
-        padding: 0.55rem 0.5rem;
+        padding: 0.4rem 0.5rem;
+        vertical-align: middle;
+    }
+
+    .pos-cart-table table.data-table td.num,
+    .pos-cart-table table.data-table th.text-right,
+    .pos-cart-table table.data-table th.text-center {
+        white-space: nowrap;
     }
 
     .pos-totals {
@@ -820,15 +827,14 @@
                 <table class="data-table" id="cart-table">
                     <thead>
                         <tr>
-                            <th>Pieza</th>
+                            <th>Producto</th>
                             <th class="text-right">Precio</th>
-                            <th style="width: 110px;">Descuento</th>
-                            <th class="text-right">Total</th>
-                            <th></th>
+                            <th class="text-center" style="width: 56px;">Cant.</th>
+                            <th style="width: 44px;"></th>
                         </tr>
                     </thead>
                     <tbody id="cart-body">
-                        <tr id="cart-empty"><td colspan="5" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>
+                        <tr id="cart-empty"><td colspan="4" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1087,7 +1093,7 @@
         body.innerHTML = '';
 
         if (cart.length === 0) {
-            body.innerHTML = '<tr id="cart-empty"><td colspan="5" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>';
+            body.innerHTML = '<tr id="cart-empty"><td colspan="4" class="muted" style="text-align: center; padding: 1.25rem;">El carrito está vacío.</td></tr>';
             recalc();
             return;
         }
@@ -1095,21 +1101,11 @@
         cart.forEach((item, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML =
-                '<td>' + item.name + '<div class="form-hint">' + item.sku + '</div></td>' +
+                '<td title="' + item.sku + '">' + item.name + '</td>' +
                 '<td class="text-right num">' + money(item.price) + '</td>' +
-                '<td><input type="number" step="0.01" min="0" class="form-control" style="height:34px;" value="' + item.discount.toFixed(2) + '" data-index="' + index + '"></td>' +
-                '<td class="text-right num">' + money(item.price - item.discount) + '</td>' +
-                '<td class="text-right"><button type="button" class="btn btn-danger btn-sm" data-remove="' + index + '">×</button></td>';
+                '<td class="text-center num">1</td>' +
+                '<td class="text-right"><button type="button" class="btn btn-danger btn-sm" data-remove="' + index + '" title="Quitar pieza">×</button></td>';
             body.appendChild(tr);
-        });
-
-        body.querySelectorAll('[data-index]').forEach((input) => {
-            input.addEventListener('input', (event) => {
-                const index = Number(event.target.dataset.index);
-                cart[index].discount = Math.max(0, Number(event.target.value) || 0);
-                resetAuthorizations();
-                renderCart();
-            });
         });
 
         body.querySelectorAll('[data-remove]').forEach((button) => {
@@ -1117,6 +1113,7 @@
                 cart.splice(Number(button.dataset.remove), 1);
                 resetAuthorizations();
                 renderCart();
+                renderAddedState();
             });
         });
 
