@@ -5,7 +5,6 @@
 @section('body_class', 'full-viewport')
 
 @section('content')
-<button type="button" id="pos-kiosk-exit" class="pos-kiosk-exit" style="position: fixed; top: 0.4rem; left: 0.6rem; z-index: 2000; background: rgba(18,22,31,0.4); color: #fff; border: none; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.72rem; line-height: 1; cursor: pointer; backdrop-filter: blur(2px); opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.5'" title="Salir de modo POS (F11, F12 o Esc)">×</button>
 <style>
     .pos-page {
         display: flex;
@@ -88,18 +87,15 @@
     }
 
     .pos-product-card {
+        position: relative;
         display: flex;
         flex-direction: column;
-        text-align: left;
         background-color: #fff;
         border: 1px solid var(--color-linea);
         border-radius: 6px;
         padding: 0;
         overflow: hidden;
-        cursor: pointer;
         transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-        font: inherit;
-        color: inherit;
     }
 
     .pos-product-card:hover {
@@ -109,11 +105,50 @@
     }
 
     .pos-product-card.is-added {
-        opacity: 0.5;
-        cursor: not-allowed;
+        opacity: 0.6;
         border-color: var(--color-exito);
         box-shadow: none;
         transform: none;
+    }
+
+    .pos-product-card-main {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        background: none;
+        border: none;
+        padding: 0;
+        width: 100%;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
+    }
+
+    .pos-product-card.is-added .pos-product-card-main {
+        cursor: not-allowed;
+    }
+
+    .pos-product-details-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        z-index: 2;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid var(--color-linea);
+        background-color: rgba(255, 255, 255, 0.92);
+        color: var(--color-noche);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+    }
+
+    .pos-product-details-btn:hover {
+        border-color: var(--color-dorado);
+        background-color: var(--color-dorado-claro);
     }
 
     .pos-product-media {
@@ -138,33 +173,12 @@
         font-size: 1.6rem;
     }
 
-    .pos-product-badge {
-        position: absolute;
-        top: 6px;
-        left: 6px;
-        background-color: var(--color-dorado);
-        color: #fff;
-        font-size: 0.62rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 2px 6px;
-        border-radius: 3px;
-    }
-
     .pos-product-body {
         padding: 0.55rem 0.65rem 0.65rem;
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.25rem;
         min-width: 0;
-    }
-
-    .pos-product-cat {
-        font-size: 0.68rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--color-piedra);
     }
 
     .pos-product-name {
@@ -178,24 +192,72 @@
         -webkit-box-orient: vertical;
     }
 
-    .pos-product-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 0.35rem;
-        margin-top: 0.15rem;
-    }
-
-    .pos-product-meta span:first-child {
-        font-size: 0.72rem;
-        color: var(--color-piedra);
-    }
-
     .pos-product-price {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: var(--color-noche);
         white-space: nowrap;
+    }
+
+    /* --- Modal de detalles de producto --- */
+    #modal-product-details .modal {
+        max-width: 620px;
+    }
+
+    .pos-detail-layout {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .pos-detail-photo {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 6px;
+        border: 1px solid var(--color-linea);
+        background-color: var(--color-crema);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .pos-detail-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pos-detail-photo .pos-product-placeholder {
+        font-size: 2.5rem;
+    }
+
+    .pos-detail-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .pos-detail-table td {
+        padding: 0.35rem 0;
+        border-bottom: 1px solid var(--color-linea);
+        font-size: 0.85rem;
+    }
+
+    .pos-detail-table td:first-child {
+        color: var(--color-piedra);
+        width: 45%;
+    }
+
+    @media (max-width: 640px) {
+        .pos-detail-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .pos-detail-photo {
+            max-width: 200px;
+            margin: 0 auto;
+        }
     }
 
     .pos-cards-empty {
@@ -705,12 +767,20 @@
     }
 
     body.pos-kiosk .pos-cards {
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-rows: repeat(3, minmax(0, 1fr));
         gap: 0.85rem;
+        align-content: stretch;
+    }
+
+    body.pos-kiosk .pos-product-card-main {
+        flex: 1;
     }
 
     body.pos-kiosk .pos-product-media {
-        height: 120px;
+        flex: 1;
+        height: auto;
+        min-height: 90px;
     }
 
     body.pos-kiosk .pos-product-name {
@@ -863,6 +933,41 @@
         
 
         
+    </div>
+</div>
+
+<!-- Modal de Detalles de Producto -->
+<div id="modal-product-details" class="modal-backdrop" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <h3 class="font-serif" id="detail-name">Detalle de la pieza</h3>
+                <span class="muted" id="detail-sku"></span>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-details">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="pos-detail-layout">
+                <div class="pos-detail-photo" id="detail-photo"></div>
+
+                <table class="pos-detail-table">
+                    <tbody>
+                        <tr><td>Categoría</td><td id="detail-category"></td></tr>
+                        <tr><td>Metal</td><td id="detail-metal"></td></tr>
+                        <tr><td>Pureza</td><td id="detail-purity"></td></tr>
+                        <tr><td>Peso</td><td id="detail-weight"></td></tr>
+                        <tr><td>Origen</td><td id="detail-origin"></td></tr>
+                        <tr><td>Código de barras</td><td id="detail-barcode"></td></tr>
+                        <tr><td>Precio</td><td id="detail-price" class="num"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p id="detail-description" class="muted" style="margin-top: 1rem; line-height: 1.6; display: none;"></p>
+
+            <button type="button" class="btn btn-gold" id="detail-add-btn" style="width: 100%; margin-top: 1rem;">Agregar al carrito</button>
+        </div>
     </div>
 </div>
 
@@ -1305,7 +1410,10 @@
         el('pos-results').querySelectorAll('[data-product-id]').forEach((card) => {
             const inCart = cart.some((item) => item.id === Number(card.dataset.productId));
             card.classList.toggle('is-added', inCart);
-            card.disabled = inCart;
+            const mainButton = card.querySelector('.pos-product-card-main');
+            if (mainButton) {
+                mainButton.disabled = inCart;
+            }
         });
     }
 
@@ -1334,31 +1442,33 @@
     }
 
     function productCard(product) {
-        const card = document.createElement('button');
-        card.type = 'button';
+        const card = document.createElement('div');
         card.className = 'pos-product-card';
         card.dataset.productId = product.id;
 
         const media = product.photo_url
             ? '<img src="' + product.photo_url + '" alt="" loading="lazy">'
             : '<span class="pos-product-placeholder">' + (product.name || '?').charAt(0) + '</span>';
-        const badge = product.is_featured ? '<span class="pos-product-badge">Destacada</span>' : '';
-        const spec = [product.purity || product.metal, (product.weight_g ? product.weight_g.replace(/0+$/, '').replace(/\.$/, '') + ' g' : '')]
-            .filter(Boolean)
-            .join(' · ');
 
         card.innerHTML =
-            '<div class="pos-product-media">' + media + badge + '</div>' +
-            '<div class="pos-product-body">' +
-                '<span class="pos-product-cat">' + (product.category || '') + '</span>' +
-                '<span class="pos-product-name">' + product.name + '</span>' +
-                '<div class="pos-product-meta">' +
-                    '<span>' + spec + '</span>' +
+            '<button type="button" class="pos-product-card-main">' +
+                '<div class="pos-product-media">' + media + '</div>' +
+                '<div class="pos-product-body">' +
+                    '<span class="pos-product-name">' + product.name + '</span>' +
                     '<span class="pos-product-price">' + money(product.price) + '</span>' +
                 '</div>' +
-            '</div>';
+            '</button>' +
+            '<button type="button" class="pos-product-details-btn" title="Ver detalles" aria-label="Ver detalles">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                    '<circle cx="12" cy="12" r="10"></circle>' +
+                    '<line x1="12" y1="16" x2="12" y2="12"></line>' +
+                    '<line x1="12" y1="8" x2="12.01" y2="8"></line>' +
+                '</svg>' +
+            '</button>';
 
-        card.addEventListener('click', () => addProductChip(product));
+        card.querySelector('.pos-product-card-main').addEventListener('click', () => addProductChip(product));
+        card.querySelector('.pos-product-details-btn').addEventListener('click', () => openProductDetails(product));
+
         return card;
     }
 
@@ -1490,6 +1600,62 @@
     el('modal-charge').addEventListener('click', (event) => {
         if (event.target === el('modal-charge')) {
             closeChargeModal();
+        }
+    });
+
+    // --- Modal de Detalles de Producto ---
+    let detailProduct = null;
+
+    function openProductDetails(product) {
+        detailProduct = product;
+
+        el('detail-name').textContent = product.name || '—';
+        el('detail-sku').textContent = product.sku || '';
+        el('detail-category').textContent = product.category || '—';
+        el('detail-metal').textContent = product.metal || '—';
+        el('detail-purity').textContent = product.purity || 'No aplica';
+        el('detail-weight').textContent = (product.weight_g ? product.weight_g.replace(/0+$/, '').replace(/\.$/, '') : '0') + ' g';
+        el('detail-origin').textContent = product.origin || '—';
+        el('detail-barcode').textContent = product.barcode || '—';
+        el('detail-price').textContent = money(product.price);
+
+        const photo = el('detail-photo');
+        photo.innerHTML = product.photo_url
+            ? '<img src="' + product.photo_url + '" alt="">'
+            : '<span class="pos-product-placeholder">' + (product.name || '?').charAt(0) + '</span>';
+
+        const description = el('detail-description');
+        if (product.description) {
+            description.textContent = product.description;
+            description.style.display = 'block';
+        } else {
+            description.textContent = '';
+            description.style.display = 'none';
+        }
+
+        const addButton = el('detail-add-btn');
+        const inCart = cart.some((item) => item.id === product.id);
+        addButton.disabled = inCart;
+        addButton.textContent = inCart ? 'Ya está en el carrito' : 'Agregar al carrito';
+
+        el('modal-product-details').style.display = 'flex';
+    }
+
+    function closeProductDetails() {
+        el('modal-product-details').style.display = 'none';
+        detailProduct = null;
+    }
+
+    el('btn-close-details').addEventListener('click', closeProductDetails);
+    el('modal-product-details').addEventListener('click', (event) => {
+        if (event.target === el('modal-product-details')) {
+            closeProductDetails();
+        }
+    });
+    el('detail-add-btn').addEventListener('click', () => {
+        if (detailProduct) {
+            addProductChip(detailProduct);
+            closeProductDetails();
         }
     });
 
@@ -1951,7 +2117,6 @@
     renderCart();
 
     const kioskToggle = document.getElementById('pos-kiosk-toggle');
-    const kioskExit = document.getElementById('pos-kiosk-exit');
 
     function syncKioskButton() {
         if (!kioskToggle) {
@@ -2007,10 +2172,6 @@
 
     if (kioskToggle) {
         kioskToggle.addEventListener('click', toggleKiosk);
-    }
-
-    if (kioskExit) {
-        kioskExit.addEventListener('click', exitKiosk);
     }
 
     document.addEventListener('keydown', function (e) {

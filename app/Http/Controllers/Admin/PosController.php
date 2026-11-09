@@ -65,11 +65,13 @@ class PosController extends Controller
                 'sku' => $product->sku,
                 'barcode' => $product->barcode,
                 'name' => $product->name,
+                'description' => $product->description,
                 'category' => $product->category?->name,
                 'metal' => $product->metal?->name,
                 'purity' => $product->purity?->label,
                 'weight_g' => (string) $product->weight_g,
                 'price' => (string) $product->price,
+                'origin' => $product->origin?->label(),
                 'is_featured' => $product->is_featured,
                 'photo_url' => $product->primaryPhoto?->url,
             ]);
