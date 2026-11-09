@@ -775,12 +775,21 @@
 
     body.pos-kiosk .pos-product-card-main {
         flex: 1;
+        min-height: 0;
     }
 
     body.pos-kiosk .pos-product-media {
-        flex: 1;
+        flex: 1 1 0;
         height: auto;
-        min-height: 90px;
+        min-height: 0;
+    }
+
+    body.pos-kiosk .pos-product-media img {
+        object-fit: contain;
+    }
+
+    body.pos-kiosk .pos-product-body {
+        flex-shrink: 0;
     }
 
     body.pos-kiosk .pos-product-name {
