@@ -3,16 +3,23 @@
 @section('title', 'Vender mi Oro — Joyería Web')
 
 @section('content')
+    <section class="page-header">
+        <div class="container" data-animate>
+            <nav class="breadcrumb" aria-label="Ruta de navegación">
+                <a href="{{ route('home') }}">Inicio</a>
+                <span class="sep">/</span>
+                <span>Vender mi oro</span>
+            </nav>
+            <span class="eyebrow">Compra de Metales</span>
+            <h1 class="section-title">Vender mi <em>oro</em> y plata</h1>
+            <p class="section-lead">
+                Obtén una estimación inmediata según el peso y la ley de tu pieza. La valuación final se confirma en tienda con pesaje certificado.
+            </p>
+        </div>
+    </section>
+
     <section class="section">
         <div class="container">
-            <div class="section-head" data-animate>
-                <span class="eyebrow">Compra de Metales</span>
-                <h2 class="section-title">Vender mi <em>oro</em> y plata</h2>
-                <p class="section-lead">
-                    Obtén una estimación inmediata según el peso y la ley de tu pieza. La valuación final se confirma en tienda con pesaje certificado.
-                </p>
-            </div>
-
             <div class="quoter">
                 <div class="form-card" data-animate>
                     <form data-quote-form>

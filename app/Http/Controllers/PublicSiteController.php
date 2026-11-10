@@ -44,9 +44,50 @@ class PublicSiteController extends Controller
             ->limit(8)
             ->get();
 
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->whereHas('products', function ($query) use ($store): void {
+                $query->when($store, fn ($query) => $query->where('store_id', $store->id))
+                    ->publiclyVisible();
+            })
+            ->withCount(['products' => function ($query) use ($store): void {
+                $query->when($store, fn ($query) => $query->where('store_id', $store->id))
+                    ->publiclyVisible();
+            }])
+            ->orderBy('name')
+            ->get();
+
+        $categoryImages = Product::query()
+            ->when($store, fn ($query) => $query->where('store_id', $store->id))
+            ->publiclyVisible()
+            ->with('primaryPhoto')
+            ->whereIn('id', function ($query) use ($store): void {
+                $query->selectRaw('MAX(products.id)')
+                    ->from('products')
+                    ->whereNull('products.deleted_at')
+                    ->where('products.is_public', true)
+                    ->where('products.status', ProductStatus::Available->value)
+                    ->whereNotNull('products.category_id')
+                    ->when($store, fn ($query) => $query->where('products.store_id', $store->id))
+                    ->groupBy('products.category_id');
+            })
+            ->get()
+            ->keyBy('category_id');
+
+        $heroSlides = $featured
+            ->filter(fn (Product $product): bool => $product->primaryPhoto !== null)
+            ->take(4)
+            ->values();
+
         return view('public.home', [
             'featured' => $featured,
             'hero' => $featured->first(),
+            'heroSlides' => $heroSlides,
+            'categories' => $categories,
+            'categoryImages' => $categoryImages,
+            'goldPricePerGram' => $this->pricePerGram('GOLD'),
+            'publicStore' => $store,
+            'publicSettings' => $store?->systemSettings,
         ]);
     }
 

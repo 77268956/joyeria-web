@@ -7,30 +7,73 @@
     <meta name="description" content="@yield('meta_description', 'Joyería fina en oro y plata, valuación experta y compra de metales preciosos.')">
     <title>@yield('title', 'Joyería Web — Joyería Fina & Metales Preciosos')</title>
 
-    <!-- Google Fonts: Cormorant Garamond & Jost -->
+    <!-- Google Fonts: Cinzel & Roboto Condensed -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
+    <script>
+        (function () {
+            var motion = new URLSearchParams(window.location.search).get('motion');
+            var stored = null;
+
+            try {
+                stored = window.sessionStorage.getItem('motion-preference');
+            } catch (error) {
+                stored = null;
+            }
+
+            var preference = motion === '0' || motion === '1' ? motion : stored;
+
+            try {
+                if (motion === '0') {
+                    window.sessionStorage.removeItem('motion-preference');
+                } else if (motion === '1') {
+                    window.sessionStorage.setItem('motion-preference', '1');
+                }
+            } catch (error) {}
+
+            if (preference === '0') {
+                document.documentElement.classList.add('motion-off');
+
+                return;
+            }
+
+            document.documentElement.classList.add('js-motion');
+
+            if (preference === '1') {
+                document.documentElement.classList.add('motion-forced');
+            }
+        })();
+    </script>
     @vite('resources/js/public.js')
     @stack('styles')
 </head>
 <body>
+    <!-- Barra superior -->
+    <div class="topbar">
+        <div class="topbar-inner">
+            <p class="topbar-promo">Joyería fina en oro y plata de ley · Valuación experta y compra de metales</p>
+
+            <div class="topbar-links">
+                @if ($publicStore?->phone)
+                    <a href="tel:{{ $publicStore->phone }}">{{ $publicStore->phone }}</a>
+                @endif
+                @if ($publicSettings?->whatsapp_number)
+                    <a href="https://wa.me/{{ preg_replace('/\D+/', '', $publicSettings->whatsapp_number) }}" target="_blank" rel="noopener">WhatsApp</a>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Barra de Navegación Pública -->
     <header class="public-navbar" id="public-navbar">
-        <a href="{{ route('home') }}" class="navbar-brand">{{ $publicSettings?->system_name ?? 'Joyería Web' }}</a>
+        <div class="navbar-main">
+            <button type="button" class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
 
-        <button type="button" class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
-
-        <nav class="navbar-menu" id="navbar-menu">
-            <ul class="navbar-nav">
-                <li><a href="{{ route('public.catalog') }}" class="navbar-link @if(request()->routeIs('public.catalog')) is-active @endif">Catálogo</a></li>
-                <li><a href="{{ route('public.sell_gold') }}" class="navbar-link @if(request()->routeIs('public.sell_gold')) is-active @endif">Vender mi Oro</a></li>
-                <li><a href="{{ route('public.store') }}" class="navbar-link @if(request()->routeIs('public.store')) is-active @endif">Sucursal</a></li>
-                <li><a href="{{ route('public.contact') }}" class="navbar-link @if(request()->routeIs('public.contact')) is-active @endif">Contacto</a></li>
-            </ul>
+            <a href="{{ route('home') }}" class="navbar-brand">{{ $publicSettings?->system_name ?? 'Joyería Web' }}</a>
 
             <div class="navbar-access">
                 @auth
@@ -39,6 +82,23 @@
                     <a href="{{ route('login') }}" class="btn-access">Acceso Personal &rarr;</a>
                 @endauth
             </div>
+        </div>
+
+        <nav class="navbar-menu" id="navbar-menu">
+            <ul class="navbar-nav">
+                <li><a href="{{ route('home') }}" class="navbar-link @if(request()->routeIs('home')) is-active @endif">Inicio</a></li>
+                <li><a href="{{ route('public.catalog') }}" class="navbar-link @if(request()->routeIs('public.catalog')) is-active @endif">Catálogo</a></li>
+                <li><a href="{{ route('public.sell_gold') }}" class="navbar-link @if(request()->routeIs('public.sell_gold')) is-active @endif">Vender mi Oro</a></li>
+                <li><a href="{{ route('public.store') }}" class="navbar-link @if(request()->routeIs('public.store')) is-active @endif">Sucursal</a></li>
+                <li><a href="{{ route('public.contact') }}" class="navbar-link @if(request()->routeIs('public.contact')) is-active @endif">Contacto</a></li>
+                <li class="navbar-access-mobile">
+                    @auth
+                        <a href="{{ route('admin.dashboard') }}" class="btn-access">Ir al Panel &rarr;</a>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-access">Acceso Personal &rarr;</a>
+                    @endauth
+                </li>
+            </ul>
         </nav>
     </header>
 
@@ -49,12 +109,12 @@
     <!-- Pie de Página -->
     <footer class="public-footer">
         <div class="footer-inner">
-            <div class="footer-col">
+            <div class="footer-col" data-animate>
                 <span class="footer-brand">{{ $publicSettings?->system_name ?? 'Joyería Web' }}</span>
                 <p class="footer-text">Oro y plata de ley, valuación experta y compra directa de metales preciosos.</p>
             </div>
 
-            <div class="footer-col">
+            <div class="footer-col" data-animate>
                 <h4 class="footer-heading">Navegación</h4>
                 <ul class="footer-links">
                     <li><a href="{{ route('public.catalog') }}">Catálogo</a></li>
@@ -64,12 +124,14 @@
                 </ul>
             </div>
 
-            <div class="footer-col">
+            <div class="footer-col" data-animate>
                 <h4 class="footer-heading">Visítanos</h4>
                 <ul class="footer-links">
                     @if ($publicStore?->address)
                         <li>{{ $publicStore->address }}</li>
                     @endif
+                    <li>Lun a Vie: 9:00 – 18:00</li>
+                    <li>Sábado: 9:00 – 14:00</li>
                     @if ($publicStore?->phone)
                         <li><a href="tel:{{ $publicStore->phone }}">{{ $publicStore->phone }}</a></li>
                     @endif
@@ -80,7 +142,7 @@
             </div>
         </div>
 
-        <div class="footer-bottom">
+        <div class="footer-bottom" data-animate>
             &copy; {{ date('Y') }} {{ $publicSettings?->system_name ?? 'Joyería Web' }}. Todos los derechos reservados.
         </div>
     </footer>

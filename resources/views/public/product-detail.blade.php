@@ -4,11 +4,15 @@
 @section('meta_description', \Illuminate\Support\Str::limit(strip_tags($product->description ?? $product->name), 150))
 
 @section('content')
-    <section class="section">
+    <section class="section" style="padding-top: 2.5rem;">
         <div class="container">
-            <p class="muted" style="margin-bottom: 1.5rem;">
-                <a href="{{ route('public.catalog') }}" style="text-decoration: none;">&larr; Volver al catálogo</a>
-            </p>
+            <nav class="breadcrumb" style="justify-content: flex-start; margin-bottom: 2rem;" aria-label="Ruta de navegación">
+                <a href="{{ route('home') }}">Inicio</a>
+                <span class="sep">/</span>
+                <a href="{{ route('public.catalog') }}">Catálogo</a>
+                <span class="sep">/</span>
+                <span>{{ $product->name }}</span>
+            </nav>
 
             <div class="detail-layout">
                 <div data-animate>
@@ -36,7 +40,7 @@
 
                 <div data-animate>
                     <span class="eyebrow">{{ $product->category?->name }}</span>
-                    <h1 class="section-title" style="font-size: 2.4rem;">{{ $product->name }}</h1>
+                    <h1 class="section-title" style="font-size: 2.2rem;">{{ $product->name }}</h1>
 
                     <p class="product-price" style="font-size: 2rem; margin-top: 0.5rem;">
                         $ {{ number_format((float) $product->price, 2) }}

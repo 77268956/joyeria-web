@@ -51,7 +51,7 @@ class CustomerController extends Controller
     /**
      * Store a new customer, keeping the ID photo on the private disk.
      */
-    public function store(StoreCustomerRequest $request): RedirectResponse
+    public function store(StoreCustomerRequest $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validated();
         $user = $request->user();
@@ -85,6 +85,10 @@ class CustomerController extends Controller
                 ]);
             });
         } catch (Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'No se pudo registrar el cliente: '.$exception->getMessage()], 422);
+            }
+
             return back()->withInput()->withErrors(['error' => 'No se pudo registrar el cliente: '.$exception->getMessage()]);
         }
 
@@ -95,7 +99,24 @@ class CustomerController extends Controller
                 ->performedOn($customer)
                 ->causedBy($user)
                 ->log("Cliente registrado: {$customer->full_name}");
+        }
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'customer' => [
+                    'id' => $customer->id,
+                    'full_name' => $customer->full_name,
+                    'document' => trim($customer->document_type.' '.$customer->document_number),
+                    'phone' => $customer->phone,
+                ],
+                'created' => $wasRecentlyCreated,
+                'message' => $wasRecentlyCreated
+                    ? "El cliente '{$customer->full_name}' se registró correctamente."
+                    : "El cliente '{$customer->full_name}' ya existe en esta sucursal.",
+            ], $wasRecentlyCreated ? 201 : 200);
+        }
+
+        if ($wasRecentlyCreated) {
             return redirect()->route('admin.customers.show', $customer)
                 ->with('status', "El cliente '{$customer->full_name}' se registró correctamente.");
         }

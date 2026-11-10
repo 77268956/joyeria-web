@@ -340,6 +340,12 @@
         text-decoration: none;
         font-weight: 600;
         transition: color 0.15s;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+        line-height: 1;
     }
     .pos-cart-customer-new:hover {
         text-decoration: underline;
@@ -442,6 +448,203 @@
         font-size: 0.75rem;
         height: 28px;
         flex-shrink: 0;
+    }
+
+    /* --- Modal de Nuevo Cliente --- */
+    #modal-new-customer .modal {
+        max-width: 620px;
+        width: 95%;
+        border-radius: 6px;
+        border: 1px solid var(--color-linea);
+        box-shadow: 0 16px 40px rgba(18, 22, 31, 0.22);
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    #modal-new-customer .modal-header {
+        background-color: #EDE8DF;
+        border-bottom: 1px solid var(--color-linea);
+        padding: 1.15rem 1.75rem;
+        align-items: flex-start;
+    }
+
+    .pos-customer-modal-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .pos-customer-modal-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(184, 154, 94, 0.16);
+        color: var(--color-dorado);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    #modal-new-customer .modal-header h3 {
+        font-family: var(--font-serif);
+        font-size: 1.45rem;
+        margin: 0;
+        color: var(--color-noche);
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+    }
+
+    #modal-new-customer .modal-header .muted {
+        font-size: 0.82rem;
+        color: var(--color-piedra);
+        margin-top: 0.15rem;
+        display: block;
+    }
+
+    .pos-customer-modal-body {
+        padding: 1.4rem 1.75rem 0.5rem;
+        background-color: #fff;
+        max-height: calc(92vh - 170px);
+        overflow-y: auto;
+    }
+
+    #modal-new-customer .form-group {
+        margin-bottom: 1.1rem;
+    }
+
+    .pos-customer-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr 1fr;
+        gap: 1rem;
+    }
+
+    #modal-new-customer .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    #modal-new-customer .form-label .req,
+    .pos-customer-modal-hint .req {
+        color: var(--color-dorado);
+        font-weight: 700;
+    }
+
+    #modal-new-customer .form-control,
+    #modal-new-customer .form-select {
+        height: 44px;
+        font-size: 0.92rem;
+        background-color: #fff;
+    }
+
+    #modal-new-customer .form-control:focus,
+    #modal-new-customer .form-select:focus {
+        border-color: var(--color-dorado);
+        box-shadow: 0 0 0 3px rgba(184, 154, 94, 0.15);
+    }
+
+    #modal-new-customer .form-control::placeholder {
+        color: #A9A7A2;
+    }
+
+    #modal-new-customer .pos-modal-section-tag {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0 0 0.9rem;
+    }
+
+    #modal-new-customer .pos-modal-section-tag + * {
+        margin-top: 0;
+    }
+
+    #modal-new-customer .pos-modal-section-tag:not(:first-child) {
+        margin-top: 1.35rem;
+    }
+
+    #modal-new-customer .pos-modal-section-tag::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: var(--color-linea);
+    }
+
+    #modal-new-customer .alert-error {
+        margin-bottom: 1.1rem;
+    }
+
+    #modal-new-customer .alert-error ul {
+        margin: 0.35rem 0 0;
+        padding-left: 1.15rem;
+        font-size: 0.84rem;
+    }
+
+    .pos-customer-modal-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--color-linea);
+        background-color: #fff;
+        padding: 1.05rem 1.75rem;
+    }
+
+    .pos-customer-modal-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.76rem;
+        color: var(--color-piedra);
+    }
+
+    .pos-customer-modal-hint svg {
+        color: var(--color-dorado);
+        flex-shrink: 0;
+    }
+
+    .pos-customer-modal-actions {
+        display: flex;
+        gap: 0.65rem;
+        margin-left: auto;
+    }
+
+    .pos-customer-modal-actions .btn {
+        height: 42px;
+        padding: 0 1.35rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 4px;
+    }
+
+    @media (max-width: 640px) {
+        #modal-new-customer .modal-header,
+        .pos-customer-modal-body,
+        .pos-customer-modal-footer {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+
+        #modal-new-customer .grid-2,
+        #modal-new-customer .pos-customer-grid-3 {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .pos-customer-modal-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pos-customer-modal-actions {
+            margin-left: 0;
+            width: 100%;
+        }
+
+        .pos-customer-modal-actions .btn {
+            flex: 1;
+        }
     }
 
     /* --- Modal de Cobro (Diseño fiel a la imagen) --- */
@@ -876,7 +1079,9 @@
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         Cliente
                     </span>
-                    <a href="{{ route('admin.customers.create') }}" class="pos-cart-customer-new" target="_blank" title="Registrar un nuevo cliente">+ Nuevo</a>
+                    @can('customers.manage')
+                        <button type="button" id="pos-new-customer" class="pos-cart-customer-new" title="Registrar un nuevo cliente">+ Nuevo</button>
+                    @endcan
                 </div>
 
                 <input type="hidden" id="customer_id" value="">
@@ -1172,6 +1377,97 @@
         </div>
     </div>
 </div>
+
+@can('customers.manage')
+<!-- Modal de Nuevo Cliente -->
+<div id="modal-new-customer" class="modal-backdrop" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="pos-customer-modal-heading">
+                <span class="pos-customer-modal-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="19" y1="8" x2="19" y2="14"></line>
+                        <line x1="22" y1="11" x2="16" y2="11"></line>
+                    </svg>
+                </span>
+                <div>
+                    <h3 class="font-serif">Nuevo Cliente</h3>
+                    <span class="muted">Registra la ficha y quedará asignado al carrito</span>
+                </div>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-new-customer" aria-label="Cerrar">✕</button>
+        </div>
+
+        <form id="pos-customer-form" autocomplete="off">
+            <div class="pos-customer-modal-body">
+                <div id="pos-customer-error" class="alert alert-error" style="display: none; margin-bottom: 1.1rem;"></div>
+
+                <div class="pos-modal-section-tag">Datos personales</div>
+
+                <div class="form-group">
+                    <label class="form-label" for="pos-customer-full-name">Nombre completo <span class="req">*</span></label>
+                    <input type="text" name="full_name" id="pos-customer-full-name" class="form-control" maxlength="150" placeholder="Ej. María Fernanda López" required>
+                </div>
+
+                <div class="pos-customer-grid-3">
+                    <div class="form-group">
+                        <label class="form-label" for="pos-customer-document-type">Tipo de documento <span class="req">*</span></label>
+                        <select name="document_type" id="pos-customer-document-type" class="form-select" required>
+                            @foreach (['DNI', 'Cédula', 'Pasaporte', 'RUC', 'Otro'] as $type)
+                                <option value="{{ $type }}">{{ $type }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pos-customer-document-number">Número de documento <span class="req">*</span></label>
+                        <input type="text" name="document_number" id="pos-customer-document-number" class="form-control" maxlength="40" placeholder="Sin guiones" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pos-customer-birth-date">Fecha de nacimiento</label>
+                        <input type="date" name="birth_date" id="pos-customer-birth-date" class="form-control">
+                    </div>
+                </div>
+
+                <div class="pos-modal-section-tag">Contacto</div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="pos-customer-phone">Teléfono</label>
+                        <input type="text" name="phone" id="pos-customer-phone" class="form-control" maxlength="50" placeholder="Opcional">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pos-customer-email">Correo</label>
+                        <input type="email" name="email" id="pos-customer-email" class="form-control" maxlength="150" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="pos-customer-address">Dirección</label>
+                    <input type="text" name="address" id="pos-customer-address" class="form-control" maxlength="255" placeholder="Opcional">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0.35rem;">
+                    <label class="form-label" for="pos-customer-notes">Notas</label>
+                    <textarea name="notes" id="pos-customer-notes" class="form-control" rows="2" maxlength="2000" placeholder="Preferencias, referencias o comentarios (opcional)"></textarea>
+                </div>
+            </div>
+
+            <div class="pos-customer-modal-footer">
+                <span class="pos-customer-modal-hint">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    Los campos con <span class="req">*</span> son obligatorios.
+                </span>
+                <div class="pos-customer-modal-actions">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-new-customer">Cancelar</button>
+                    <button type="submit" class="btn btn-gold" id="btn-save-new-customer">Guardar y seleccionar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endcan
 @endsection
 
 @push('scripts')
@@ -1185,6 +1481,7 @@
         requestRemote: @json(route('admin.pos.authorization.store')),
         checkStatus: @json(url('admin/pos/autorizacion')),
         customerSearch: @json(route('admin.customers.search')),
+        customerStore: @json(route('admin.customers.store')),
     };
 
     const maxDiscountPercent = Number(@json((float) $maxDiscountPercent)) || 10;
@@ -1776,6 +2073,107 @@
             }
         }
     });
+
+    // --- Modal de Nuevo Cliente ---
+    const newCustomerBtn = el('pos-new-customer');
+    const newCustomerModal = el('modal-new-customer');
+    const newCustomerForm = el('pos-customer-form');
+
+    function showNewCustomerError(message, errors) {
+        const box = el('pos-customer-error');
+        let html = '<div><strong>' + (message || 'Revisa los datos del cliente.') + '</strong>';
+
+        if (errors) {
+            const messages = Object.values(errors).flat();
+            if (messages.length > 0) {
+                html += '<ul>' + messages.map((item) => '<li>' + item + '</li>').join('') + '</ul>';
+            }
+        }
+
+        html += '</div>';
+        box.innerHTML = html;
+        box.style.display = 'flex';
+    }
+
+    function openNewCustomerModal() {
+        if (!newCustomerModal || !newCustomerForm) {
+            return;
+        }
+
+        newCustomerForm.reset();
+        const errorBox = el('pos-customer-error');
+        errorBox.innerHTML = '';
+        errorBox.style.display = 'none';
+        newCustomerModal.style.display = 'flex';
+
+        setTimeout(() => el('pos-customer-full-name')?.focus(), 40);
+    }
+
+    function closeNewCustomerModal() {
+        if (newCustomerModal) {
+            newCustomerModal.style.display = 'none';
+        }
+    }
+
+    if (newCustomerBtn) {
+        newCustomerBtn.addEventListener('click', openNewCustomerModal);
+    }
+
+    el('btn-close-new-customer')?.addEventListener('click', closeNewCustomerModal);
+    el('btn-cancel-new-customer')?.addEventListener('click', closeNewCustomerModal);
+
+    if (newCustomerModal) {
+        newCustomerModal.addEventListener('click', (event) => {
+            if (event.target === newCustomerModal) {
+                closeNewCustomerModal();
+            }
+        });
+    }
+
+    if (newCustomerForm) {
+        newCustomerForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const submitBtn = el('btn-save-new-customer');
+            const errorBox = el('pos-customer-error');
+            errorBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            fetch(routes.customerStore, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: new FormData(newCustomerForm),
+            })
+                .then(async (response) => {
+                    let data = {};
+                    try {
+                        data = await response.json();
+                    } catch (e) {}
+                    if (!response.ok) {
+                        throw { data: data };
+                    }
+                    return data;
+                })
+                .then((data) => {
+                    if (data.customer) {
+                        selectCustomer(data.customer);
+                    }
+                    closeNewCustomerModal();
+                })
+                .catch((error) => {
+                    const data = (error && error.data) || {};
+                    showNewCustomerError(data.message, data.errors);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Guardar y seleccionar';
+                });
+        });
+    }
 
     // --- Modal de Autorización Híbrida ---
     function openAuthModal(subtotal, discountTotal, total, percent) {

@@ -3,14 +3,21 @@
 @section('title', 'Catálogo — Joyería Web')
 
 @section('content')
+    <section class="page-header">
+        <div class="container" data-animate>
+            <nav class="breadcrumb" aria-label="Ruta de navegación">
+                <a href="{{ route('home') }}">Inicio</a>
+                <span class="sep">/</span>
+                <span>Catálogo</span>
+            </nav>
+            <span class="eyebrow">Catálogo</span>
+            <h1 class="section-title">Nuestras <em>piezas</em></h1>
+            <p class="section-lead">Explora joyería fina en oro y plata. Filtra por metal o categoría.</p>
+        </div>
+    </section>
+
     <section class="section">
         <div class="container">
-            <div class="section-head" data-animate>
-                <span class="eyebrow">Catálogo</span>
-                <h2 class="section-title">Nuestras <em>piezas</em></h2>
-                <p class="section-lead">Explora joyería fina en oro y plata. Filtra por metal o categoría.</p>
-            </div>
-
             <!-- Filtros -->
             <div class="filter-bar" data-animate>
                 <a href="{{ route('public.catalog', array_filter(['category' => $selectedCategory])) }}"

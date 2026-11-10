@@ -1,4 +1,6 @@
 import Chart from 'chart.js/auto';
+import { animate, stagger } from 'animejs';
+import { prefersReducedMotion } from './motion.js';
 
 const palette = {
     night: '#12161F',
@@ -338,3 +340,52 @@ if (carousel) {
 
     goTo(0);
 }
+
+function animateMetrics() {
+    if (prefersReducedMotion) {
+        return;
+    }
+
+    document.querySelectorAll('.metric-value').forEach((element) => {
+        const text = element.textContent.trim();
+        const match = text.match(/^(\$)?\s*([\d,]+(?:\.\d+)?)$/);
+
+        if (!match) {
+            return;
+        }
+
+        const prefix = match[1] || '';
+        const target = Number(match[2].replace(/,/g, ''));
+        const decimals = (match[2].split('.')[1] || '').length;
+        const state = { value: 0 };
+
+        animate(state, {
+            value: target,
+            duration: 1100,
+            ease: 'outCubic',
+            onUpdate: () => {
+                element.textContent = prefix + state.value.toLocaleString('es-MX', {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals,
+                });
+            },
+        });
+    });
+}
+
+function animateCharts() {
+    if (prefersReducedMotion) {
+        return;
+    }
+
+    animate('.chart-wrap canvas', {
+        opacity: [0, 1],
+        scale: [0.97, 1],
+        duration: 700,
+        delay: stagger(110),
+        ease: 'outCubic',
+    });
+}
+
+animateMetrics();
+animateCharts();

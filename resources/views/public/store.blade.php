@@ -3,14 +3,21 @@
 @section('title', 'Sucursal — Joyería Web')
 
 @section('content')
+    <section class="page-header">
+        <div class="container" data-animate>
+            <nav class="breadcrumb" aria-label="Ruta de navegación">
+                <a href="{{ route('home') }}">Inicio</a>
+                <span class="sep">/</span>
+                <span>Sucursal</span>
+            </nav>
+            <span class="eyebrow">Visítanos</span>
+            <h1 class="section-title">Nuestra <em>sucursal</em></h1>
+            <p class="section-lead">Te esperamos para asesorarte, valuar tus piezas y mostrarte nuestra colección.</p>
+        </div>
+    </section>
+
     <section class="section">
         <div class="container">
-            <div class="section-head" data-animate>
-                <span class="eyebrow">Visítanos</span>
-                <h2 class="section-title">Nuestra <em>sucursal</em></h2>
-                <p class="section-lead">Te esperamos para asesorarte, valuar tus piezas y mostrarte nuestra colección.</p>
-            </div>
-
             <div class="store-grid">
                 <div data-animate>
                     <ul class="info-list">

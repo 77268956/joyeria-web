@@ -687,8 +687,67 @@
         }
 
         .scale-actions .form-select { width: auto; height: 32px; }
+
+        /* ------------------ MOTION ------------------ */
+        .js-motion .content-area .metric-card,
+        .js-motion .content-area .card,
+        .js-motion .content-area .page-header,
+        .js-motion .content-area .page-header > *,
+        .js-motion .content-area .table tbody tr,
+        .js-motion .sidebar-brand,
+        .js-motion .sidebar-nav > li {
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html:not(.motion-forced) .js-motion .content-area .metric-card,
+            html:not(.motion-forced) .js-motion .content-area .card,
+            html:not(.motion-forced) .js-motion .content-area .page-header,
+            html:not(.motion-forced) .js-motion .content-area .page-header > *,
+            html:not(.motion-forced) .js-motion .content-area .table tbody tr,
+            html:not(.motion-forced) .js-motion .sidebar-brand,
+            html:not(.motion-forced) .js-motion .sidebar-nav > li {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
     </style>
 
+    <script>
+        (function () {
+            var motion = new URLSearchParams(window.location.search).get('motion');
+            var stored = null;
+
+            try {
+                stored = window.sessionStorage.getItem('motion-preference');
+            } catch (error) {
+                stored = null;
+            }
+
+            var preference = motion === '0' || motion === '1' ? motion : stored;
+
+            try {
+                if (motion === '0') {
+                    window.sessionStorage.removeItem('motion-preference');
+                } else if (motion === '1') {
+                    window.sessionStorage.setItem('motion-preference', '1');
+                }
+            } catch (error) {}
+
+            if (preference === '0') {
+                document.documentElement.classList.add('motion-off');
+
+                return;
+            }
+
+            document.documentElement.classList.add('js-motion');
+
+            if (preference === '1') {
+                document.documentElement.classList.add('motion-forced');
+            }
+        })();
+    </script>
+    @vite('resources/js/motion.js')
     @stack('styles')
 </head>
 <body class="@yield('body_class')">

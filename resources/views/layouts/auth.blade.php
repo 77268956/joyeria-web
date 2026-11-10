@@ -47,7 +47,61 @@
         h1, h2, h3, h4, .font-serif {
             font-family: var(--font-serif);
         }
+
+        /* ------------------ MOTION ------------------ */
+        .js-motion .login-card .brand-header,
+        .js-motion .login-card .form-group,
+        .js-motion .login-card .btn-submit,
+        .js-motion .login-visual .visual-content {
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html:not(.motion-forced) .js-motion .login-card .brand-header,
+            html:not(.motion-forced) .js-motion .login-card .form-group,
+            html:not(.motion-forced) .js-motion .login-card .btn-submit,
+            html:not(.motion-forced) .js-motion .login-visual .visual-content {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
     </style>
+
+    <script>
+        (function () {
+            var motion = new URLSearchParams(window.location.search).get('motion');
+            var stored = null;
+
+            try {
+                stored = window.sessionStorage.getItem('motion-preference');
+            } catch (error) {
+                stored = null;
+            }
+
+            var preference = motion === '0' || motion === '1' ? motion : stored;
+
+            try {
+                if (motion === '0') {
+                    window.sessionStorage.removeItem('motion-preference');
+                } else if (motion === '1') {
+                    window.sessionStorage.setItem('motion-preference', '1');
+                }
+            } catch (error) {}
+
+            if (preference === '0') {
+                document.documentElement.classList.add('motion-off');
+
+                return;
+            }
+
+            document.documentElement.classList.add('js-motion');
+
+            if (preference === '1') {
+                document.documentElement.classList.add('motion-forced');
+            }
+        })();
+    </script>
+    @vite('resources/js/motion.js')
 </head>
 <body>
     @yield('content')

@@ -8,18 +8,35 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/zoom';
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
-
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+import { animate, stagger } from 'animejs';
+import { prefersReducedMotion } from './motion.js';
 
 /**
  * Initialise Swiper carousels. Each carousel declares its behaviour through a
  * `.js-swiper` class plus a data attribute for the variant.
  */
 function initCarousels() {
+    document.querySelectorAll('.js-hero-swiper').forEach((element) => {
+        new Swiper(element, {
+            modules: [Navigation, Pagination, Autoplay, EffectFade],
+            effect: 'fade',
+            fadeEffect: { crossFade: true },
+            loop: element.querySelectorAll('.swiper-slide').length > 1,
+            speed: 700,
+            autoplay: prefersReducedMotion ? false : { delay: 5500, disableOnInteraction: false },
+            pagination: { clickable: true },
+            navigation: { nextEl: element.querySelector('.swiper-button-next'), prevEl: element.querySelector('.swiper-button-prev') },
+            on: {
+                init(instance) {
+                    animateHeroSlide(instance.slides[instance.activeIndex]);
+                },
+                slideChangeTransitionStart(instance) {
+                    animateHeroSlide(instance.slides[instance.activeIndex]);
+                },
+            },
+        });
+    });
+
     document.querySelectorAll('.js-featured-swiper').forEach((element) => {
         new Swiper(element, {
             modules: [Navigation, Pagination, Autoplay],
@@ -48,32 +65,39 @@ function initCarousels() {
 }
 
 /**
- * Reveal elements softly as they scroll into view.
+ * Animate the content of the active hero slide.
  */
-function initRevealAnimations() {
-    const targets = document.querySelectorAll('[data-animate]');
-
-    if (prefersReducedMotion || targets.length === 0) {
-        targets.forEach((target) => {
-            target.style.opacity = '1';
-        });
-
+function animateHeroSlide(slide) {
+    if (!slide || prefersReducedMotion) {
         return;
     }
 
-    targets.forEach((target) => {
-        gsap.fromTo(
-            target,
-            { opacity: 0, y: 24 },
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.7,
-                ease: 'power2.out',
-                scrollTrigger: { trigger: target, start: 'top 88%' },
-            },
-        );
+    const content = slide.querySelector('.hero-slide-content');
+
+    if (!content) {
+        return;
+    }
+
+    animate(content.children, {
+        opacity: [0, 1],
+        translateY: [26, 0],
+        duration: 850,
+        delay: stagger(80, { start: 180 }),
+        ease: 'outCubic',
     });
+}
+
+/**
+ * Animate the top bar and navigation on first paint.
+ */
+function initChromeAnimations() {
+    if (prefersReducedMotion) {
+        return;
+    }
+
+    animate('.topbar', { opacity: [0, 1], translateY: [-14, 0], duration: 550, ease: 'outCubic' });
+    animate('.navbar-main', { opacity: [0, 1], translateY: [-16, 0], duration: 650, delay: 80, ease: 'outCubic' });
+    animate('.navbar-menu', { opacity: [0, 1], translateY: [-10, 0], duration: 650, delay: 160, ease: 'outCubic' });
 }
 
 /**
@@ -90,6 +114,16 @@ function initMobileNav() {
     toggle.addEventListener('click', () => {
         const isOpen = menu.classList.toggle('is-open');
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+        if (isOpen && !prefersReducedMotion) {
+            animate(menu.querySelectorAll('li'), {
+                opacity: [0, 1],
+                translateX: [-12, 0],
+                duration: 400,
+                delay: stagger(45),
+                ease: 'outCubic',
+            });
+        }
     });
 }
 
@@ -114,6 +148,38 @@ function initQuoter() {
 
     const money = (value) => '$ ' + Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+    let currentAmount = 0;
+    let amountAnimation = null;
+
+    function setAmount(value) {
+        const target = Number(value) || 0;
+
+        if (!amountEl) {
+            return;
+        }
+
+        amountAnimation?.cancel();
+
+        if (prefersReducedMotion) {
+            amountEl.textContent = money(target);
+            currentAmount = target;
+
+            return;
+        }
+
+        const state = { value: currentAmount };
+
+        amountAnimation = animate(state, {
+            value: target,
+            duration: 650,
+            ease: 'outCubic',
+            onUpdate: () => {
+                currentAmount = state.value;
+                amountEl.textContent = money(state.value);
+            },
+        });
+    }
+
     function fillPurities() {
         const metal = (config.metals || []).find((item) => String(item.id) === String(metalSelect.value));
         const purities = metal ? metal.purities : [];
@@ -129,7 +195,7 @@ function initQuoter() {
         const weight = Number(weightInput.value);
 
         if (!metalSelect.value || !puritySelect.value || !weight || weight <= 0) {
-            if (amountEl) amountEl.textContent = '$ 0.00';
+            setAmount(0);
             if (detailEl) detailEl.textContent = 'Completa los datos para ver tu estimación.';
             if (errorEl) errorEl.style.display = 'none';
 
@@ -157,7 +223,7 @@ function initQuoter() {
                 throw new Error(data.message || 'No se pudo calcular la estimación.');
             }
 
-            if (amountEl) amountEl.textContent = money(data.amount);
+            setAmount(data.amount);
             if (detailEl) detailEl.textContent = `${data.purity} · ${money(data.price_per_gram)} por gramo`;
             if (errorEl) errorEl.style.display = 'none';
         } catch (error) {
@@ -185,8 +251,8 @@ function initQuoter() {
 }
 
 function boot() {
+    initChromeAnimations();
     initCarousels();
-    initRevealAnimations();
     initMobileNav();
     initQuoter();
 }

@@ -3,14 +3,21 @@
 @section('title', 'Contacto — Joyería Web')
 
 @section('content')
+    <section class="page-header">
+        <div class="container" data-animate>
+            <nav class="breadcrumb" aria-label="Ruta de navegación">
+                <a href="{{ route('home') }}">Inicio</a>
+                <span class="sep">/</span>
+                <span>Contacto</span>
+            </nav>
+            <span class="eyebrow">Contacto</span>
+            <h1 class="section-title">Escríbenos</h1>
+            <p class="section-lead">Cuéntanos qué necesitas y te responderemos a la brevedad.</p>
+        </div>
+    </section>
+
     <section class="section">
         <div class="container">
-            <div class="section-head" data-animate>
-                <span class="eyebrow">Contacto</span>
-                <h2 class="section-title">Escríbenos</h2>
-                <p class="section-lead">Cuéntanos qué necesitas y te responderemos a la brevedad.</p>
-            </div>
-
             <div class="store-grid">
                 <div data-animate>
                     <div class="form-card">
