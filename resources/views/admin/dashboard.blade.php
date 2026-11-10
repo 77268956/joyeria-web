@@ -683,10 +683,10 @@
             <div class="card">
                 <div class="card-head tabs-head">
                     <button type="button" class="tab-btn active" data-tab="tab-estado">
-                        <span class="badge badge-info">Sistema</span>
+                        <span class="badge ">Sistema</span>
                     </button>
                     <button type="button" class="tab-btn" data-tab="tab-actividad">
-                        <span class="badge badge-gold">Bitácora</span>
+                        <span class="badge ">Bitácora</span>
                     </button>
                 </div>
 
