@@ -177,6 +177,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/apartados', [LayawayController::class, 'index'])->name('layaways.index');
 
         Route::middleware(['cash.session'])->group(function () {
+            Route::get('/apartados/buscar', [LayawayController::class, 'search'])->name('layaways.search');
             Route::get('/apartados/crear', [LayawayController::class, 'create'])->name('layaways.create');
             Route::post('/apartados', [LayawayController::class, 'store'])->name('layaways.store');
         });

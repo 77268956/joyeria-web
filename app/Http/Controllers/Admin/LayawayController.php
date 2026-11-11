@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\LayawayService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -53,18 +54,66 @@ class LayawayController extends Controller
     {
         $settings = SystemSetting::firstOrCreate(['store_id' => $request->user()->store_id]);
 
-        return view('admin.layaways.create', [
-            'products' => Product::query()
+        $selectedId = (int) old('product_id', $request->integer('product_id') ?: 0);
+
+        $selectedProduct = $selectedId > 0
+            ? Product::query()
                 ->where('status', ProductStatus::Available->value)
-                ->with(['metal', 'purity'])
-                ->orderBy('name')
-                ->get(),
-            'customers' => Customer::orderBy('full_name')->get(['id', 'full_name', 'document_type', 'document_number']),
+                ->with(['metal', 'purity', 'primaryPhoto'])
+                ->find($selectedId)
+            : null;
+
+        $selectedCustomer = Customer::find((int) old('customer_id', 0));
+
+        return view('admin.layaways.create', [
             'defaultDueDate' => now()->addDays((int) $settings->layaway_max_days)->toDateString(),
             'maxDays' => (int) $settings->layaway_max_days,
-            'selectedProductId' => $request->integer('product_id') ?: null,
+            'selectedProduct' => $selectedProduct ? $this->productPayload($selectedProduct) : null,
+            'selectedCustomer' => $selectedCustomer ? [
+                'id' => $selectedCustomer->id,
+                'full_name' => $selectedCustomer->full_name,
+                'document' => $selectedCustomer->document_type.' '.$selectedCustomer->document_number,
+                'phone' => $selectedCustomer->phone,
+            ] : null,
+            'hasAvailableProducts' => Product::query()->where('status', ProductStatus::Available->value)->exists(),
             'paymentMethods' => PaymentMethod::cases(),
         ]);
+    }
+
+    /**
+     * Search available pieces by name, SKU or barcode for the layaway form.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $products = Product::query()
+            ->search($request->string('q')->trim()->value())
+            ->where('status', ProductStatus::Available->value)
+            ->with(['metal', 'purity', 'primaryPhoto'])
+            ->orderBy('name')
+            ->limit(15)
+            ->get()
+            ->map(fn (Product $product): array => $this->productPayload($product));
+
+        return response()->json(['products' => $products]);
+    }
+
+    /**
+     * Serializable shape of a piece used by the picker and the search endpoint.
+     *
+     * @return array<string, mixed>
+     */
+    private function productPayload(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'metal' => $product->metal?->name,
+            'purity' => $product->purity?->label,
+            'weight_g' => (string) $product->weight_g,
+            'price' => (string) $product->price,
+            'photo_url' => $product->primaryPhoto?->url,
+        ];
     }
 
     /**

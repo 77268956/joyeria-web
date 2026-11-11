@@ -252,6 +252,84 @@ class LayawayTest extends TestCase
         $this->actingAs($user)->get(route('admin.layaways.index'))->assertForbidden();
     }
 
+    public function test_the_create_page_renders_the_customer_list(): void
+    {
+        $owner = $this->owner();
+        app(CashSessionService::class)->open($owner, '100.00');
+        $this->product($owner);
+        $this->customer($owner);
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.create'))
+            ->assertOk()
+            ->assertSee('Pieza a apartar')
+            ->assertSee('Buscar pieza por nombre, SKU o código de barras')
+            ->assertSee('Buscar cliente por nombre, documento o teléfono')
+            ->assertSee('Regístralo aquí');
+    }
+
+    public function test_the_create_page_arrives_with_a_preselected_product(): void
+    {
+        $owner = $this->owner();
+        app(CashSessionService::class)->open($owner, '100.00');
+        $product = $this->product($owner);
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.create', ['product_id' => $product->id]))
+            ->assertOk()
+            ->assertSee($product->name)
+            ->assertSee($product->sku);
+    }
+
+    public function test_the_create_page_arrives_with_a_preselected_customer_after_validation_errors(): void
+    {
+        $owner = $this->owner();
+        app(CashSessionService::class)->open($owner, '100.00');
+        $product = $this->product($owner);
+        $customer = $this->customer($owner);
+
+        $this->actingAs($owner)
+            ->post(route('admin.layaways.store'), [
+                'product_id' => $product->id,
+                'customer_id' => $customer->id,
+                'due_date' => now()->addDays(10)->toDateString(),
+                'initial_amount' => '-1',
+                'initial_method' => 'cash',
+            ])->assertSessionHasErrors('initial_amount');
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.create'))
+            ->assertOk()
+            ->assertSee($customer->full_name)
+            ->assertSee($customer->document_type.' '.$customer->document_number);
+    }
+
+    public function test_the_product_search_returns_available_pieces_only(): void
+    {
+        $owner = $this->owner();
+        app(CashSessionService::class)->open($owner, '100.00');
+        $available = $this->product($owner, '150.00');
+        $reserved = Product::factory()->create([
+            'store_id' => $owner->store_id,
+            'price' => '90.00',
+            'status' => ProductStatus::Reserved,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.search', ['q' => $available->sku]))
+            ->assertOk()
+            ->assertJsonCount(1, 'products')
+            ->assertJsonPath('products.0.id', $available->id)
+            ->assertJsonPath('products.0.name', $available->name)
+            ->assertJsonPath('products.0.price', '150.00')
+            ->assertJsonPath('products.0.photo_url', null);
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.search', ['q' => $reserved->sku]))
+            ->assertOk()
+            ->assertJsonCount(0, 'products');
+    }
+
     public function test_the_due_date_cannot_exceed_the_configured_maximum(): void
     {
         $owner = $this->owner();
