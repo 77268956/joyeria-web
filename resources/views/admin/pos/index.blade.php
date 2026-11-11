@@ -869,24 +869,26 @@
 
     .pos-modal-methods-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 0.85rem;
         margin-bottom: 1.35rem;
     }
 
     .pos-method-btn {
-        height: 48px;
+        min-height: 82px;
+        padding: 0.8rem;
         border: 1px solid var(--color-linea);
         background-color: #fff;
         border-radius: 4px;
-        font-size: 0.92rem;
-        font-weight: 500;
         color: var(--color-noche);
         cursor: pointer;
         transition: all 0.15s ease-in-out;
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         justify-content: center;
+        gap: 0.25rem;
+        text-align: left;
     }
 
     .pos-method-btn:hover {
@@ -894,12 +896,30 @@
         background-color: var(--color-hueso);
     }
 
+    .pos-method-btn:focus-visible {
+        outline: 2px solid var(--color-dorado);
+        outline-offset: 2px;
+    }
+
     .pos-method-btn.active {
         border: 2px solid var(--color-dorado);
         background-color: #FAF7F0;
-        font-weight: 700;
-        color: var(--color-noche);
         box-shadow: 0 2px 8px rgba(184, 154, 94, 0.18);
+    }
+
+    .pos-method-icon {
+        color: var(--color-dorado);
+        line-height: 1;
+    }
+
+    .pos-method-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .pos-method-description {
+        color: var(--color-piedra);
+        font-size: 0.74rem;
     }
 
     /* Grilla de campos: Pagos (Izquierda) vs Descuento (Derecha) */
@@ -912,18 +932,6 @@
         padding-bottom: 0.75rem;
     }
 
-    .pos-payment-subhead {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 34px;
-        gap: 0.45rem;
-        margin-bottom: 0.4rem;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--color-piedra);
-    }
-
     .pos-payments-box {
         display: flex;
         flex-direction: column;
@@ -931,15 +939,51 @@
     }
 
     .pos-payment-input-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 34px;
-        gap: 0.45rem;
-        align-items: center;
+        padding: 0.65rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 4px;
+        background-color: #fff;
     }
 
-    .pos-payment-input-row .form-control {
+    .pos-payment-row-heading {
+        margin-bottom: 0.5rem;
+        color: var(--color-noche);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .pos-payment-row-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px;
+        gap: 0.45rem;
+        align-items: start;
+    }
+
+    .pos-payment-field {
+        min-width: 0;
+    }
+
+    .pos-payment-field[hidden] {
+        display: none;
+    }
+
+    .pos-payment-field label {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: var(--color-piedra);
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .pos-payment-field .form-control {
         height: 38px;
         font-size: 0.88rem;
+    }
+
+    .pos-payment-change {
+        margin-top: 0.2rem;
+        color: var(--color-info);
+        font-size: 0.72rem;
     }
 
     .pos-payment-del {
@@ -1061,9 +1105,8 @@
             grid-template-columns: repeat(2, 1fr);
         }
 
-        .pos-payment-subhead,
-        .pos-payment-input-row {
-            grid-template-columns: 1fr 1fr;
+        .pos-payment-row-fields {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px;
         }
 
         .pos-discount-subhead,
@@ -1338,25 +1381,42 @@
                 </div>
             </div>
 
-            <!-- Botones de Método de Pago (Efectivo, Tarjeta, Transferencia, Otro) -->
-            <div class="pos-modal-method-title">Metodo de pago:</div>
+            <div class="pos-modal-method-title">Selecciona el método de pago:</div>
             <div class="pos-modal-methods-grid">
-                <button type="button" class="pos-method-btn active" data-method-btn="cash">Efectivo</button>
-                <button type="button" class="pos-method-btn" data-method-btn="card">Tarjeta</button>
-                <button type="button" class="pos-method-btn" data-method-btn="transfer">Transferencia</button>
-                <button type="button" class="pos-method-btn" data-method-btn="other">Otro</button>
+                <button type="button" class="pos-method-btn active" data-method-btn="cash" aria-pressed="true">
+                    <span class="pos-method-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle cx="12" cy="12" r="3"></circle><path d="M7 10h.01M17 14h.01"></path></svg>
+                    </span>
+                    <span class="pos-method-name">Efectivo</span>
+                    <span class="pos-method-description">Calcula el cambio</span>
+                </button>
+                <button type="button" class="pos-method-btn" data-method-btn="card" aria-pressed="false">
+                    <span class="pos-method-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h3"></path></svg>
+                    </span>
+                    <span class="pos-method-name">Tarjeta</span>
+                    <span class="pos-method-description">Sin cálculo de cambio</span>
+                </button>
+                <button type="button" class="pos-method-btn" data-method-btn="transfer" aria-pressed="false">
+                    <span class="pos-method-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h15l-3-3M20 17H5l3 3"></path><path d="M19 7v4M5 13v4"></path></svg>
+                    </span>
+                    <span class="pos-method-name">Transferencia</span>
+                    <span class="pos-method-description">Referencia opcional</span>
+                </button>
+                <button type="button" class="pos-method-btn" data-method-btn="other" aria-pressed="false">
+                    <span class="pos-method-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>
+                    </span>
+                    <span class="pos-method-name">Otro</span>
+                    <span class="pos-method-description">Referencia opcional</span>
+                </button>
             </div>
 
             <!-- Fila de Campos: Pagos (Izquierda) y Descuentos (Derecha) -->
             <div class="pos-modal-fields-row">
                 <!-- Columna Izquierda: Pagos -->
                 <div>
-                    <div class="pos-payment-subhead">
-                        <span>Monto</span>
-                        <span>Recibido</span>
-                        <span>Referencia</span>
-                        <span></span>
-                    </div>
                     <div id="payments" class="pos-payments-box"></div>
                     <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem; font-size: 0.78rem;">+ Agregar otro método</button>
                 </div>
@@ -1704,18 +1764,67 @@
     }
 
     let activePaymentRow = null;
+    let paymentRowCount = 0;
+    const paymentMethodLabels = {
+        cash: 'Efectivo',
+        card: 'Tarjeta',
+        transfer: 'Transferencia',
+        other: 'Otro',
+    };
 
     function setMethodButtonActive(method) {
         document.querySelectorAll('[data-method-btn]').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.methodBtn === method);
+            btn.setAttribute('aria-pressed', btn.dataset.methodBtn === method ? 'true' : 'false');
         });
+    }
+
+    function updatePaymentFields(row) {
+        const method = row.querySelector('[data-method]').value;
+        const isCash = method === 'cash';
+        row.querySelector('[data-method-label]').textContent = paymentMethodLabels[method] || 'Pago';
+        row.querySelector('[data-field="received"]').hidden = !isCash;
+        row.querySelector('[data-field="reference"]').hidden = isCash;
+    }
+
+    function updateCashChange(row) {
+        if (row.querySelector('[data-method]').value !== 'cash') {
+            return;
+        }
+
+        const amount = Math.round((Number(row.querySelector('[data-amount]').value) || 0) * 100);
+        const receivedInput = row.querySelector('[data-received]');
+        const changeLabel = row.querySelector('[data-change]');
+        const receivedValue = receivedInput.value;
+
+        if (receivedValue === '') {
+            changeLabel.textContent = 'Cambio: ' + money(0);
+            changeLabel.style.color = 'var(--color-info)';
+            return;
+        }
+
+        const received = Math.round((Number(receivedValue) || 0) * 100);
+        const difference = received - amount;
+
+        if (difference < 0) {
+            changeLabel.textContent = 'Faltan: ' + money(Math.abs(difference) / 100);
+            changeLabel.style.color = 'var(--color-error)';
+        } else {
+            changeLabel.textContent = 'Cambio: ' + money(difference / 100);
+            changeLabel.style.color = 'var(--color-info)';
+        }
     }
 
     function setRowMethod(row, method) {
         const methodInput = row.querySelector('[data-method]');
         if (methodInput) {
+            if (methodInput.value === 'cash' && method !== 'cash') {
+                row.querySelector('[data-received]').value = '';
+            }
             methodInput.value = method;
         }
+        updatePaymentFields(row);
+        updateCashChange(row);
         setMethodButtonActive(method);
     }
 
@@ -1723,6 +1832,7 @@
         let paid = 0;
         paymentRows().forEach((row) => {
             paid += Number(row.querySelector('[data-amount]').value) || 0;
+            updateCashChange(row);
         });
 
         el('sum-paid').textContent = money(paid);
@@ -1736,12 +1846,13 @@
             status.textContent = 'Faltante: ' + money(-diff);
             status.style.color = 'var(--color-error)';
         } else {
-            status.textContent = 'Cambio: ' + money(diff);
-            status.style.color = 'var(--color-info)';
+            status.textContent = 'Excedente: ' + money(diff);
+            status.style.color = 'var(--color-error)';
         }
     }
 
     function addPaymentRow(method = 'cash', amount = null) {
+        const rowId = ++paymentRowCount;
         const row = document.createElement('div');
         row.setAttribute('data-payment', '');
         row.className = 'pos-payment-input-row';
@@ -1758,10 +1869,23 @@
 
         row.innerHTML =
             '<input type="hidden" data-method value="' + (method || 'cash') + '">' +
-            '<input type="number" step="0.01" min="0" class="form-control" data-amount placeholder="Monto" value="' + (amount ? Number(amount).toFixed(2) : '') + '">' +
-            '<input type="number" step="0.01" min="0" class="form-control" data-received placeholder="Recibido">' +
-            '<input type="text" class="form-control" data-reference placeholder="Referencia">' +
-            '<button type="button" class="btn btn-outline btn-sm pos-payment-del" data-drop title="Eliminar pago">×</button>';
+            '<div class="pos-payment-row-heading" data-method-label></div>' +
+            '<div class="pos-payment-row-fields">' +
+                '<div class="pos-payment-field" data-field="amount">' +
+                    '<label for="payment-amount-' + rowId + '">Monto</label>' +
+                    '<input type="number" id="payment-amount-' + rowId + '" step="0.01" min="0" class="form-control" data-amount placeholder="0.00" value="' + (amount ? Number(amount).toFixed(2) : '') + '">' +
+                '</div>' +
+                '<div class="pos-payment-field" data-field="received">' +
+                    '<label for="payment-received-' + rowId + '">Recibido en efectivo</label>' +
+                    '<input type="number" id="payment-received-' + rowId + '" step="0.01" min="0" class="form-control" data-received placeholder="0.00">' +
+                    '<div class="pos-payment-change" data-change aria-live="polite">Cambio: $ 0.00</div>' +
+                '</div>' +
+                '<div class="pos-payment-field" data-field="reference">' +
+                    '<label for="payment-reference-' + rowId + '">Referencia (opcional)</label>' +
+                    '<input type="text" id="payment-reference-' + rowId + '" class="form-control" data-reference placeholder="Folio o autorización">' +
+                '</div>' +
+                '<button type="button" class="btn btn-outline btn-sm pos-payment-del" data-drop title="Eliminar pago" aria-label="Eliminar pago">×</button>' +
+            '</div>';
 
         row.querySelectorAll('input').forEach((input) => {
             input.addEventListener('focus', () => {
@@ -1787,10 +1911,10 @@
 
         el('payments').appendChild(row);
         activePaymentRow = row;
-        setMethodButtonActive(method || 'cash');
+        setRowMethod(row, method || 'cash');
     }
 
-    // Botones de selección rápida de Método de Pago
+    // Las tarjetas cambian el método de la fila de pago activa.
     document.querySelectorAll('[data-method-btn]').forEach((btn) => {
         btn.addEventListener('click', () => {
             const selectedMethod = btn.dataset.methodBtn;
@@ -2487,8 +2611,8 @@
         const payments = paymentRows().map((row) => ({
             method: row.querySelector('[data-method]').value,
             amount: row.querySelector('[data-amount]').value,
-            received: row.querySelector('[data-received]').value || null,
-            reference: row.querySelector('[data-reference]').value || null,
+            received: row.querySelector('[data-method]').value === 'cash' ? row.querySelector('[data-received]').value || null : null,
+            reference: row.querySelector('[data-method]').value !== 'cash' ? row.querySelector('[data-reference]').value || null : null,
         }));
 
         el('remote-initial').style.display = 'none';
@@ -2651,8 +2775,8 @@
         const payments = paymentRows().map((row) => ({
             method: row.querySelector('[data-method]').value,
             amount: row.querySelector('[data-amount]').value,
-            received: row.querySelector('[data-received]').value || null,
-            reference: row.querySelector('[data-reference]').value || null,
+            received: row.querySelector('[data-method]').value === 'cash' ? row.querySelector('[data-received]').value || null : null,
+            reference: row.querySelector('[data-method]').value !== 'cash' ? row.querySelector('[data-reference]').value || null : null,
         }));
 
         if (payments.length === 0) {
