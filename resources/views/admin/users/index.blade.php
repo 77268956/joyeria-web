@@ -2,7 +2,10 @@
 
 @section('title', 'Gestión de Usuarios')
 
+@section('body_class', 'full-viewport')
+
 @section('content')
+<div class="paginated-page">
 <div class="page-header">
     <div>
         <h1 class="page-title font-serif">Gestión de Usuarios</h1>
@@ -21,7 +24,7 @@
 
 {{-- Mensajes flash de éxito y error --}}
 @if (session('status'))
-    <div style="background-color: rgba(184, 154, 94, 0.15); border-left: 4px solid var(--color-dorado); color: var(--color-noche); padding: 1rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+    <div style="background-color: rgba(184, 154, 94, 0.15); border-left: 4px solid var(--color-dorado); color: var(--color-noche); padding: 1rem 1.25rem; border-radius: 4px; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -34,7 +37,7 @@
 @endif
 
 @if ($errors->any())
-    <div style="background-color: #FDEDED; border-left: 4px solid var(--color-error); color: #5F2120; padding: 1rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem;">
+    <div style="background-color: #FDEDED; border-left: 4px solid var(--color-error); color: #5F2120; padding: 1rem 1.25rem; border-radius: 4px; margin-bottom: 0.85rem;">
         <div style="font-weight: 600; margin-bottom: 0.35rem;">Por favor corrige los siguientes errores:</div>
         <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.88rem;">
             @foreach ($errors->all() as $error)
@@ -45,10 +48,10 @@
 @endif
 
 {{-- Filtros de búsqueda --}}
-<div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem 1.75rem;">
-    <form action="{{ route('admin.users.index') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
-        <div style="flex: 1; min-width: 240px;">
-            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.35rem; font-weight: 500;">
+<div class="card paginated-filter-card" style="padding: 0.85rem 1.25rem;">
+    <form action="{{ route('admin.users.index') }}" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 1; min-width: 220px;">
+            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.25rem; font-weight: 500;">
                 Buscar por Nombre o Correo
             </label>
             <input 
@@ -56,15 +59,15 @@
                 name="search" 
                 value="{{ request('search') }}" 
                 placeholder="Ej. Carlos Administrador, maria@..." 
-                style="width: 100%; height: 38px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.88rem; outline: none;"
+                style="width: 100%; height: 36px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.85rem; outline: none;"
             >
         </div>
 
         <div style="min-width: 160px;">
-            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.35rem; font-weight: 500;">
+            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.25rem; font-weight: 500;">
                 Rol de Usuario
             </label>
-            <select name="role" style="width: 100%; height: 38px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.88rem; outline: none; background-color: var(--color-blanco);">
+            <select name="role" style="width: 100%; height: 36px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.85rem; outline: none; background-color: var(--color-blanco);">
                 <option value="">Todos los roles</option>
                 @foreach ($roles as $r)
                     <option value="{{ $r->name }}" {{ request('role') === $r->name ? 'selected' : '' }}>
@@ -75,10 +78,10 @@
         </div>
 
         <div style="min-width: 140px;">
-            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.35rem; font-weight: 500;">
+            <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-piedra); margin-bottom: 0.25rem; font-weight: 500;">
                 Estado
             </label>
-            <select name="status" style="width: 100%; height: 38px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.88rem; outline: none; background-color: var(--color-blanco);">
+            <select name="status" style="width: 100%; height: 36px; border: 1px solid var(--color-linea); border-radius: 4px; padding: 0 0.75rem; font-size: 0.85rem; outline: none; background-color: var(--color-blanco);">
                 <option value="">Todos</option>
                 <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Activos</option>
                 <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactivos</option>
@@ -86,11 +89,11 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem;">
-            <button type="submit" style="height: 38px; padding: 0 1.25rem; background-color: var(--color-noche); color: var(--color-hueso); border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+            <button type="submit" style="height: 36px; padding: 0 1.25rem; background-color: var(--color-noche); color: var(--color-hueso); border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
                 Filtrar
             </button>
             @if(request()->hasAny(['search', 'role', 'status']))
-                <a href="{{ route('admin.users.index') }}" style="height: 38px; padding: 0 1rem; border: 1px solid var(--color-linea); color: var(--color-piedra); border-radius: 4px; font-size: 0.85rem; display: inline-flex; align-items: center; text-decoration: none;">
+                <a href="{{ route('admin.users.index') }}" style="height: 36px; padding: 0 1rem; border: 1px solid var(--color-linea); color: var(--color-piedra); border-radius: 4px; font-size: 0.85rem; display: inline-flex; align-items: center; text-decoration: none;">
                     Limpiar
                 </a>
             @endif
@@ -99,17 +102,17 @@
 </div>
 
 {{-- Tabla de Usuarios --}}
-<div class="card" style="padding: 0; overflow: hidden;">
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+<div class="card paginated-table-card">
+    <div class="table-wrap paginated-table-wrap">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
             <thead>
                 <tr style="background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); color: var(--color-noche);">
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">Colaborador</th>
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">Rol</th>
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">Sucursal</th>
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">Estado</th>
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">Último Acceso</th>
-                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Acciones</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Colaborador</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Rol</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Sucursal</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Estado</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Último Acceso</th>
+                    <th style="padding: 0.85rem 1.25rem; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: right; position: sticky; top: 0; z-index: 2; background-color: var(--color-crema); box-shadow: inset 0 -1px 0 var(--color-linea);">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -242,11 +245,12 @@
     </div>
 
     @if($users->hasPages())
-        <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--color-linea);">
+        <div class="paginated-pagination" style="padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-linea);">
             {{ $users->links() }}
         </div>
     @endif
 </div>
+</div> {{-- .paginated-page --}}
 
 {{-- MODAL: NUEVO USUARIO --}}
 <div id="createModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 22, 31, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
