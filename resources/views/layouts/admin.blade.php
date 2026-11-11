@@ -545,6 +545,65 @@
         table.data-table tbody tr:hover { background-color: #FBF9F5; }
         .num { font-variant-numeric: tabular-nums; }
 
+        /* ------------------ PAGINATED / FULL-VIEWPORT TABLE PAGES ------------------ */
+        .paginated-page {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.85rem;
+        }
+        .paginated-page .page-header {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        .paginated-page .paginated-filter-card,
+        .paginated-page > .card:not(.paginated-table-card) {
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        .paginated-page .paginated-table-card {
+            padding: 0 !important;
+            margin-bottom: 0 !important;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .paginated-page .paginated-table-wrap,
+        .paginated-page .paginated-table-card > .table-wrap {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .paginated-page table.data-table {
+            margin-bottom: 0;
+        }
+        .paginated-page table.data-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: var(--color-crema);
+            box-shadow: inset 0 -1px 0 var(--color-linea);
+        }
+        .paginated-page .paginated-pagination,
+        .paginated-page .pagination-wrap {
+            flex-shrink: 0;
+            margin-top: 0;
+        }
+        @media (max-width: 1024px) {
+            .paginated-page {
+                display: block;
+            }
+            .paginated-page .paginated-table-card {
+                max-height: 60vh;
+                margin-bottom: 1rem;
+            }
+        }
+
         /* ------------------ BADGES & ALERTS ------------------ */
         .badge {
             display: inline-block;

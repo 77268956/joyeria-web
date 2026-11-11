@@ -5,73 +5,7 @@
 @section('body_class', 'full-viewport')
 
 @section('content')
-<style>
-    .purchases-page {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        gap: 0.85rem;
-    }
-
-    .purchases-page .page-header {
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-
-    .purchases-page .purchases-filter-card {
-        padding: 0.85rem 1.25rem;
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-
-    .purchases-page .purchases-table-card {
-        padding: 0;
-        margin-bottom: 0;
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .purchases-page .purchases-table-wrap {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        overflow-x: auto;
-    }
-
-    .purchases-page .data-table {
-        margin-bottom: 0;
-    }
-
-    .purchases-page .data-table th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background-color: var(--color-crema);
-        box-shadow: inset 0 -1px 0 var(--color-linea);
-    }
-
-    .purchases-page .purchases-pagination {
-        flex-shrink: 0;
-        margin-top: 0;
-    }
-
-    @media (max-width: 1024px) {
-        .purchases-page {
-            display: block;
-        }
-
-        .purchases-page .purchases-table-card {
-            max-height: 60vh;
-            margin-bottom: 1rem;
-        }
-    }
-</style>
-
-<div class="purchases-page">
+<div class="paginated-page">
     <div class="page-header">
         <div>
             <h1 class="page-title font-serif">Compra de Metales</h1>
@@ -86,7 +20,7 @@
 
     @include('admin.partials.alerts')
 
-    <div class="card purchases-filter-card">
+    <div class="card paginated-filter-card">
         <form action="{{ route('admin.purchases.index') }}" method="GET" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
             <div class="form-group" style="flex: 1; min-width: 220px; margin: 0;">
                 <label class="form-label" for="search" style="font-size: 0.75rem; margin-bottom: 0.25rem;">Buscar</label>
@@ -110,8 +44,8 @@
         </form>
     </div>
 
-    <div class="card purchases-table-card">
-        <div class="purchases-table-wrap">
+    <div class="card paginated-table-card">
+        <div class="paginated-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -156,7 +90,7 @@
         </div>
     </div>
 
-    <div class="purchases-pagination">
+    <div class="paginated-pagination">
         {{ $purchases->links() }}
     </div>
 </div>

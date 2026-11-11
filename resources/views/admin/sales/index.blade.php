@@ -5,73 +5,7 @@
 @section('body_class', 'full-viewport')
 
 @section('content')
-<style>
-    .sales-page {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        gap: 0.85rem;
-    }
-
-    .sales-page .page-header {
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-
-    .sales-page .sales-filter-card {
-        padding: 0.85rem 1.25rem;
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-
-    .sales-page .sales-table-card {
-        padding: 0;
-        margin-bottom: 0;
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .sales-page .sales-table-wrap {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        overflow-x: auto;
-    }
-
-    .sales-page .data-table {
-        margin-bottom: 0;
-    }
-
-    .sales-page .data-table th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background-color: var(--color-crema);
-        box-shadow: inset 0 -1px 0 var(--color-linea);
-    }
-
-    .sales-page .sales-pagination {
-        flex-shrink: 0;
-        margin-top: 0;
-    }
-
-    @media (max-width: 1024px) {
-        .sales-page {
-            display: block;
-        }
-
-        .sales-page .sales-table-card {
-            max-height: 60vh;
-            margin-bottom: 1rem;
-        }
-    }
-</style>
-
-<div class="sales-page">
+<div class="paginated-page">
     <div class="page-header">
         <div>
             <h1 class="page-title font-serif">Ventas</h1>
@@ -84,7 +18,7 @@
 
     @include('admin.partials.alerts')
 
-    <div class="card sales-filter-card">
+    <div class="card paginated-filter-card">
         <form action="{{ route('admin.sales.index') }}" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
             <div style="flex: 1; min-width: 180px;">
                 <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem;">Número</label>
@@ -112,8 +46,8 @@
         </form>
     </div>
 
-    <div class="card sales-table-card">
-        <div class="sales-table-wrap">
+    <div class="card paginated-table-card">
+        <div class="paginated-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -150,7 +84,7 @@
         </div>
     </div>
 
-    <div class="sales-pagination">
+    <div class="paginated-pagination">
         {{ $sales->links() }}
     </div>
 </div>
