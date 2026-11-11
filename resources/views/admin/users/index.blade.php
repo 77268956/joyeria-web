@@ -249,8 +249,8 @@
 </div>
 
 {{-- MODAL: NUEVO USUARIO --}}
-<div id="createModal" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 22, 31, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
-    <div style="background-color: var(--color-blanco); border-radius: 6px; width: 100%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; margin: 1rem;">
+<div id="createModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 22, 31, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+    <div class="modal" style="background-color: var(--color-blanco); border-radius: 6px; width: 100%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; margin: 1rem;">
         <div style="padding: 1.25rem 1.5rem; background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); display: flex; align-items: center; justify-content: space-between;">
             <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Registrar Nuevo Colaborador</h3>
             <button type="button" onclick="closeCreateModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--color-piedra);">✕</button>
@@ -341,8 +341,8 @@
 </div>
 
 {{-- MODAL: EDITAR USUARIO --}}
-<div id="editModal" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 22, 31, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
-    <div style="background-color: var(--color-blanco); border-radius: 6px; width: 100%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; margin: 1rem;">
+<div id="editModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 22, 31, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+    <div class="modal" style="background-color: var(--color-blanco); border-radius: 6px; width: 100%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; margin: 1rem;">
         <div style="padding: 1.25rem 1.5rem; background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); display: flex; align-items: center; justify-content: space-between;">
             <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Editar Colaborador</h3>
             <button type="button" onclick="closeEditModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--color-piedra);">✕</button>

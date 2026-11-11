@@ -581,6 +581,21 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(2px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .modal-backdrop.is-active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            animation: modal-backdrop-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .modal-backdrop.is-closing {
+            opacity: 0;
+            pointer-events: none;
+            animation: modal-backdrop-exit 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
         .modal {
             background-color: var(--color-blanco);
@@ -590,6 +605,45 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             margin: 1rem;
+            opacity: 0;
+            transform: translateY(26px) scale(0.96);
+            transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .modal-backdrop.is-active .modal {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            animation: modal-content-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .modal-backdrop.is-closing .modal {
+            animation: modal-content-exit 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes modal-backdrop-enter {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes modal-backdrop-exit {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes modal-content-enter {
+            from { opacity: 0; transform: translateY(26px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes modal-content-exit {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(18px) scale(0.97); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .modal-backdrop,
+            .modal-backdrop.is-active,
+            .modal-backdrop.is-closing,
+            .modal,
+            .modal-backdrop.is-active .modal,
+            .modal-backdrop.is-closing .modal {
+                animation: none;
+                transition: none;
+            }
+            .modal { opacity: 1; transform: none; }
         }
         .modal-header {
             padding: 1.15rem 1.5rem;
@@ -746,6 +800,40 @@
                 document.documentElement.classList.add('motion-forced');
             }
         })();
+
+        function syncModalAnimations() {
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                if (!backdrop.dataset.modalMotionBound) {
+                    backdrop.dataset.modalMotionBound = '1';
+
+                    var sync = function () {
+                        if (backdrop.classList.contains('is-closing')) {
+                            return;
+                        }
+                        var isVisible = getComputedStyle(backdrop).display !== 'none' && !backdrop.hidden;
+                        if (!isVisible) {
+                            backdrop.classList.remove('is-active', 'is-closing');
+                        } else {
+                            backdrop.classList.add('is-active');
+                        }
+                    };
+
+                    var observer = new MutationObserver(function () {
+                        sync();
+                    });
+
+                    observer.observe(backdrop, {
+                        attributes: true,
+                        attributeFilter: ['style', 'hidden'],
+                    });
+
+                    sync();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', syncModalAnimations);
+        syncModalAnimations();
     </script>
     @vite('resources/js/motion.js')
     @stack('styles')

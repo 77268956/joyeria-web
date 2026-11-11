@@ -600,7 +600,7 @@
                 <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Movimientos del Turno Activo</h3>
                 <p class="muted" style="font-size: 0.8rem; margin: 0;">Entradas y salidas de efectivo justificadas</p>
             </div>
-            <button type="button" class="modal-close" data-close-modal="modal-movements">&times;</button>
+            <button type="button" class="modal-close" data-close-modal="modal-movements" onclick="closeModal('modal-movements')" aria-label="Cerrar">&times;</button>
         </div>
 
         <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.25rem;">
@@ -682,7 +682,7 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-close-modal="modal-movements">Cerrar</button>
+            <button type="button" class="btn btn-outline" data-close-modal="modal-movements" onclick="closeModal('modal-movements')">Cerrar</button>
         </div>
     </div>
 </div>
@@ -695,7 +695,7 @@
                 <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Cerrar Turno de Caja (Arqueo)</h3>
                 <p class="muted" style="font-size: 0.8rem; margin: 0;">Ingresa los valores contados físicamente para comparar con el sistema</p>
             </div>
-            <button type="button" class="modal-close" data-close-modal="modal-close-shift">&times;</button>
+            <button type="button" class="modal-close" data-close-modal="modal-close-shift" onclick="closeModal('modal-close-shift')" aria-label="Cerrar">&times;</button>
         </div>
 
         <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.25rem;">
@@ -803,7 +803,7 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-close-modal="modal-close-shift">Cancelar</button>
+            <button type="button" class="btn btn-outline" data-close-modal="modal-close-shift" onclick="closeModal('modal-close-shift')">Cancelar</button>
             <button type="button" id="btn-submit-close-cash" class="btn btn-gold">Confirmar y Cerrar Turno</button>
         </div>
     </div>
@@ -1181,7 +1181,7 @@
                 <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Apertura de Turno de Caja</h3>
                 <p class="muted" style="font-size: 0.8rem; margin: 0;">Inicia un nuevo turno con tu fondo de efectivo inicial</p>
             </div>
-            <button type="button" class="modal-close" data-close-modal="modal-open-shift">&times;</button>
+            <button type="button" class="modal-close" data-close-modal="modal-open-shift" onclick="closeModal('modal-open-shift')" aria-label="Cerrar">&times;</button>
         </div>
 
         <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash">
@@ -1206,7 +1206,7 @@
             </div>
 
             <div class="modal-footer" style="justify-content: space-between;">
-                <button type="button" class="btn btn-outline" data-close-modal="modal-open-shift">Cancelar</button>
+                <button type="button" class="btn btn-outline" data-close-modal="modal-open-shift" onclick="closeModal('modal-open-shift')">Cancelar</button>
                 <button type="submit" class="btn btn-gold">Confirmar y Abrir Turno</button>
             </div>
         </form>
@@ -1222,7 +1222,7 @@
                 <h3 class="font-serif" style="font-size: 1.25rem; margin: 0; color: var(--color-noche);">Detalle de Arqueo y Cierre</h3>
                 <p class="muted" style="font-size: 0.8rem; margin: 0;" id="det-subtitle">Auditoría completa del turno</p>
             </div>
-            <button type="button" class="modal-close" data-close-modal="modal-shift-details">&times;</button>
+            <button type="button" class="modal-close" data-close-modal="modal-shift-details" onclick="closeModal('modal-shift-details')" aria-label="Cerrar">&times;</button>
         </div>
 
         <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.25rem;">
@@ -1306,7 +1306,7 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-close-modal="modal-shift-details">Cerrar</button>
+            <button type="button" class="btn btn-outline" data-close-modal="modal-shift-details" onclick="closeModal('modal-shift-details')">Cerrar</button>
         </div>
     </div>
 </div>
@@ -1324,8 +1324,10 @@
     function openModal(id) {
         const m = el(id);
         if (m) {
-            m.classList.add('is-active');
+            m.classList.remove('is-closing');
             m.style.display = 'flex';
+            void m.offsetWidth;
+            m.classList.add('is-active');
             const input = m.querySelector('input:not([type="hidden"]), select, textarea');
             if (input) setTimeout(() => input.focus(), 60);
         }
@@ -1335,9 +1337,16 @@
         const m = el(id);
         if (m) {
             m.classList.remove('is-active');
-            m.style.display = 'none';
+            m.classList.add('is-closing');
+            setTimeout(() => {
+                m.style.display = 'none';
+                m.classList.remove('is-closing');
+            }, 260);
         }
     }
+
+    window.openModal = openModal;
+    window.closeModal = closeModal;
 
     // --- Panel lateral del Historial del Día (Offcanvas) ---
     const dayHistoryDrawer = el('offcanvas-day-history');

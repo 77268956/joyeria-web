@@ -647,6 +647,132 @@
         }
     }
 
+    /* =========================================================================
+       MODALES POS: Apertura y Cierre Pausados, Fluidos y Elegantes
+       ========================================================================= */
+    #modal-charge,
+    #modal-product-details,
+    #modal-supervisor-auth,
+    #modal-new-customer {
+        transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                    visibility 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #modal-charge.is-active,
+    #modal-product-details.is-active,
+    #modal-supervisor-auth.is-active,
+    #modal-new-customer.is-active {
+        animation: pos-backdrop-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    #modal-charge.is-closing,
+    #modal-product-details.is-closing,
+    #modal-supervisor-auth.is-closing,
+    #modal-new-customer.is-closing {
+        animation: pos-backdrop-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    #modal-charge .modal,
+    #modal-product-details .modal,
+    #modal-supervisor-auth .modal,
+    #modal-new-customer .modal {
+        opacity: 0;
+        transform: translateY(32px) scale(0.96);
+        will-change: transform, opacity;
+        transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #modal-charge.is-active .modal,
+    #modal-product-details.is-active .modal,
+    #modal-supervisor-auth.is-active .modal,
+    #modal-new-customer.is-active .modal {
+        animation: pos-modal-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    #modal-charge.is-closing .modal,
+    #modal-product-details.is-closing .modal,
+    #modal-supervisor-auth.is-closing .modal,
+    #modal-new-customer.is-closing .modal {
+        animation: pos-modal-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes pos-backdrop-in {
+        0% {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+        }
+        100% {
+            opacity: 1;
+            backdrop-filter: blur(2px);
+        }
+    }
+
+    @keyframes pos-backdrop-out {
+        0% {
+            opacity: 1;
+            backdrop-filter: blur(2px);
+        }
+        100% {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+        }
+    }
+
+    @keyframes pos-modal-in {
+        0% {
+            opacity: 0;
+            transform: translateY(32px) scale(0.96);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes pos-modal-out {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(18px) scale(0.97);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #modal-charge,
+        #modal-product-details,
+        #modal-supervisor-auth,
+        #modal-new-customer,
+        #modal-charge.is-active,
+        #modal-product-details.is-active,
+        #modal-supervisor-auth.is-active,
+        #modal-new-customer.is-active,
+        #modal-charge.is-closing,
+        #modal-product-details.is-closing,
+        #modal-supervisor-auth.is-closing,
+        #modal-new-customer.is-closing,
+        #modal-charge .modal,
+        #modal-product-details .modal,
+        #modal-supervisor-auth .modal,
+        #modal-new-customer .modal,
+        #modal-charge.is-active .modal,
+        #modal-product-details.is-active .modal,
+        #modal-supervisor-auth.is-active .modal,
+        #modal-new-customer.is-active .modal,
+        #modal-charge.is-closing .modal,
+        #modal-product-details.is-closing .modal,
+        #modal-supervisor-auth.is-closing .modal,
+        #modal-new-customer.is-closing .modal {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+
     /* --- Modal de Cobro (Diseño fiel a la imagen) --- */
     #modal-charge .modal {
         max-width: 880px;
@@ -1846,6 +1972,41 @@
     });
     el('add-payment').addEventListener('click', () => addPaymentRow());
 
+    // --- Utilidades para Abrir y Cerrar Modales con Transición Fluida y Pausada ---
+    function openPosModal(modal) {
+        const target = typeof modal === 'string' ? el(modal) : modal;
+        if (!target) return;
+
+        target.classList.remove('is-closing');
+        target.style.display = 'flex';
+        // Forzar reflujo para pintar estado inicial antes de animar suavemente
+        void target.offsetWidth;
+        target.classList.add('is-active');
+    }
+
+    function closePosModal(modal, onClosed) {
+        const target = typeof modal === 'string' ? el(modal) : modal;
+        if (!target) return;
+
+        if (!target.classList.contains('is-active') && target.style.display === 'none') {
+            if (typeof onClosed === 'function') onClosed();
+            return;
+        }
+
+        target.classList.remove('is-active');
+        target.classList.add('is-closing');
+
+        setTimeout(() => {
+            if (target.classList.contains('is-closing')) {
+                target.style.display = 'none';
+                target.classList.remove('is-closing');
+                if (typeof onClosed === 'function') {
+                    onClosed();
+                }
+            }
+        }, 320);
+    }
+
     // --- Modal de Cobro ---
     function openChargeModal() {
         const error = el('cart-error');
@@ -1882,22 +2043,32 @@
         const activeMethod = freshRows[0] ? freshRows[0].querySelector('[data-method]').value : 'cash';
         setMethodButtonActive(activeMethod);
 
-        el('modal-charge').style.display = 'flex';
+        openPosModal('modal-charge');
         recalc();
 
-        // Enfoque inmediato al campo adecuado (recibido si es efectivo, referencia si tarjeta)
-        const primaryRow = paymentRows()[0];
-        if (primaryRow) {
-            if (activeMethod === 'cash') {
-                primaryRow.querySelector('[data-received]').focus();
-            } else {
-                primaryRow.querySelector('[data-reference]').focus();
+        // Enfoque suave al campo adecuado
+        setTimeout(() => {
+            const primaryRow = paymentRows()[0];
+            if (primaryRow) {
+                if (activeMethod === 'cash') {
+                    const rec = primaryRow.querySelector('[data-received]');
+                    if (rec) {
+                        rec.focus();
+                        rec.select();
+                    }
+                } else {
+                    const ref = primaryRow.querySelector('[data-reference]');
+                    if (ref) {
+                        ref.focus();
+                        ref.select();
+                    }
+                }
             }
-        }
+        }, 120);
     }
 
     function closeChargeModal() {
-        el('modal-charge').style.display = 'none';
+        closePosModal('modal-charge');
     }
 
     el('open-charge').addEventListener('click', openChargeModal);
@@ -1944,12 +2115,13 @@
         addButton.disabled = inCart;
         addButton.textContent = inCart ? 'Ya está en el carrito' : 'Agregar al carrito';
 
-        el('modal-product-details').style.display = 'flex';
+        openPosModal('modal-product-details');
     }
 
     function closeProductDetails() {
-        el('modal-product-details').style.display = 'none';
-        detailProduct = null;
+        closePosModal('modal-product-details', () => {
+            detailProduct = null;
+        });
     }
 
     el('btn-close-details').addEventListener('click', closeProductDetails);
@@ -2104,14 +2276,14 @@
         const errorBox = el('pos-customer-error');
         errorBox.innerHTML = '';
         errorBox.style.display = 'none';
-        newCustomerModal.style.display = 'flex';
+        openPosModal(newCustomerModal);
 
-        setTimeout(() => el('pos-customer-full-name')?.focus(), 40);
+        setTimeout(() => el('pos-customer-full-name')?.focus(), 120);
     }
 
     function closeNewCustomerModal() {
         if (newCustomerModal) {
-            newCustomerModal.style.display = 'none';
+            closePosModal(newCustomerModal);
         }
     }
 
@@ -2193,8 +2365,8 @@
         el('remote-rejected').style.display = 'none';
         el('remote-expired').style.display = 'none';
 
-        el('modal-supervisor-auth').style.display = 'flex';
-        el('supervisor-pin').focus();
+        openPosModal('modal-supervisor-auth');
+        setTimeout(() => el('supervisor-pin')?.focus(), 120);
     }
 
     function stopPollingAndCountdown() {
@@ -2209,8 +2381,9 @@
     }
 
     function closeAuthModal() {
-        el('modal-supervisor-auth').style.display = 'none';
-        stopPollingAndCountdown();
+        closePosModal('modal-supervisor-auth', () => {
+            stopPollingAndCountdown();
+        });
     }
 
     function switchAuthTab(tab) {
@@ -2239,6 +2412,11 @@
     el('tab-pin').addEventListener('click', () => switchAuthTab('pin'));
     el('tab-remote').addEventListener('click', () => switchAuthTab('remote'));
     el('btn-close-auth-modal').addEventListener('click', closeAuthModal);
+    el('modal-supervisor-auth').addEventListener('click', (event) => {
+        if (event.target === el('modal-supervisor-auth')) {
+            closeAuthModal();
+        }
+    });
 
     // Validador PIN
     el('btn-submit-pin').addEventListener('click', () => {
@@ -2588,8 +2766,26 @@
             return;
         }
 
-        if (e.key === 'Escape' && document.body.classList.contains('pos-kiosk')) {
-            exitKiosk();
+        if (e.key === 'Escape') {
+            const activeModal = document.querySelector('#modal-charge.is-active, #modal-product-details.is-active, #modal-supervisor-auth.is-active, #modal-new-customer.is-active, .modal-backdrop.is-active');
+            if (activeModal) {
+                if (activeModal.id === 'modal-supervisor-auth') {
+                    closeAuthModal();
+                } else if (activeModal.id === 'modal-charge') {
+                    closeChargeModal();
+                } else if (activeModal.id === 'modal-product-details') {
+                    closeProductDetails();
+                } else if (activeModal.id === 'modal-new-customer') {
+                    closeNewCustomerModal();
+                } else {
+                    closePosModal(activeModal);
+                }
+                return;
+            }
+
+            if (document.body.classList.contains('pos-kiosk')) {
+                exitKiosk();
+            }
         }
     });
 
