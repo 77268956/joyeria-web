@@ -773,24 +773,27 @@
         }
     }
 
-    /* --- Modal de Cobro (Diseño fiel a la imagen) --- */
+    /* --- Modal de Cobro --- */
     #modal-charge .modal {
-        max-width: 880px;
+        max-width: 980px;
         width: 95%;
+        max-height: 92vh;
         border-radius: 6px;
         box-shadow: 0 16px 40px rgba(18, 22, 31, 0.22);
         border: 1px solid var(--color-linea);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
         background-color: #fff;
     }
 
     #modal-charge .modal-header {
         background-color: #EDE8DF;
         border-bottom: 1px solid var(--color-linea);
-        padding: 1.15rem 1.75rem;
+        padding: 0.8rem 1.25rem;
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
     }
 
     #modal-charge .modal-header h3 {
@@ -810,7 +813,9 @@
     }
 
     #modal-charge .modal-body {
-        padding: 1.5rem 1.75rem;
+        padding: 0.8rem 1.25rem 1rem;
+        min-height: 0;
+        overflow-y: auto;
         background-color: #fff;
     }
 
@@ -820,22 +825,27 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: var(--color-piedra);
-        margin-bottom: 0.85rem;
+        margin-bottom: 0.45rem;
     }
 
     .pos-modal-info-summary {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        margin-bottom: 1.35rem;
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: 0.65rem 1rem;
+        padding: 0.55rem 0.7rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 4px;
+        background-color: #FAF8F3;
     }
 
     .pos-modal-info-row {
-        font-size: 0.95rem;
+        min-width: 0;
+        font-size: 0.83rem;
         color: var(--color-noche);
         display: flex;
         align-items: baseline;
-        gap: 0.4rem;
+        gap: 0.3rem;
         flex-wrap: wrap;
     }
 
@@ -845,6 +855,7 @@
     }
 
     .pos-modal-info-val {
+        min-width: 0;
         font-weight: 500;
         color: #1e2430;
     }
@@ -861,33 +872,45 @@
     }
 
     .pos-modal-method-title {
-        font-size: 0.88rem;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.84rem;
         font-weight: 700;
         color: var(--color-noche);
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .pos-modal-method-help {
+        color: var(--color-piedra);
+        font-size: 0.74rem;
+        font-weight: 400;
     }
 
     .pos-modal-methods-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.85rem;
-        margin-bottom: 1.35rem;
+        gap: 0.55rem;
+        margin-bottom: 0.7rem;
     }
 
     .pos-method-btn {
-        min-height: 82px;
-        padding: 0.8rem;
+        min-height: 64px;
+        padding: 0.5rem 0.65rem;
         border: 1px solid var(--color-linea);
         background-color: #fff;
         border-radius: 4px;
         color: var(--color-noche);
         cursor: pointer;
         transition: all 0.15s ease-in-out;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        align-items: center;
         justify-content: center;
-        gap: 0.25rem;
+        column-gap: 0.5rem;
+        row-gap: 0.1rem;
         text-align: left;
     }
 
@@ -908,54 +931,62 @@
     }
 
     .pos-method-icon {
+        grid-row: 1 / span 2;
         color: var(--color-dorado);
         line-height: 1;
     }
 
     .pos-method-name {
-        font-size: 0.9rem;
+        font-size: 0.86rem;
         font-weight: 700;
+        line-height: 1.15;
     }
 
     .pos-method-description {
         color: var(--color-piedra);
-        font-size: 0.74rem;
+        font-size: 0.7rem;
+        line-height: 1.2;
     }
 
     /* Grilla de campos: Pagos (Izquierda) vs Descuento (Derecha) */
     .pos-modal-fields-row {
         display: grid;
-        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
-        gap: 1.5rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+        gap: 0.8rem;
         align-items: start;
-        margin-top: 0.5rem;
-        padding-bottom: 0.75rem;
+        margin-top: 0;
+        padding-bottom: 0.45rem;
     }
 
     .pos-payments-box {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.4rem;
     }
 
     .pos-payment-input-row {
-        padding: 0.65rem;
+        padding: 0.5rem 0.6rem;
         border: 1px solid var(--color-linea);
         border-radius: 4px;
         background-color: #fff;
     }
 
     .pos-payment-row-heading {
-        margin-bottom: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 0.35rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 3px;
+        background-color: #FAF8F3;
         color: var(--color-noche);
-        font-size: 0.82rem;
+        font-size: 0.76rem;
         font-weight: 700;
     }
 
     .pos-payment-row-fields {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px;
-        gap: 0.45rem;
+        gap: 0.4rem;
         align-items: start;
     }
 
@@ -969,15 +1000,15 @@
 
     .pos-payment-field label {
         display: block;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.2rem;
         color: var(--color-piedra);
         font-size: 0.7rem;
         font-weight: 700;
     }
 
     .pos-payment-field .form-control {
-        height: 38px;
-        font-size: 0.88rem;
+        height: 36px;
+        font-size: 0.84rem;
     }
 
     .pos-payment-change {
@@ -987,7 +1018,7 @@
     }
 
     .pos-payment-del {
-        height: 38px;
+        height: 36px;
         width: 34px;
         padding: 0;
         display: flex;
@@ -1008,7 +1039,7 @@
         display: grid;
         grid-template-columns: 1fr 1.35fr;
         gap: 0.5rem;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.3rem;
         font-size: 0.72rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -1019,32 +1050,39 @@
     .pos-discount-input-row {
         display: grid;
         grid-template-columns: 1fr 1.35fr;
-        gap: 0.5rem;
+        gap: 0.4rem;
         align-items: center;
     }
 
     .pos-discount-input-row .form-control {
-        height: 38px;
-        font-size: 0.88rem;
+        height: 36px;
+        font-size: 0.84rem;
+    }
+
+    .pos-discount-panel {
+        padding: 0.65rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 4px;
+        background-color: #FAF8F3;
     }
 
     /* Footer de Cobro */
     .pos-charge-footer-bar {
         border-top: 1px solid var(--color-linea);
-        padding-top: 1.15rem;
-        margin-top: 1rem;
+        padding-top: 0.7rem;
+        margin-top: 0.6rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.7rem;
     }
 
     .pos-footer-totals {
         display: flex;
         align-items: baseline;
-        gap: 1.5rem;
-        font-size: 0.95rem;
+        gap: 0.85rem;
+        font-size: 0.86rem;
     }
 
     .pos-footer-total-item {
@@ -1053,20 +1091,25 @@
 
     .pos-footer-total-val {
         font-weight: 700;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
     }
 
     .pos-footer-actions {
         display: flex;
-        gap: 0.65rem;
+        gap: 0.5rem;
     }
 
     .pos-footer-actions .btn {
-        height: 42px;
-        padding: 0 1.5rem;
-        font-size: 0.92rem;
+        height: 38px;
+        padding: 0 1.1rem;
+        font-size: 0.86rem;
         font-weight: 600;
         border-radius: 4px;
+    }
+
+    .pos-add-payment {
+        margin-top: 0.35rem;
+        font-size: 0.76rem;
     }
 
     @media (max-width: 1024px) {
@@ -1094,15 +1137,38 @@
             position: static;
         }
 
+    }
+
+    @media (max-width: 760px) {
         .pos-modal-fields-row {
             grid-template-columns: 1fr;
-            gap: 1.25rem;
+            gap: 0.65rem;
         }
     }
 
     @media (max-width: 640px) {
+        #modal-charge .modal-header {
+            padding: 0.7rem 0.85rem;
+        }
+
+        #modal-charge .modal-body {
+            padding: 0.7rem 0.85rem 0.85rem;
+        }
+
+        .pos-modal-method-title {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .pos-modal-info-summary {
+            grid-template-columns: 1fr;
+            gap: 0.35rem;
+        }
+
         .pos-modal-methods-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 0.45rem;
         }
 
         .pos-payment-row-fields {
@@ -1360,15 +1426,12 @@
         <div class="modal-header">
             <div>
                 <h3 class="font-serif">Cobro</h3>
-                <span class="muted">Cliente, descuento y pagos antes de registrar la venta</span>
+                <span class="muted">Revisa los importes y confirma el cobro</span>
             </div>
             <button type="button" class="modal-close" id="btn-close-charge">✕</button>
         </div>
 
         <div class="modal-body">
-            <div class="pos-modal-section-tag">PAGOS</div>
-
-            <!-- Resumen superior: Cliente y Productos -->
             <div class="pos-modal-info-summary">
                 <div class="pos-modal-info-row">
                     <span class="pos-modal-info-label">Cliente:</span>
@@ -1381,7 +1444,10 @@
                 </div>
             </div>
 
-            <div class="pos-modal-method-title">Selecciona el método de pago:</div>
+            <div class="pos-modal-method-title">
+                <span>Método de pago</span>
+                <span class="pos-modal-method-help">Puedes combinar métodos</span>
+            </div>
             <div class="pos-modal-methods-grid">
                 <button type="button" class="pos-method-btn active" data-method-btn="cash" aria-pressed="true">
                     <span class="pos-method-icon" aria-hidden="true">
@@ -1395,7 +1461,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h3"></path></svg>
                     </span>
                     <span class="pos-method-name">Tarjeta</span>
-                    <span class="pos-method-description">Sin cálculo de cambio</span>
+                    <span class="pos-method-description">Sin cambio</span>
                 </button>
                 <button type="button" class="pos-method-btn" data-method-btn="transfer" aria-pressed="false">
                     <span class="pos-method-icon" aria-hidden="true">
@@ -1418,11 +1484,11 @@
                 <!-- Columna Izquierda: Pagos -->
                 <div>
                     <div id="payments" class="pos-payments-box"></div>
-                    <button type="button" class="btn btn-outline btn-sm" id="add-payment" style="margin-top: 0.5rem; font-size: 0.78rem;">+ Agregar otro método</button>
+                    <button type="button" class="btn btn-outline btn-sm pos-add-payment" id="add-payment">+ Agregar otro método</button>
                 </div>
 
                 <!-- Columna Derecha: Descuentos -->
-                <div>
+                <div class="pos-discount-panel">
                     <div class="pos-discount-subhead">
                         <span>Descuento global</span>
                         <span>Motivo del descuento</span>
