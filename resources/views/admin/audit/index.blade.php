@@ -114,7 +114,7 @@
 
     @if($activities->hasPages())
         <div class="paginated-pagination" style="padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-linea);">
-            {{ $activities->links() }}
+            {{ $activities->links('vendor.pagination.admin') }}
         </div>
     @endif
 </div>

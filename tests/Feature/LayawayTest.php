@@ -304,6 +304,59 @@ class LayawayTest extends TestCase
             ->assertSee($customer->document_type.' '.$customer->document_number);
     }
 
+    public function test_the_show_page_renders_the_layaway_summary_and_payment_form(): void
+    {
+        $owner = $this->owner();
+        $session = app(CashSessionService::class)->open($owner, '0.00');
+        $product = $this->product($owner);
+        $customer = $this->customer($owner);
+
+        $layaway = app(LayawayService::class)->create($owner, $session, [
+            'product_id' => $product->id,
+            'customer_id' => $customer->id,
+            'due_date' => now()->addDays(10)->toDateString(),
+            'initial_amount' => '20.00',
+            'initial_method' => 'cash',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.show', $layaway))
+            ->assertOk()
+            ->assertSeeText($layaway->number)
+            ->assertSeeText($customer->full_name)
+            ->assertSeeText($product->name)
+            ->assertSeeText('Progreso del pago')
+            ->assertSeeText('Abonos registrados')
+            ->assertSeeText('Registrar abono')
+            ->assertSeeText('Saldo pendiente')
+            ->assertSeeText('$ 100.00');
+    }
+
+    public function test_the_show_page_marks_a_cancelled_layaway_and_hides_the_payment_form(): void
+    {
+        $owner = $this->owner();
+        $session = app(CashSessionService::class)->open($owner, '0.00');
+        $product = $this->product($owner);
+        $customer = $this->customer($owner);
+
+        $layaway = app(LayawayService::class)->create($owner, $session, [
+            'product_id' => $product->id,
+            'customer_id' => $customer->id,
+            'due_date' => now()->addDays(10)->toDateString(),
+            'initial_amount' => '20.00',
+            'initial_method' => 'cash',
+        ]);
+
+        app(LayawayService::class)->cancel($layaway, $owner, 'El cliente desistió');
+
+        $this->actingAs($owner)
+            ->get(route('admin.layaways.show', $layaway->refresh()))
+            ->assertOk()
+            ->assertSeeText('Apartado cancelado')
+            ->assertSeeText('El cliente desistió')
+            ->assertDontSeeText('Registrar abono');
+    }
+
     public function test_the_product_search_returns_available_pieces_only(): void
     {
         $owner = $this->owner();

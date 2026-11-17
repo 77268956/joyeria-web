@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StoreSaleRequest;
 use App\Models\Category;
 use App\Models\Metal;
 use App\Models\Product;
+use App\Models\Sale;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\SaleService;
@@ -77,6 +78,57 @@ class PosController extends Controller
             ]);
 
         return response()->json(['products' => $products]);
+    }
+
+    /**
+     * Return the sales registered during the current shift (or today when there is none).
+     */
+    public function history(): JsonResponse
+    {
+        $session = $this->cash->currentSession(Auth::user());
+
+        $sales = Sale::query()
+            ->when($session !== null, fn ($query) => $query->where('cash_session_id', $session->id))
+            ->when($session === null, fn ($query) => $query->whereDate('created_at', today()))
+            ->with('customer')
+            ->withCount('items')
+            ->latest('id')
+            ->get()
+            ->map(fn (Sale $sale): array => [
+                'id' => $sale->id,
+                'number' => $sale->number,
+                'time' => $sale->created_at?->format('H:i'),
+                'date' => $sale->created_at?->format('d/m/Y'),
+                'customer' => $sale->customer?->full_name ?? 'Consumidor final',
+                'items' => $sale->items_count,
+                'total' => (string) $sale->total,
+                'status' => $sale->status?->label() ?? '',
+                'is_voided' => $sale->isVoided(),
+                'show_url' => route('admin.sales.show', $sale),
+                'ticket_url' => route('admin.sales.ticket', $sale),
+            ]);
+
+        $count = 0;
+        $total = '0.00';
+
+        foreach ($sales as $sale) {
+            if ($sale['is_voided']) {
+                continue;
+            }
+
+            $count++;
+            $total = bcadd($total, $sale['total'], 2);
+        }
+
+        return response()->json([
+            'scope' => $session !== null ? 'shift' : 'today',
+            'opened_at' => $session?->opened_at?->format('d/m/Y H:i'),
+            'summary' => [
+                'count' => $count,
+                'total' => $total,
+            ],
+            'sales' => $sales->values(),
+        ]);
     }
 
     /**

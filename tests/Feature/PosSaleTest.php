@@ -71,7 +71,45 @@ class PosSaleTest extends TestCase
             ->assertOk()
             ->assertSee('Punto de Venta')
             ->assertSee('Modo POS (F11)')
+            ->assertSee('Historial de ventas')
+            ->assertSee('scope=shift', false)
             ->assertSee("e.key === 'F11'", false);
+    }
+
+    public function test_the_history_endpoint_returns_the_current_shift_sales(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $product = $this->product('100.00');
+
+        $this->actingAs($seller)->postJson(route('admin.pos.store'), $this->payload($product))->assertOk();
+
+        $this->actingAs($seller)->getJson(route('admin.pos.history'))
+            ->assertOk()
+            ->assertJsonPath('scope', 'shift')
+            ->assertJsonPath('summary.count', 1)
+            ->assertJsonPath('summary.total', '100.00')
+            ->assertJsonPath('sales.0.number', 'VTA-000001')
+            ->assertJsonPath('sales.0.customer', 'Consumidor final');
+    }
+
+    public function test_sales_history_can_be_filtered_to_the_current_shift(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $product = $this->product('100.00');
+
+        $this->actingAs($seller)->postJson(route('admin.pos.store'), $this->payload($product))->assertOk();
+
+        $this->actingAs($seller)->get(route('admin.sales.index', ['scope' => 'shift']))
+            ->assertOk()
+            ->assertSee('VTA-000001')
+            ->assertSee('Ventas del turno');
+
+        $this->actingAs($seller)->get(route('admin.sales.index', ['scope' => 'today']))
+            ->assertOk()
+            ->assertSee('VTA-000001')
+            ->assertSee('Ventas de hoy');
     }
 
     public function test_search_returns_available_products(): void

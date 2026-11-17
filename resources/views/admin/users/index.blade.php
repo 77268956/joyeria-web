@@ -246,7 +246,7 @@
 
     @if($users->hasPages())
         <div class="paginated-pagination" style="padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-linea);">
-            {{ $users->links() }}
+            {{ $users->links('vendor.pagination.admin') }}
         </div>
     @endif
 </div>

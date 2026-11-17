@@ -95,7 +95,7 @@
     </div>
 
     <div class="paginated-pagination">
-        {{ $layaways->links() }}
+        {{ $layaways->links('vendor.pagination.admin') }}
     </div>
 </div>
 @endsection

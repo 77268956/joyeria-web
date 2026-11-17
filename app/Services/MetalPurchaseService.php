@@ -60,7 +60,8 @@ class MetalPurchaseService
      *         net_weight_g: string,
      *         weight_source: string,
      *         destination: string,
-     *         photo: UploadedFile
+     *         photo: UploadedFile,
+     *         negotiated_amount?: string|null
      *     }>
      * }  $data
      */
@@ -313,6 +314,7 @@ class MetalPurchaseService
             'price_per_gram_snapshot' => $line['price_per_gram_snapshot'],
             'discount_percent_snapshot' => $line['discount_percent_snapshot'],
             'amount' => $line['amount'],
+            'appraised_amount' => $line['appraised_amount'],
             'photo_path' => $this->storePhoto($item['photo']),
             'destination' => $item['destination'],
         ]);
@@ -377,6 +379,18 @@ class MetalPurchaseService
         $fineness = (string) $purity->fineness;
         $pricePerGram = $this->pricePerGram($metal);
         $discount = $this->discountFor($storeId, $metal->id, $purity->id);
+        $appraisedAmount = $this->pricing->purchaseAmount($net, $pricePerGram, $fineness, $discount);
+        $negotiatedAmount = $item['negotiated_amount'] ?? null;
+
+        if ($negotiatedAmount === null || $negotiatedAmount === '') {
+            $amount = $appraisedAmount;
+        } else {
+            $amount = $this->pricing->round((string) $negotiatedAmount, 2);
+
+            if (bccomp($amount, '0', 2) < 0) {
+                throw new InvalidArgumentException('El precio acordado no puede ser negativo.');
+            }
+        }
 
         return [
             'gross_weight_g' => $gross,
@@ -384,7 +398,8 @@ class MetalPurchaseService
             'fineness_snapshot' => $fineness,
             'price_per_gram_snapshot' => $pricePerGram,
             'discount_percent_snapshot' => $discount,
-            'amount' => $this->pricing->purchaseAmount($net, $pricePerGram, $fineness, $discount),
+            'appraised_amount' => $appraisedAmount,
+            'amount' => $amount,
         ];
     }
 

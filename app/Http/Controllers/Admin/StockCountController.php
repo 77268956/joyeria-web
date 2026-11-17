@@ -30,9 +30,17 @@ class StockCountController extends Controller
             ->latest('id')
             ->paginate(20);
 
+        $statusCounts = StockCount::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         return view('admin.stock-counts.index', [
             'counts' => $counts,
             'statuses' => StockCountStatus::cases(),
+            'openCount' => (int) ($statusCounts[StockCountStatus::Open->value] ?? 0),
+            'finishedCount' => (int) ($statusCounts[StockCountStatus::Finished->value] ?? 0),
+            'appliedCount' => (int) ($statusCounts[StockCountStatus::Applied->value] ?? 0),
         ]);
     }
 

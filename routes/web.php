@@ -72,6 +72,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['permission:sales.create', 'cash.session'])->group(function () {
         Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
         Route::get('/pos/buscar', [PosController::class, 'search'])->name('pos.search');
+        Route::get('/pos/historial', [PosController::class, 'history'])->name('pos.history');
         Route::post('/pos/venta', [PosController::class, 'store'])->name('pos.store');
 
         // Autorizaciones de descuento en mostrador (híbrido PIN / remoto)

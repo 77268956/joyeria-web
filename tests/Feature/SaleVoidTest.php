@@ -57,6 +57,32 @@ class SaleVoidTest extends TestCase
         ]);
     }
 
+    public function test_a_manager_can_view_the_sale_detail(): void
+    {
+        $product = $this->product();
+        $sale = $this->createSale($product);
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.sales.show', $sale))
+            ->assertOk()
+            ->assertSee($sale->number)
+            ->assertSee('Piezas vendidas')
+            ->assertSee('Pagos');
+    }
+
+    public function test_a_manager_can_view_the_sale_invoice(): void
+    {
+        $product = $this->product();
+        $sale = $this->createSale($product);
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.sales.ticket', ['sale' => $sale, 'format' => 'invoice']))
+            ->assertOk()
+            ->assertSee('Factura de venta')
+            ->assertSee($sale->number)
+            ->assertSee('Pagos');
+    }
+
     public function test_a_manager_can_void_a_sale_and_return_the_piece_to_stock(): void
     {
         $product = $this->product();

@@ -36,6 +36,7 @@ class MetalPurchaseItem extends Model
         'price_per_gram_snapshot',
         'discount_percent_snapshot',
         'amount',
+        'appraised_amount',
         'photo_path',
         'destination',
         'product_id',
@@ -57,8 +58,33 @@ class MetalPurchaseItem extends Model
             'price_per_gram_snapshot' => 'decimal:4',
             'discount_percent_snapshot' => 'decimal:2',
             'amount' => 'decimal:2',
+            'appraised_amount' => 'decimal:2',
             'destination' => PurchaseDestination::class,
         ];
+    }
+
+    /**
+     * System valuation before customer negotiation.
+     */
+    public function appraisedAmount(): string
+    {
+        return bcadd((string) ($this->appraised_amount ?? $this->amount), '0', 2);
+    }
+
+    /**
+     * Difference between the agreed amount and the system valuation.
+     */
+    public function negotiationDifference(): string
+    {
+        return bcsub((string) $this->amount, $this->appraisedAmount(), 2);
+    }
+
+    /**
+     * Whether the piece was negotiated away from the system valuation.
+     */
+    public function isNegotiated(): bool
+    {
+        return bccomp($this->negotiationDifference(), '0', 2) !== 0;
     }
 
     /**

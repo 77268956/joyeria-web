@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\StoreMetalPurchaseRequest;
 use App\Models\Customer;
 use App\Models\Metal;
 use App\Models\MetalPurchase;
+use App\Models\MetalPurchaseItem;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\MetalPurchaseService;
@@ -35,9 +36,7 @@ class MetalPurchaseController extends Controller
      */
     public function index(Request $request): View
     {
-        $purchases = MetalPurchase::query()
-            ->with(['customer:id,full_name', 'user:id,name'])
-            ->withCount('items')
+        $query = MetalPurchase::query()
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->when($request->filled('search'), function ($query) use ($request): void {
                 $term = '%'.$request->input('search').'%';
@@ -45,7 +44,30 @@ class MetalPurchaseController extends Controller
                     $query->where('number', 'like', $term)
                         ->orWhereHas('customer', fn ($query) => $query->where('full_name', 'like', $term));
                 });
-            })
+            });
+
+        $summary = (clone $query)
+            ->reorder()
+            ->selectRaw(
+                'COUNT(*) as purchases_count, '.
+                'COALESCE(SUM(CASE WHEN status IN (?, ?) THEN total_amount ELSE 0 END), 0) as paid_total, '.
+                'COUNT(CASE WHEN status = ? THEN 1 END) as pending_count',
+                [
+                    MetalPurchaseStatus::Paid->value,
+                    MetalPurchaseStatus::Adjusted->value,
+                    MetalPurchaseStatus::PendingApproval->value,
+                ],
+            )
+            ->first();
+
+        $piecesCount = MetalPurchaseItem::query()
+            ->whereIn('metal_purchase_id', (clone $query)->reorder()->select('metal_purchases.id'))
+            ->count();
+
+        $purchases = $query
+            ->with(['customer:id,full_name', 'user:id,name'])
+            ->withCount('items')
+            ->withSum('items as appraised_total', 'appraised_amount')
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -53,6 +75,12 @@ class MetalPurchaseController extends Controller
         return view('admin.purchases.index', [
             'purchases' => $purchases,
             'statuses' => MetalPurchaseStatus::cases(),
+            'summary' => [
+                'count' => (int) ($summary->purchases_count ?? 0),
+                'paid_total' => (string) ($summary->paid_total ?? '0.00'),
+                'pending_count' => (int) ($summary->pending_count ?? 0),
+                'pieces_count' => $piecesCount,
+            ],
         ]);
     }
 
@@ -79,8 +107,17 @@ class MetalPurchaseController extends Controller
             ])->values()->all(),
         ])->values()->all();
 
+        $selectedCustomer = filled(old('customer_id'))
+            ? Customer::find(old('customer_id'))
+            : null;
+
         return view('admin.purchases.create', [
-            'customers' => Customer::orderBy('full_name')->get(['id', 'full_name', 'document_type', 'document_number']),
+            'selectedCustomer' => $selectedCustomer ? [
+                'id' => $selectedCustomer->id,
+                'full_name' => $selectedCustomer->full_name,
+                'document' => trim($selectedCustomer->document_type.' '.$selectedCustomer->document_number),
+                'phone' => $selectedCustomer->phone,
+            ] : null,
             'metalsJson' => $metalsJson,
             'approvalLimit' => (string) $settings->purchase_approval_limit,
             'canApprove' => $user->can('purchases.approve'),

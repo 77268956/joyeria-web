@@ -36,6 +36,14 @@ class MetalPriceController extends Controller
             fn (Metal $metal): array => [$metal->code => $this->prices->currentForMetal($metal)]
         );
 
+        $previous = $metals->mapWithKeys(function (Metal $metal): array {
+            return [$metal->code => MetalPrice::where('metal_id', $metal->id)
+                ->latest('created_at')
+                ->latest('id')
+                ->skip(1)
+                ->first()];
+        });
+
         // Indicative price per gram for each purity, derived solely through PricingCalculator.
         $purityPrices = $metals->mapWithKeys(function (Metal $metal) use ($current): array {
             $price = $current[$metal->code] ?? null;
@@ -59,6 +67,7 @@ class MetalPriceController extends Controller
         return view('admin.prices.index', [
             'metals' => $metals,
             'current' => $current,
+            'previous' => $previous,
             'purityPrices' => $purityPrices,
             'history' => $history,
             'store' => $this->currentStore(),

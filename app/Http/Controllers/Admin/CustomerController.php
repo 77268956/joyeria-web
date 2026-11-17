@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LayawayStatus;
+use App\Enums\SaleStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCustomerRequest;
 use App\Http\Requests\Admin\UpdateCustomerRequest;
@@ -37,7 +39,23 @@ class CustomerController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.customers.index', ['customers' => $customers]);
+        $stats = [
+            'total' => Customer::query()->count(),
+            'with_sales' => Customer::query()->has('sales')->count(),
+            'new_this_month' => Customer::query()->where('created_at', '>=', now()->startOfMonth())->count(),
+            'with_contact' => Customer::query()->where(function (Builder $query): void {
+                $query->where(function (Builder $sub): void {
+                    $sub->whereNotNull('phone')->where('phone', '!=', '');
+                })->orWhere(function (Builder $sub): void {
+                    $sub->whereNotNull('email')->where('email', '!=', '');
+                });
+            })->count(),
+        ];
+
+        return view('admin.customers.index', [
+            'customers' => $customers,
+            'stats' => $stats,
+        ]);
     }
 
     /**
@@ -130,9 +148,30 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer): View
     {
-        $customer->load(['sales' => fn ($query) => $query->latest('id')->limit(20)]);
+        $customer->load([
+            'sales' => fn ($query) => $query->latest('id')->limit(30),
+            'layaways' => fn ($query) => $query->latest('id')->limit(10),
+        ]);
 
-        return view('admin.customers.show', ['customer' => $customer]);
+        $completedSales = $customer->sales->where('status', SaleStatus::Completed);
+        $completedCount = $completedSales->count();
+        $totalSpent = $completedSales->reduce(
+            fn (string $carry, $sale): string => bcadd($carry, (string) $sale->total, 2),
+            '0.00'
+        );
+        $averageTicket = $completedCount > 0
+            ? bcdiv($totalSpent, (string) $completedCount, 2)
+            : '0.00';
+
+        return view('admin.customers.show', [
+            'customer' => $customer,
+            'stats' => [
+                'total_sales' => $completedCount,
+                'total_spent' => $totalSpent,
+                'average_ticket' => $averageTicket,
+                'active_layaways' => $customer->layaways->where('status', LayawayStatus::Active)->count(),
+            ],
+        ]);
     }
 
     /**

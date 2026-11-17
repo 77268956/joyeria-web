@@ -7,15 +7,207 @@
 @section('content')
 <style>
     .pos-page {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
+        gap: 0.85rem;
         flex: 1;
         min-height: 0;
-        gap: 0.85rem;
     }
 
     .pos-header {
         margin-bottom: 0;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.75rem;
+    }
+
+    .pos-search-card .pos-header {
+        margin-bottom: 0.65rem;
+        padding-bottom: 0.55rem;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .pos-search-card .pos-header .page-title {
+        font-size: 1.3rem;
+    }
+
+    .pos-search-card .pos-header .page-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .pos-kiosk-history {
+        display: none;
+    }
+
+    body.pos-kiosk .pos-kiosk-history {
+        display: inline-flex;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .pos-search-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pos-search-row #pos-search {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* --- Drawer lateral de historial de ventas --- */
+    .pos-history-backdrop {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(20, 18, 15, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 2100;
+    }
+
+    .pos-history-backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .pos-history-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: min(420px, 100vw);
+        display: flex;
+        flex-direction: column;
+        background-color: var(--color-blanco);
+        border-left: 1px solid var(--color-linea);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        z-index: 2200;
+    }
+
+    .pos-history-drawer.is-open {
+        transform: translateX(0);
+    }
+
+    .pos-history-drawer-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .pos-history-drawer-header h3 {
+        margin: 0;
+        font-size: 1.15rem;
+    }
+
+    .pos-history-scope {
+        display: block;
+        margin-top: 0.15rem;
+        color: var(--color-piedra);
+        font-size: 0.76rem;
+    }
+
+    .pos-history-summary {
+        display: flex;
+        gap: 1.25rem;
+        padding: 0.85rem 1.1rem;
+        background-color: var(--color-crema);
+        border-bottom: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .pos-history-summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
+    }
+
+    .pos-history-summary-label {
+        color: var(--color-piedra);
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .pos-history-summary-value {
+        color: var(--color-noche);
+        font-family: var(--font-serif);
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .pos-history-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0.75rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .pos-history-item {
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        padding: 0.6rem 0.7rem;
+        background-color: #fff;
+    }
+
+    .pos-history-item-top,
+    .pos-history-item-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .pos-history-number {
+        color: var(--color-noche);
+        font-weight: 700;
+        font-size: 0.88rem;
+    }
+
+    .pos-history-total {
+        color: var(--color-noche);
+        font-weight: 700;
+        font-size: 0.92rem;
+    }
+
+    .pos-history-meta {
+        margin: 0.2rem 0 0.4rem;
+        color: var(--color-piedra);
+        font-size: 0.75rem;
+    }
+
+    .pos-history-link {
+        color: var(--color-dorado);
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .pos-history-empty {
+        padding: 2rem 0.5rem;
+        color: var(--color-piedra);
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    .pos-history-drawer-footer {
+        padding: 0.85rem 1.1rem;
+        border-top: 1px solid var(--color-linea);
+        flex-shrink: 0;
+    }
+
+    .pos-history-drawer-footer .btn {
+        width: 100%;
     }
 
     .pos-header .page-title {
@@ -25,14 +217,6 @@
     .pos-header .page-subtitle {
         font-size: 0.82rem;
         margin-top: 0.1rem;
-    }
-
-    .pos-main {
-        display: grid;
-        grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
-        gap: 0.85rem;
-        flex: 1;
-        min-height: 0;
     }
 
     .pos-card-title {
@@ -51,6 +235,10 @@
         min-width: 0;
         padding: 0.9rem 1rem;
         margin-bottom: 0;
+    }
+
+    .pos-search-card {
+        flex: 1;
     }
 
     .pos-results {
@@ -773,6 +961,67 @@
         }
     }
 
+    /* --- Nuevo Cliente: panel lateral derecho --- */
+    #modal-new-customer {
+        justify-content: flex-end;
+        align-items: stretch;
+        padding: 0;
+    }
+
+    #modal-new-customer .modal {
+        width: min(560px, 100vw);
+        max-width: min(560px, 100vw);
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        border: 0;
+        border-left: 1px solid var(--color-linea);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: transform 0.25s ease, opacity 0.25s ease;
+        animation: none !important;
+    }
+
+    #modal-new-customer.is-active .modal {
+        opacity: 1;
+        transform: translateX(0);
+        animation: none !important;
+    }
+
+    #modal-new-customer.is-closing .modal {
+        opacity: 0;
+        transform: translateX(100%);
+        animation: none !important;
+    }
+
+    #modal-new-customer form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+
+    #modal-new-customer .pos-customer-modal-body {
+        flex: 1;
+        max-height: none;
+    }
+
+    #modal-new-customer .modal-header,
+    #modal-new-customer .pos-customer-modal-footer {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 640px) {
+        #modal-new-customer .modal {
+            width: 100vw;
+            max-width: 100vw;
+        }
+    }
+
     /* --- Modal de Cobro --- */
     #modal-charge .modal {
         max-width: 980px;
@@ -1017,6 +1266,44 @@
         font-size: 0.72rem;
     }
 
+    .pos-payment-pieces {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .pos-piece-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.15rem 0.45rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 999px;
+        background-color: #FAF8F3;
+        color: var(--color-piedra);
+        font-size: 0.7rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pos-piece-chip.is-checked {
+        border-color: var(--color-dorado);
+        background-color: #FFF8E7;
+        color: var(--color-noche);
+    }
+
+    .pos-piece-chip input {
+        margin: 0;
+        accent-color: var(--color-dorado);
+    }
+
+    .pos-payment-field .form-control.is-readonly {
+        background-color: #FAF8F3;
+        color: var(--color-noche);
+        font-weight: 600;
+    }
+
     .pos-payment-del {
         height: 36px;
         width: 34px;
@@ -1117,10 +1404,6 @@
             display: block;
         }
 
-        .pos-main {
-            display: block;
-        }
-
         .pos-search-card,
         .pos-cart-card {
             margin-bottom: 1rem;
@@ -1194,7 +1477,7 @@
         }
     }
     /* --- Modo POS a pantalla completa: interfaz más grande para mostrador --- */
-    body.pos-kiosk .pos-main {
+    body.pos-kiosk .pos-page {
         grid-template-columns: minmax(0, 2.4fr) minmax(380px, 1fr);
         gap: 0.9rem;
     }
@@ -1202,6 +1485,11 @@
     body.pos-kiosk #pos-search {
         height: 48px;
         font-size: 1.05rem;
+    }
+
+    body.pos-kiosk .pos-kiosk-history {
+        height: 48px;
+        font-size: 0.9rem;
     }
 
     body.pos-kiosk .pos-cards {
@@ -1245,10 +1533,203 @@
     body.pos-kiosk .pos-card-title {
         font-size: 1.15rem;
     }
+
+    /* =========================================================================
+       Rediseño del modal de cobro: flujo vertical claro y sin espacios muertos
+       ========================================================================= */
+    #modal-charge .modal {
+        max-width: 940px;
+        width: 96%;
+        border-radius: 8px;
+    }
+
+    #modal-charge .modal-header {
+        padding: 0.85rem 1.15rem;
+        background-color: #fff;
+    }
+
+    #modal-charge .modal-body {
+        padding: 0.9rem 1.15rem 1rem;
+        background-color: #F7F4EE;
+    }
+
+    #modal-charge .pos-modal-info-summary {
+        margin-bottom: 0.75rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    #modal-charge .pos-modal-method-title {
+        margin-bottom: 0.4rem;
+    }
+
+    #modal-charge .pos-modal-methods-grid {
+        margin-bottom: 0.8rem;
+    }
+
+    #modal-charge .pos-modal-fields-row {
+        display: block;
+    }
+
+    #modal-charge .pos-payments-box {
+        gap: 0.55rem;
+    }
+
+    #modal-charge .pos-payments-box::before {
+        content: 'Pagos';
+        margin-bottom: 0.05rem;
+        color: var(--color-noche);
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    #modal-charge .pos-payment-input-row {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    #modal-charge .pos-payment-row-heading {
+        align-self: flex-start;
+        max-width: calc(100% - 4.5rem);
+        margin-bottom: 0;
+        padding: 0.16rem 0.55rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 999px;
+        background-color: #FAF8F3;
+        font-size: 0.73rem;
+    }
+
+    #modal-charge .pos-payment-pieces {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-bottom: 0;
+    }
+
+    #modal-charge .pos-payment-pieces::before {
+        content: 'Piezas de este pago';
+        display: block;
+        width: 100%;
+        color: var(--color-piedra);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    #modal-charge .pos-piece-chip {
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        background-color: #fff;
+        font-size: 0.68rem;
+    }
+
+    #modal-charge .pos-payment-row-fields {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0.55rem;
+    }
+
+    #modal-charge .pos-payment-field label {
+        margin-bottom: 0.15rem;
+        font-size: 0.66rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    #modal-charge .pos-payment-field .form-control {
+        height: 38px;
+        font-size: 0.86rem;
+    }
+
+    #modal-charge .pos-payment-del {
+        position: absolute;
+        top: 0.55rem;
+        right: 0.6rem;
+        width: auto;
+        height: auto;
+        padding: 0.15rem 0.3rem;
+        border: 0;
+        background: none;
+        color: var(--color-piedra);
+        font-size: 0;
+        font-weight: 600;
+    }
+
+    #modal-charge .pos-payment-del::after {
+        content: 'Quitar';
+        font-size: 0.7rem;
+    }
+
+    #modal-charge .pos-payment-del:hover {
+        border-color: transparent;
+        background-color: #FDF2F2;
+        color: var(--color-error);
+    }
+
+    #modal-charge .pos-add-payment {
+        align-self: flex-start;
+        margin-top: 0.45rem;
+    }
+
+    #modal-charge .pos-discount-panel {
+        margin-top: 0.8rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    #modal-charge .pos-charge-footer-bar {
+        margin-top: 0.8rem;
+        padding: 0.7rem 0.8rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 6px;
+        background-color: #FAF8F3;
+    }
+
+    #modal-charge .pos-footer-total-main {
+        font-weight: 700;
+    }
+
+    #modal-charge .pos-footer-total-main .pos-footer-total-val {
+        font-family: var(--font-serif);
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 640px) {
+        #modal-charge .modal-body {
+            padding: 0.75rem 0.85rem 0.9rem;
+        }
+
+        #modal-charge .pos-payment-row-fields {
+            grid-template-columns: 1fr;
+        }
+
+        #modal-charge .pos-charge-footer-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #modal-charge .pos-footer-actions {
+            width: 100%;
+        }
+
+        #modal-charge .pos-footer-actions .btn {
+            flex: 1;
+        }
+    }
 </style>
 
+@php($historyUrl = route('admin.sales.index', ['scope' => $session ? 'shift' : 'today']))
+
 <div class="pos-page">
-    <div class="page-header pos-header">
+    <div class="card pos-search-card">
+        <div class="page-header pos-header">
         <div>
             <h1 class="page-title font-serif">Punto de Venta</h1>
             <p class="page-subtitle">
@@ -1268,16 +1749,18 @@
                 <a href="{{ route('admin.layaways.create') }}" class="btn btn-outline btn-sm">Apartar pieza</a>
             @endcan
             <a href="{{ route('admin.cash.index') }}" class="btn btn-outline btn-sm">Caja</a>
+            <button type="button" class="btn btn-outline btn-sm js-pos-history">Historial de ventas</button>
             <button type="button" id="pos-kiosk-toggle" class="btn btn-outline btn-sm" title="Modo mostrador a pantalla completa (F11)">Modo POS (F11)</button>
         </div>
-    </div>
+        </div>
 
-    @include('admin.partials.alerts')
+        @include('admin.partials.alerts')
 
-    <div class="pos-main">
-        <div class="card pos-search-card">
-            <label class="form-label" for="pos-search">Buscar pieza (código de barras, SKU o nombre)</label>
-            <input type="text" id="pos-search" class="form-control" placeholder="Escanea o escribe y presiona Enter" autocomplete="off" autofocus>
+        <label class="form-label" for="pos-search">Buscar pieza (código de barras, SKU o nombre)</label>
+            <div class="pos-search-row">
+                <input type="text" id="pos-search" class="form-control" placeholder="Escanea o escribe y presiona Enter" autocomplete="off" autofocus>
+                <button type="button" class="btn btn-outline btn-sm pos-kiosk-history js-pos-history">Historial de ventas</button>
+            </div>
 
             <div class="pos-filters">
                 <select id="filter-metal" class="form-select">
@@ -1298,14 +1781,10 @@
             </div>
 
             <div id="pos-results" class="pos-cards"></div>
-        </div>
+    </div>
 
-
-
-
-
-        <div class="card pos-cart-card ">
-            <h2 class="font-serif pos-card-title bg-[#343]">Carrito</h2>
+    <div class="card pos-cart-card">
+        <h2 class="font-serif pos-card-title bg-[#343]">Carrito</h2>
 
             <!-- Selector de Cliente en Vista Principal (desde el inicio) -->
             <div class="pos-cart-customer-section">
@@ -1376,14 +1855,42 @@
             <button type="button" class="btn btn-gold" id="open-charge" style="margin-top: 0.75rem; width: 100%; height: 46px; font-size: 1rem;">Cobrar</button>
 
             <p id="cart-error" class="alert alert-error" style="display: none; margin-top: 0.75rem;"></p>
-        </div>
-
-
-        
-
-        
     </div>
 </div>
+
+<!-- Drawer lateral: Historial de ventas del turno -->
+<div id="pos-history-backdrop" class="pos-history-backdrop" aria-hidden="true"></div>
+<aside id="pos-history-drawer" class="pos-history-drawer" aria-hidden="true" role="dialog" aria-labelledby="pos-history-title">
+    <div class="pos-history-drawer-header">
+        <div>
+            <h3 id="pos-history-title" class="font-serif">Historial de ventas</h3>
+            <span id="pos-history-scope" class="pos-history-scope">Turno actual</span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+            <button type="button" id="pos-history-refresh" class="btn btn-outline btn-sm" title="Actualizar historial">Actualizar</button>
+            <button type="button" id="pos-history-close" class="modal-close" aria-label="Cerrar historial">×</button>
+        </div>
+    </div>
+
+    <div class="pos-history-summary">
+        <div class="pos-history-summary-item">
+            <span class="pos-history-summary-label">Ventas</span>
+            <span id="pos-history-count" class="pos-history-summary-value">0</span>
+        </div>
+        <div class="pos-history-summary-item">
+            <span class="pos-history-summary-label">Total cobrado</span>
+            <span id="pos-history-total" class="pos-history-summary-value">$ 0.00</span>
+        </div>
+    </div>
+
+    <div id="pos-history-body" class="pos-history-body">
+        <div class="pos-history-empty">Cargando historial...</div>
+    </div>
+
+    <div class="pos-history-drawer-footer">
+        <a href="{{ $historyUrl }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Ver historial completo</a>
+    </div>
+</aside>
 
 <!-- Modal de Detalles de Producto -->
 <div id="modal-product-details" class="modal-backdrop" style="display: none;">
@@ -1510,6 +2017,10 @@
             <!-- Footer con totales y botones de acción -->
             <div class="pos-charge-footer-bar">
                 <div class="pos-footer-totals">
+                    <div class="pos-footer-total-item pos-footer-total-main">
+                        <span>Total a cobrar:</span>
+                        <span class="num pos-footer-total-val" id="modal-total-display">$ 0.00</span>
+                    </div>
                     <div class="pos-footer-total-item">
                         <span>Total pagado:</span>
                         <span class="num pos-footer-total-val" id="sum-paid">$ 0.00</span>
@@ -1728,6 +2239,7 @@
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
     const routes = {
         search: @json(route('admin.pos.search')),
+        history: @json(route('admin.pos.history')),
         store: @json(route('admin.pos.store')),
         validatePin: @json(route('admin.pos.authorization.pin')),
         requestRemote: @json(route('admin.pos.authorization.store')),
@@ -1803,12 +2315,23 @@
         el('sum-discount').textContent = money(discountTotal);
         el('sum-total').textContent = money(total);
 
-        // Auto-fill first payment row amount with the total (if only one row and empty)
+        const modalTotalDisplay = el('modal-total-display');
+        if (modalTotalDisplay) {
+            modalTotalDisplay.textContent = money(total);
+        }
+
+        // Mantener las piezas asignadas a cada pago sincronizadas con el carrito
         const rows = paymentRows();
-        if (rows.length === 1) {
-            const amountInput = rows[0].querySelector('[data-amount]');
-            if (!amountInput.value || Number(amountInput.value) === 0) {
-                amountInput.value = total.toFixed(2);
+        if (rows.length > 0) {
+            const validIds = new Set(cart.map((item) => item.id));
+            rows.forEach((row) => {
+                row._pieceIds = (row._pieceIds || []).filter((pieceId) => validIds.has(pieceId));
+            });
+
+            if (cart.length > 0 && !rows.some((row) => row._pieceIds.length > 0)) {
+                autoDistributeItems();
+            } else {
+                refreshRowAmounts();
             }
         }
 
@@ -1827,6 +2350,135 @@
 
     function paymentRows() {
         return Array.from(el('payments').querySelectorAll('[data-payment]'));
+    }
+
+    function itemChargeCents() {
+        const baseCents = cart.map((item) => Math.max(0, Math.round(item.price * 100) - Math.round((item.discount || 0) * 100)));
+        const baseSum = baseCents.reduce((sum, value) => sum + value, 0);
+        const globalDiscountCents = Math.min(
+            Math.round((Number(el('discount_total').value) || 0) * 100),
+            baseSum
+        );
+        const cents = baseCents.map((base) => {
+            if (baseSum <= 0) {
+                return 0;
+            }
+            return Math.round(base - (globalDiscountCents * base) / baseSum);
+        });
+        const totalCents = Math.max(0, baseSum - globalDiscountCents);
+        const diff = totalCents - cents.reduce((sum, value) => sum + value, 0);
+        if (cents.length > 0) {
+            cents[cents.length - 1] += diff;
+        }
+        return cents;
+    }
+
+    function syncRowAmount(row) {
+        if (!row._autoAmount) {
+            return;
+        }
+        const charges = itemChargeCents();
+        const cents = (row._pieceIds || []).reduce((sum, pieceId) => {
+            const index = cart.findIndex((item) => item.id === pieceId);
+            return index >= 0 ? sum + (charges[index] || 0) : sum;
+        }, 0);
+        row.querySelector('[data-amount]').value = (cents / 100).toFixed(2);
+    }
+
+    function refreshRowAmounts() {
+        paymentRows().forEach((row) => syncRowAmount(row));
+    }
+
+    function renderRowPieces(row) {
+        const box = row.querySelector('[data-pieces]');
+        if (!box) {
+            return;
+        }
+
+        box.innerHTML = '';
+        if (cart.length === 0) {
+            box.textContent = 'Sin piezas en el carrito.';
+            row.querySelector('[data-amount]').readOnly = false;
+            row.querySelector('[data-amount]').classList.remove('is-readonly');
+            return;
+        }
+
+        row._pieceIds = (row._pieceIds || []).filter((pieceId) => cart.some((item) => item.id === pieceId));
+
+        cart.forEach((item) => {
+            const chip = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = row._pieceIds.includes(item.id);
+            chip.classList.toggle('is-checked', checkbox.checked);
+
+            const text = document.createElement('span');
+            text.textContent = item.name + ' (' + money(item.price) + ')';
+
+            checkbox.addEventListener('change', () => togglePiece(row, item.id, checkbox.checked));
+
+            chip.appendChild(checkbox);
+            chip.appendChild(text);
+            box.appendChild(chip);
+        });
+
+        const amountInput = row.querySelector('[data-amount]');
+        amountInput.readOnly = row._pieceIds.length > 0;
+        amountInput.classList.toggle('is-readonly', row._pieceIds.length > 0);
+    }
+
+    function togglePiece(row, pieceId, checked) {
+        row._pieceIds = row._pieceIds || [];
+        if (checked) {
+            paymentRows().forEach((other) => {
+                if (other !== row && (other._pieceIds || []).includes(pieceId)) {
+                    other._pieceIds = other._pieceIds.filter((id) => id !== pieceId);
+                    other._autoAmount = true;
+                    syncRowAmount(other);
+                    renderRowPieces(other);
+                }
+            });
+            if (!row._pieceIds.includes(pieceId)) {
+                row._pieceIds.push(pieceId);
+            }
+        } else {
+            row._pieceIds = row._pieceIds.filter((id) => id !== pieceId);
+        }
+
+        row._autoAmount = true;
+        syncRowAmount(row);
+        renderRowPieces(row);
+        updatePaid(currentTotal());
+    }
+
+    function autoDistributeItems() {
+        const rows = paymentRows();
+        if (rows.length === 0) {
+            return;
+        }
+
+        const charges = itemChargeCents();
+        const pieces = cart
+            .map((item, index) => ({ id: item.id, cents: charges[index] || 0 }))
+            .sort((a, b) => b.cents - a.cents);
+
+        rows.forEach((row) => {
+            row._pieceIds = [];
+            row._autoAmount = true;
+        });
+
+        pieces.forEach((piece, position) => {
+            rows[position % rows.length]._pieceIds.push(piece.id);
+        });
+
+        const cartOrder = new Map(cart.map((item, index) => [item.id, index]));
+        rows.forEach((row) => {
+            row._pieceIds.sort((a, b) => (cartOrder.get(a) ?? 0) - (cartOrder.get(b) ?? 0));
+            renderRowPieces(row);
+            syncRowAmount(row);
+        });
+
+        updatePaid(currentTotal());
     }
 
     let activePaymentRow = null;
@@ -1933,9 +2585,13 @@
             amount = remaining > 0 ? remaining.toFixed(2) : currentTotal().toFixed(2);
         }
 
+        row._pieceIds = [];
+        row._autoAmount = true;
+
         row.innerHTML =
             '<input type="hidden" data-method value="' + (method || 'cash') + '">' +
             '<div class="pos-payment-row-heading" data-method-label></div>' +
+            '<div class="pos-payment-pieces" data-pieces></div>' +
             '<div class="pos-payment-row-fields">' +
                 '<div class="pos-payment-field" data-field="amount">' +
                     '<label for="payment-amount-' + rowId + '">Monto</label>' +
@@ -1961,23 +2617,40 @@
             });
         });
 
-        row.querySelector('[data-amount]').addEventListener('input', () => updatePaid(currentTotal()));
+        row.querySelector('[data-amount]').addEventListener('input', () => {
+            row._autoAmount = false;
+            updatePaid(currentTotal());
+        });
         row.querySelector('[data-received]').addEventListener('input', () => updatePaid(currentTotal()));
         row.querySelector('[data-drop]').addEventListener('click', () => {
             if (paymentRows().length > 1) {
                 row.remove();
+                if (activePaymentRow === row) {
+                    const remainingRows = paymentRows();
+                    activePaymentRow = remainingRows[remainingRows.length - 1] || null;
+                }
             } else {
-                row.querySelector('[data-amount]').value = currentTotal().toFixed(2);
+                row._pieceIds = [];
+                row._autoAmount = true;
                 row.querySelector('[data-received]').value = '';
                 row.querySelector('[data-reference]').value = '';
                 setRowMethod(row, 'cash');
             }
             updatePaid(currentTotal());
+            if (cart.length > 0) {
+                autoDistributeItems();
+            }
         });
 
         el('payments').appendChild(row);
         activePaymentRow = row;
         setRowMethod(row, method || 'cash');
+
+        if (cart.length > 0) {
+            autoDistributeItems();
+        } else {
+            renderRowPieces(row);
+        }
     }
 
     // Las tarjetas cambian el método de la fila de pago activa.
@@ -2221,13 +2894,12 @@
         const productNames = cart.map((item) => item.name);
         el('modal-products-display').textContent = productNames.length > 0 ? productNames.join(', ') : 'Sin piezas';
 
-        // Asegurar fila de pago inicial con el total
+        // Asegurar fila de pago inicial y repartir las piezas del carrito
         const rows = paymentRows();
         if (rows.length === 0) {
             addPaymentRow('cash', currentTotal());
-        } else if (rows.length === 1 && (!rows[0].querySelector('[data-amount]').value || Number(rows[0].querySelector('[data-amount]').value) === 0)) {
-            rows[0].querySelector('[data-amount]').value = currentTotal().toFixed(2);
         }
+        autoDistributeItems();
 
         const freshRows = paymentRows();
         const activeMethod = freshRows[0] ? freshRows[0].querySelector('[data-method]').value : 'cash';
@@ -2949,6 +3621,94 @@
         kioskToggle.addEventListener('click', toggleKiosk);
     }
 
+    // --- Drawer lateral: Historial de ventas del turno ---
+    const historyDrawer = el('pos-history-drawer');
+    const historyBackdrop = el('pos-history-backdrop');
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+        });
+    }
+
+    function renderHistory(data) {
+        el('pos-history-scope').textContent = data.scope === 'shift'
+            ? 'Turno abierto desde ' + (data.opened_at || '—')
+            : 'Ventas de hoy';
+        el('pos-history-count').textContent = String(data.summary.count);
+        el('pos-history-total').textContent = money(data.summary.total);
+
+        const body = el('pos-history-body');
+
+        if (!data.sales.length) {
+            body.innerHTML = '<div class="pos-history-empty">Todavía no hay ventas registradas en este turno.</div>';
+            return;
+        }
+
+        body.innerHTML = data.sales.map(function (sale) {
+            const statusClass = sale.is_voided ? 'badge-danger' : 'badge-success';
+
+            return '<div class="pos-history-item">' +
+                '<div class="pos-history-item-top">' +
+                    '<a href="' + escapeHtml(sale.show_url) + '" target="_blank" rel="noopener" class="pos-history-number">' + escapeHtml(sale.number) + '</a>' +
+                    '<span class="pos-history-total">' + money(sale.total) + '</span>' +
+                '</div>' +
+                '<div class="pos-history-meta">' +
+                    escapeHtml(sale.time) + ' · ' + escapeHtml(sale.customer) + ' · ' + escapeHtml(sale.items) + ' pieza(s)' +
+                '</div>' +
+                '<div class="pos-history-item-bottom">' +
+                    '<span class="badge ' + statusClass + '">' + escapeHtml(sale.status) + '</span>' +
+                    '<a href="' + escapeHtml(sale.ticket_url) + '" target="_blank" rel="noopener" class="pos-history-link">Ticket</a>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    function loadHistory() {
+        el('pos-history-body').innerHTML = '<div class="pos-history-empty">Cargando historial...</div>';
+
+        fetch(routes.history, {
+            headers: { 'Accept': 'application/json' },
+        })
+            .then(async function (response) {
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar el historial.');
+                }
+
+                return response.json();
+            })
+            .then(renderHistory)
+            .catch(function (exception) {
+                el('pos-history-body').innerHTML =
+                    '<div class="pos-history-empty" style="color: var(--color-error);">' +
+                    escapeHtml(exception.message) +
+                    '</div>';
+            });
+    }
+
+    function openHistory() {
+        historyDrawer.classList.add('is-open');
+        historyBackdrop.classList.add('is-open');
+        historyDrawer.setAttribute('aria-hidden', 'false');
+        historyBackdrop.setAttribute('aria-hidden', 'false');
+        loadHistory();
+    }
+
+    function closeHistory() {
+        historyDrawer.classList.remove('is-open');
+        historyBackdrop.classList.remove('is-open');
+        historyDrawer.setAttribute('aria-hidden', 'true');
+        historyBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('.js-pos-history').forEach(function (button) {
+        button.addEventListener('click', openHistory);
+    });
+
+    el('pos-history-close').addEventListener('click', closeHistory);
+    el('pos-history-refresh').addEventListener('click', loadHistory);
+    historyBackdrop.addEventListener('click', closeHistory);
+
     document.addEventListener('keydown', function (e) {
         if (e.key === 'F11' || e.key === 'F12') {
             e.preventDefault();
@@ -2957,6 +3717,11 @@
         }
 
         if (e.key === 'Escape') {
+            if (historyDrawer.classList.contains('is-open')) {
+                closeHistory();
+                return;
+            }
+
             const activeModal = document.querySelector('#modal-charge.is-active, #modal-product-details.is-active, #modal-supervisor-auth.is-active, #modal-new-customer.is-active, .modal-backdrop.is-active');
             if (activeModal) {
                 if (activeModal.id === 'modal-supervisor-auth') {

@@ -156,6 +156,7 @@ class LayawayController extends Controller
             'customer',
             'product.metal',
             'product.purity',
+            'product.primaryPhoto',
             'user:id,name',
             'completedSale',
             'payments.user:id,name',

@@ -49,4 +49,20 @@ class Customer extends Model
     {
         return $this->hasMany(Sale::class)->latest('id');
     }
+
+    /**
+     * The layaways linked to this customer.
+     */
+    public function layaways(): HasMany
+    {
+        return $this->hasMany(Layaway::class)->latest('id');
+    }
+
+    /**
+     * The metal purchases bought from this customer.
+     */
+    public function metalPurchases(): HasMany
+    {
+        return $this->hasMany(MetalPurchase::class)->latest('id');
+    }
 }

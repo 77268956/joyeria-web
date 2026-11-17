@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Metal;
 use App\Models\MetalPrice;
 use App\Models\MetalPurchase;
+use App\Models\MetalPurchaseItem;
 use App\Models\MetalPurity;
 use App\Models\Store;
 use App\Models\User;
@@ -102,7 +103,14 @@ class MetalPurchaseTest extends TestCase
         $seller = $this->seller();
         $this->openSession($seller);
 
-        $this->actingAs($seller)->get(route('admin.purchases.create'))->assertOk()->assertSee('Nueva compra de metales');
+        $this->actingAs($seller)
+            ->get(route('admin.purchases.create'))
+            ->assertOk()
+            ->assertSee('Nueva compra de metales')
+            ->assertSee('Buscar cliente por nombre, documento o teléfono...')
+            ->assertSee('Precio acordado')
+            ->assertSee('Valuación del sistema')
+            ->assertSee('purchase-customer-search', false);
     }
 
     public function test_the_purchase_form_requires_an_open_session(): void
@@ -265,8 +273,79 @@ class MetalPurchaseTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('amount', '265.41')
+            ->assertJsonPath('appraised_amount', '265.41')
             ->assertJsonPath('fineness_snapshot', '0.7500')
             ->assertJsonPath('price_per_gram_snapshot', '74.5000');
+    }
+
+    public function test_a_negotiated_price_above_the_valuation_is_paid_and_keeps_the_system_snapshot(): void
+    {
+        $seller = $this->seller();
+        $session = $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload([
+            'items' => [$this->itemPayload($this->purity18k(), ['negotiated_amount' => '280.00'])],
+        ]))->assertRedirect();
+
+        $purchase = MetalPurchase::withoutGlobalScopes()->first();
+        $item = MetalPurchaseItem::first();
+
+        $this->assertSame('280.00', (string) $purchase->total_amount);
+        $this->assertSame('280.00', (string) $item->amount);
+        $this->assertSame('265.41', $item->appraisedAmount());
+        $this->assertSame('14.59', $item->negotiationDifference());
+        $this->assertDatabaseHas('cash_movements', ['cash_session_id' => $session->id, 'type' => 'out', 'amount' => 280.00]);
+    }
+
+    public function test_a_negotiated_price_below_the_valuation_drives_inventory_and_cash(): void
+    {
+        $seller = $this->seller();
+        $session = $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload([
+            'items' => [$this->itemPayload($this->purity18k(), ['negotiated_amount' => '250.00'])],
+        ]))->assertRedirect();
+
+        $purchase = MetalPurchase::withoutGlobalScopes()->first();
+        $item = MetalPurchaseItem::first();
+
+        $this->assertSame('250.00', (string) $purchase->total_amount);
+        $this->assertSame('265.41', $item->appraisedAmount());
+        $this->assertSame('-15.41', $item->negotiationDifference());
+        $this->assertDatabaseHas('cash_movements', ['cash_session_id' => $session->id, 'type' => 'out', 'amount' => 250.00]);
+        $this->assertDatabaseHas('products', ['name' => 'Cadena rota 18k', 'origin' => 'used_purchase']);
+    }
+
+    public function test_an_omitted_negotiated_price_defaults_to_the_system_valuation(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload([
+            'items' => [$this->itemPayload($this->purity18k(), ['negotiated_amount' => null])],
+        ]))->assertRedirect();
+
+        $item = MetalPurchaseItem::first();
+
+        $this->assertSame('265.41', (string) $item->amount);
+        $this->assertSame('265.41', $item->appraisedAmount());
+        $this->assertSame('0.00', $item->negotiationDifference());
+    }
+
+    public function test_a_negative_negotiated_price_is_rejected(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload([
+            'items' => [$this->itemPayload($this->purity18k(), ['negotiated_amount' => '-1.00'])],
+        ]))->assertSessionHasErrors('items.0.negotiated_amount');
+
+        $this->assertDatabaseCount('metal_purchases', 0);
     }
 
     public function test_the_legal_receipt_is_downloaded_as_pdf(): void
@@ -282,5 +361,56 @@ class MetalPurchaseTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
+    }
+
+    public function test_the_purchase_index_shows_the_summary_and_tabs(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload());
+
+        $this->actingAs($seller)
+            ->get(route('admin.purchases.index'))
+            ->assertOk()
+            ->assertSee('Todas')
+            ->assertSee('Pendientes')
+            ->assertSee('Total pagado')
+            ->assertSee('COM-000001');
+    }
+
+    public function test_a_user_can_view_the_purchase_detail(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload());
+        $purchase = MetalPurchase::withoutGlobalScopes()->first();
+
+        $this->actingAs($seller)
+            ->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertSee('Compra COM-000001')
+            ->assertSee('Piezas recibidas')
+            ->assertSee('purchase-show-page', false)
+            ->assertSee('Cadena rota 18k');
+    }
+
+    public function test_a_manager_can_open_the_adjustment_form(): void
+    {
+        $seller = $this->seller();
+        $this->openSession($seller);
+        $this->goldPrice();
+
+        $this->actingAs($seller)->post(route('admin.purchases.store'), $this->payload());
+        $purchase = MetalPurchase::withoutGlobalScopes()->first();
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.purchases.adjust', $purchase))
+            ->assertOk()
+            ->assertSee('Impacto del ajuste')
+            ->assertSee('Corrección auditada');
     }
 }

@@ -128,8 +128,11 @@ class ProductController extends Controller
      */
     public function edit(Product $product): View
     {
+        $product->load(['category', 'metal', 'purity', 'location', 'photos']);
+
         return view('admin.inventory.edit', array_merge($this->formData(), [
-            'product' => $product->load('photos'),
+            'product' => $product,
+            'stock' => $product->movements()->sum('quantity_delta'),
             'statuses' => ProductStatus::cases(),
             'origins' => ProductOrigin::cases(),
         ]));
@@ -256,7 +259,7 @@ class ProductController extends Controller
      */
     public function showAdjustForm(Product $product): View
     {
-        $product->load(['metal', 'purity']);
+        $product->load(['category', 'metal', 'purity', 'location', 'photos']);
 
         return view('admin.inventory.adjust', [
             'product' => $product,
