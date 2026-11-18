@@ -881,6 +881,99 @@
             max-width: 180px;
         }
     }
+
+    .price-confirm-hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .price-confirm-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--color-crema);
+        color: var(--color-dorado);
+    }
+
+    .price-confirm-hero h3 {
+        margin: 0;
+        color: var(--color-noche);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .price-confirm-hero p {
+        margin: 0.25rem 0 0;
+        color: var(--color-piedra);
+        font-size: 0.84rem;
+        line-height: 1.45;
+    }
+
+    .price-confirm-details {
+        display: grid;
+        gap: 0.55rem;
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-blanco);
+    }
+
+    .price-confirm-details[hidden] {
+        display: none;
+    }
+
+    .price-confirm-details > div {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .price-confirm-details span {
+        flex-shrink: 0;
+        color: var(--color-piedra);
+        font-size: 0.64rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .price-confirm-details strong {
+        color: var(--color-noche);
+        font-size: 0.86rem;
+        text-align: right;
+    }
+
+    .price-confirm-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 1rem 0 0;
+        padding: 0.85rem 1rem;
+        list-style: none;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-crema);
+    }
+
+    .price-confirm-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: var(--color-noche);
+        font-size: 0.84rem;
+        line-height: 1.4;
+    }
+
+    .price-confirm-list svg {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        color: var(--color-dorado);
+    }
 </style>
 
 <div class="prices-page">
@@ -912,7 +1005,7 @@
 
             <div class="prices-hero-actions">
                 @can('metal_price.override')
-                    <form action="{{ route('admin.prices.refresh') }}" method="POST" data-refresh-form>
+                    <form action="{{ route('admin.prices.refresh') }}" method="POST" data-refresh-form data-supervisor-action="actualizar los precios del metal">
                         @csrf
                         <button type="submit" class="btn btn-outline">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -1064,7 +1157,7 @@
                     <span class="badge badge-gold">Auditado</span>
                 </div>
 
-                <form action="{{ route('admin.prices.manual') }}" method="POST" class="prices-manual-form" data-manual-form>
+                <form action="{{ route('admin.prices.manual') }}" method="POST" class="prices-manual-form" data-manual-form data-supervisor-action="fijar el precio manual del metal">
                     @csrf
 
                     <div class="prices-field">
@@ -1192,6 +1285,70 @@
         </section>
     </div>
 </div>
+
+@if ($canOverride)
+<div class="modal-backdrop" id="price-update-confirm-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="price-update-confirm-title" style="max-width: 520px;">
+        <div class="modal-header">
+            <div>
+                <h2 id="price-update-confirm-title" style="font-size: 1.05rem; margin: 0;">Confirmar actualización</h2>
+                <p class="muted" id="price-update-confirm-subtitle" style="font-size: 0.78rem; margin: 0.2rem 0 0;">Precio del metal</p>
+            </div>
+            <button type="button" class="modal-close" data-price-update-cancel aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="price-confirm-hero">
+                <span class="price-confirm-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3v18" />
+                        <path d="M17 7.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.6 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3" />
+                    </svg>
+                </span>
+                <div>
+                    <h3 id="price-update-confirm-heading">Revisa antes de continuar</h3>
+                    <p id="price-update-confirm-description">Confirma la actualización para continuar.</p>
+                </div>
+            </div>
+
+            <div class="price-confirm-details" id="price-update-confirm-details" hidden>
+                <div>
+                    <span>Metal</span>
+                    <strong id="price-update-confirm-metal">—</strong>
+                </div>
+                <div>
+                    <span>Nuevo precio</span>
+                    <strong id="price-update-confirm-price">—</strong>
+                </div>
+                <div>
+                    <span>Motivo</span>
+                    <strong id="price-update-confirm-reason">—</strong>
+                </div>
+            </div>
+
+            <ul class="price-confirm-list">
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>La actualización quedará registrada con usuario, fecha y motivo en la bitácora.</span>
+                </li>
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>El precio anterior se conservará en el historial y podrás revisarlo después.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-price-update-cancel>Cancelar</button>
+            <button type="button" class="btn btn-gold" data-price-update-confirm>Continuar</button>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('scripts')
@@ -1224,40 +1381,190 @@
     }
 
     const manualForm = document.querySelector('[data-manual-form]');
+    const refreshForm = document.querySelector('[data-refresh-form]');
+    const confirmModal = document.getElementById('price-update-confirm-modal');
+
+    if (!confirmModal || (!manualForm && !refreshForm)) {
+        return;
+    }
+
+    const confirmTitle = document.getElementById('price-update-confirm-title');
+    const confirmSubtitle = document.getElementById('price-update-confirm-subtitle');
+    const confirmHeading = document.getElementById('price-update-confirm-heading');
+    const confirmDescription = document.getElementById('price-update-confirm-description');
+    const confirmDetails = document.getElementById('price-update-confirm-details');
+    const confirmMetal = document.getElementById('price-update-confirm-metal');
+    const confirmPrice = document.getElementById('price-update-confirm-price');
+    const confirmReason = document.getElementById('price-update-confirm-reason');
+    const confirmButton = confirmModal.querySelector('[data-price-update-confirm]');
+    const cancelButtons = confirmModal.querySelectorAll('[data-price-update-cancel]');
+
+    let pendingForm = null;
+    let submitting = false;
+    let closeTimer = null;
+
+    function openConfirmation(options) {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+
+        pendingForm = options.form;
+        submitting = false;
+
+        confirmTitle.textContent = options.title;
+        confirmSubtitle.textContent = options.subtitle;
+        confirmHeading.textContent = options.heading;
+        confirmDescription.textContent = options.description;
+        confirmButton.textContent = options.confirmLabel;
+        confirmButton.className = options.confirmClass;
+
+        if (options.details) {
+            confirmMetal.textContent = options.details.metal;
+            confirmPrice.textContent = options.details.price;
+            confirmReason.textContent = options.details.reason;
+            confirmDetails.hidden = false;
+        } else {
+            confirmDetails.hidden = true;
+        }
+
+        confirmModal.style.display = 'flex';
+        confirmModal.classList.remove('is-closing');
+        confirmModal.classList.add('is-active');
+
+        window.setTimeout(() => confirmButton.focus(), 80);
+    }
+
+    function closeConfirmation() {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+        }
+
+        confirmModal.classList.add('is-closing');
+        confirmModal.classList.remove('is-active');
+
+        closeTimer = window.setTimeout(() => {
+            confirmModal.style.display = 'none';
+            confirmModal.classList.remove('is-closing');
+            closeTimer = null;
+        }, 280);
+    }
+
+    function disableSubmitButton(form, labelText) {
+        const button = form.querySelector('button[type="submit"]');
+
+        if (!button) {
+            return;
+        }
+
+        button.disabled = true;
+
+        const label = button.querySelector('span');
+
+        if (label) {
+            label.textContent = labelText;
+        } else {
+            button.textContent = labelText;
+        }
+    }
+
+    cancelButtons.forEach((button) => {
+        button.addEventListener('click', closeConfirmation);
+    });
+
+    confirmModal.addEventListener('click', (event) => {
+        if (event.target === confirmModal) {
+            closeConfirmation();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && confirmModal.classList.contains('is-active')) {
+            closeConfirmation();
+        }
+    });
+
+    confirmButton.addEventListener('click', () => {
+        if (submitting || !pendingForm) {
+            return;
+        }
+
+        submitting = true;
+
+        const form = pendingForm;
+        pendingForm = null;
+        form.dataset.confirmed = '1';
+
+        closeConfirmation();
+
+        window.setTimeout(() => {
+            form.requestSubmit();
+        }, 200);
+    });
+
     if (manualForm) {
         manualForm.addEventListener('submit', function (event) {
-            const metalName = metalSelect?.selectedOptions[0]?.textContent.trim() || 'este metal';
-            const price = manualForm.querySelector('input[name="price_per_gram"]')?.value || '';
+            if (manualForm.dataset.confirmed === '1') {
+                delete manualForm.dataset.confirmed;
 
-            if (!window.confirm('¿Fijar ' + currency + ' $' + price + ' por gramo de ' + metalName + '? El precio anterior se conservará en el historial.')) {
-                event.preventDefault();
+                window.setTimeout(() => {
+                    if (!event.defaultPrevented) {
+                        disableSubmitButton(manualForm, 'Guardando…');
+                    }
+                }, 0);
+
                 return;
             }
 
-            const button = manualForm.querySelector('button[type="submit"]');
-            if (button) {
-                button.disabled = true;
-                button.textContent = 'Guardando…';
-            }
+            event.preventDefault();
+
+            const metalName = metalSelect?.selectedOptions[0]?.textContent.trim() || 'este metal';
+            const price = manualForm.querySelector('input[name="price_per_gram"]')?.value || '';
+            const reason = manualForm.querySelector('input[name="reason"]')?.value.trim() || 'Sin motivo indicado';
+
+            openConfirmation({
+                form: manualForm,
+                title: 'Fijar precio manual',
+                subtitle: metalName,
+                heading: '¿Confirmas el nuevo precio?',
+                description: 'El precio anterior se conservará en el historial y el cambio quedará auditado con tu usuario.',
+                confirmLabel: 'Fijar precio',
+                confirmClass: 'btn btn-gold',
+                details: {
+                    metal: metalName,
+                    price: currency + ' $' + price + ' / g',
+                    reason,
+                },
+            });
         });
     }
 
-    const refreshForm = document.querySelector('[data-refresh-form]');
     if (refreshForm) {
         refreshForm.addEventListener('submit', function (event) {
-            if (!window.confirm('¿Consultar ahora el precio del metal al proveedor configurado?')) {
-                event.preventDefault();
+            if (refreshForm.dataset.confirmed === '1') {
+                delete refreshForm.dataset.confirmed;
+
+                window.setTimeout(() => {
+                    if (!event.defaultPrevented) {
+                        disableSubmitButton(refreshForm, 'Actualizando…');
+                    }
+                }, 0);
+
                 return;
             }
 
-            const button = refreshForm.querySelector('button[type="submit"]');
-            if (button) {
-                button.disabled = true;
-                const label = button.querySelector('span');
-                if (label) {
-                    label.textContent = 'Actualizando…';
-                }
-            }
+            event.preventDefault();
+
+            openConfirmation({
+                form: refreshForm,
+                title: 'Actualizar precios',
+                subtitle: 'Proveedor configurado',
+                heading: '¿Consultar el precio ahora?',
+                description: 'Se consultará al proveedor configurado y se actualizarán los precios que respondan correctamente. Si falla, se conserva el último precio válido.',
+                confirmLabel: 'Consultar ahora',
+                confirmClass: 'btn btn-dark',
+                details: null,
+            });
         });
     }
 })();

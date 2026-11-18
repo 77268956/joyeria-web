@@ -11,6 +11,7 @@ use App\Models\PurchaseSetting;
 use App\Models\Store;
 use App\Services\MetalPriceService;
 use App\Services\PricingCalculator;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,8 @@ use Throwable;
 
 class MetalPriceController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(protected MetalPriceService $prices, protected PricingCalculator $calculator) {}
 
     /**
@@ -93,6 +96,7 @@ class MetalPriceController extends Controller
 
         activity('precios')
             ->causedBy(Auth::user())
+            ->event('refreshed')
             ->withProperties($result)
             ->log('Actualización automática del precio del metal bajo demanda');
 
@@ -125,11 +129,9 @@ class MetalPriceController extends Controller
         activity('precios')
             ->performedOn($price)
             ->causedBy(Auth::user())
-            ->withProperties([
-                'metal' => $metal->code,
-                'price_per_gram' => (string) $price->price_per_gram,
-                'reason' => $validated['reason'],
-            ])
+            ->event('price_set')
+            ->withChanges($this->activityCreatedChanges($price))
+            ->withProperties(['metal' => $metal->code])
             ->log("Precio fijado manualmente para {$metal->name}");
 
         return back()->with('status', "El precio de {$metal->name} se fijó manualmente y quedó auditado.");
@@ -149,9 +151,14 @@ class MetalPriceController extends Controller
             fn (PurchaseSetting $setting): string => $setting->metal_id.'-'.($setting->purity_id ?? 'default')
         );
 
+        $current = $metals->mapWithKeys(
+            fn (Metal $metal): array => [$metal->code => $this->prices->currentForMetal($metal)]
+        );
+
         return view('admin.prices.purchase-settings', [
             'metals' => $metals,
             'settings' => $settings,
+            'current' => $current,
             'store' => $this->currentStore(),
         ]);
     }
@@ -164,6 +171,14 @@ class MetalPriceController extends Controller
         $store = $this->currentStore();
         $discounts = $request->validated()['discounts'];
         $userId = Auth::id();
+
+        $before = PurchaseSetting::with(['metal', 'purity'])
+            ->where('store_id', $store->id)
+            ->get()
+            ->mapWithKeys(fn (PurchaseSetting $setting): array => [
+                $this->purchaseSettingLabel($setting) => (string) $setting->discount_percent,
+            ])
+            ->all();
 
         DB::transaction(function () use ($store, $discounts, $userId): void {
             foreach ($discounts as $key => $value) {
@@ -188,11 +203,43 @@ class MetalPriceController extends Controller
             }
         });
 
+        $after = PurchaseSetting::with(['metal', 'purity'])
+            ->where('store_id', $store->id)
+            ->get()
+            ->mapWithKeys(fn (PurchaseSetting $setting): array => [
+                $this->purchaseSettingLabel($setting) => (string) $setting->discount_percent,
+            ])
+            ->all();
+
+        $old = [];
+        $attributes = [];
+
+        foreach ($after as $label => $value) {
+            $previous = $before[$label] ?? null;
+
+            if ($previous === $value) {
+                continue;
+            }
+
+            $old[$label] = $previous;
+            $attributes[$label] = $value;
+        }
+
         activity('precios')
             ->causedBy(Auth::user())
+            ->event('updated')
+            ->withChanges(['attributes' => $attributes, 'old' => $old])
             ->log('Actualización de los descuentos de compra de metal');
 
         return back()->with('status', 'Los descuentos de compra se actualizaron correctamente.');
+    }
+
+    private function purchaseSettingLabel(PurchaseSetting $setting): string
+    {
+        $metal = $setting->metal?->name ?? 'Metal '.$setting->metal_id;
+        $purity = $setting->purity?->code ?? 'General';
+
+        return "{$metal} {$purity}";
     }
 
     /**

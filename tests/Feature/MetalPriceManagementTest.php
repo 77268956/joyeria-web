@@ -63,6 +63,17 @@ class MetalPriceManagementTest extends TestCase
         $response->assertSee('Precio del Metal');
     }
 
+    public function test_manager_sees_the_styled_confirmation_before_updating_prices(): void
+    {
+        $this->actingAs($this->manager())
+            ->get(route('admin.prices.index'))
+            ->assertOk()
+            ->assertSee('price-update-confirm-modal', false)
+            ->assertSee('data-manual-form', false)
+            ->assertSee('data-refresh-form', false)
+            ->assertDontSee('window.confirm(', false);
+    }
+
     public function test_a_manager_can_fix_a_price_manually_with_a_reason(): void
     {
         $manager = $this->manager();
@@ -170,6 +181,22 @@ class MetalPriceManagementTest extends TestCase
         $this->actingAs($this->owner())->get(route('admin.prices.purchase_settings'))->assertOk();
         $this->actingAs($this->manager())->get(route('admin.prices.purchase_settings'))->assertForbidden();
         $this->actingAs($this->seller())->get(route('admin.prices.purchase_settings'))->assertForbidden();
+    }
+
+    public function test_the_purchase_discount_screen_shows_the_guide_and_current_price(): void
+    {
+        $this->goldPrice(Store::first(), '74.5000');
+
+        $this->actingAs($this->owner())
+            ->get(route('admin.prices.purchase_settings'))
+            ->assertOk()
+            ->assertSee('Cómo funcionan los descuentos de compra')
+            ->assertSee('Valor por defecto')
+            ->assertSee('74.50')
+            ->assertSee('full-viewport', false)
+            ->assertSee('purchase-body', false)
+            ->assertSee('purchase-form', false)
+            ->assertSee('purchase-metals', false);
     }
 
     public function test_the_owner_can_update_the_purchase_discounts(): void
