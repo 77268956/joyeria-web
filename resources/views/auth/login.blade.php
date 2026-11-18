@@ -22,12 +22,24 @@
         overflow: hidden;
     }
 
-    /* Patrón decorativo y brillo dorado sutil */
+    .login-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Overlay oscuro y brillo dorado sutil sobre el video */
     .login-visual::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: 
+        z-index: 1;
+        background:
+            linear-gradient(180deg, rgba(10, 13, 19, 0.28) 0%, rgba(10, 13, 19, 0.55) 55%, rgba(10, 13, 19, 0.84) 100%),
             radial-gradient(circle at 80% 20%, rgba(184, 154, 94, 0.18) 0%, transparent 50%),
             radial-gradient(circle at 20% 80%, rgba(227, 214, 180, 0.1) 0%, transparent 40%);
         pointer-events: none;
@@ -288,6 +300,14 @@
 <div class="login-container">
     <!-- Panel Visual Izquierdo -->
     <div class="login-visual">
+        @if (file_exists(public_path('videos/login.gif')))
+            <img class="login-video" src="{{ asset('videos/login.gif') }}" alt="" aria-hidden="true" decoding="async">
+        @elseif (file_exists(public_path('videos/login.mp4')))
+            <video class="login-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+                <source src="{{ asset('videos/login.mp4') }}" type="video/mp4">
+            </video>
+        @endif
+
         <div class="visual-content">
             <div class="visual-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
