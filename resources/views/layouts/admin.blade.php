@@ -827,6 +827,38 @@
                 transform: none !important;
             }
         }
+        /* ------------------ SCROLLBAR ------------------ */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(107, 107, 112, 0.22) transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            min-height: 32px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background-color: rgba(107, 107, 112, 0.22);
+            background-clip: padding-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(107, 107, 112, 0.5);
+        }
+
+        ::-webkit-scrollbar-button,
+        ::-webkit-scrollbar-corner {
+            display: none;
+            background: transparent;
+        }
     </style>
 
     <script>
@@ -950,8 +982,12 @@
             <li class="nav-item">
                 <a href="{{ route('admin.cash.index') }}" class="nav-link {{ request()->routeIs('admin.cash.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                        <rect x="3" y="9" width="18" height="12" rx="2"></rect>
+                        <path d="M7 9V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"></path>
+                        <path d="M7 15h.01"></path>
+                        <path d="M11 15h.01"></path>
+                        <path d="M15 15h.01"></path>
+                        <path d="M7 19h10"></path>
                     </svg>
                     <span>Caja</span>
                 </a>
@@ -960,10 +996,10 @@
             <li class="nav-item">
                 <a href="{{ route('admin.sales.index') }}" class="nav-link {{ request()->routeIs('admin.sales.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                        <line x1="9" y1="11" x2="15" y2="11"></line>
+                        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path>
+                        <path d="M8 7h8"></path>
+                        <path d="M8 11h8"></path>
+                        <path d="M8 15h5"></path>
                     </svg>
                     <span>Ventas</span>
                 </a>
@@ -984,7 +1020,11 @@
             <li class="nav-item">
                 <a href="{{ route('admin.purchases.index') }}" class="nav-link {{ request()->routeIs('admin.purchases.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                        <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                        <path d="M7 21h10"></path>
+                        <path d="M12 3v18"></path>
+                        <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
                     </svg>
                     <span>Compra Metales</span>
                 </a>
@@ -1002,8 +1042,10 @@
             <li class="nav-item">
                 <a href="{{ route('admin.inventory.lots.index') }}" class="nav-link {{ request()->routeIs('admin.inventory.lots.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        <path d="M6 3h12l3 6-9 12L3 9l3-6Z"></path>
+                        <path d="M3 9h18"></path>
+                        <path d="M9 3l3 18"></path>
+                        <path d="M15 3l-3 18"></path>
                     </svg>
                     <span>Materia Prima</span>
                 </a>
@@ -1032,8 +1074,9 @@
             <li class="nav-item">
                 <a href="{{ route('admin.prices.index') }}" class="nav-link {{ request()->routeIs('admin.prices.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                        <path d="M12 18V6"></path>
                     </svg>
                     <span>Precio del Metal</span>
                 </a>
@@ -1054,11 +1097,8 @@
             <li class="nav-item">
                 <a href="{{ route('admin.audit.index') }}" class="nav-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
                     </svg>
                     <span>Auditoría</span>
                 </a>

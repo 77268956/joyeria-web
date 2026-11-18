@@ -1189,9 +1189,12 @@
             <div class="modal-body" style="padding: 1.5rem; text-align: center;">
                 <div style="width: 52px; height: 52px; border-radius: 50%; background-color: var(--color-crema); color: var(--color-dorado); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="7" width="18" height="13" rx="2"></rect>
-                        <path d="M3 11h18"></path>
-                        <circle cx="12" cy="15" r="1.5"></circle>
+                        <rect x="3" y="9" width="18" height="12" rx="2"></rect>
+                        <path d="M7 9V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"></path>
+                        <path d="M7 15h.01"></path>
+                        <path d="M11 15h.01"></path>
+                        <path d="M15 15h.01"></path>
+                        <path d="M7 19h10"></path>
                     </svg>
                 </div>
 

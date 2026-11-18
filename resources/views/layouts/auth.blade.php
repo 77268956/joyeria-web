@@ -65,6 +65,38 @@
                 transform: none !important;
             }
         }
+        /* ------------------ SCROLLBAR ------------------ */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(107, 107, 112, 0.22) transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            min-height: 32px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background-color: rgba(107, 107, 112, 0.22);
+            background-clip: padding-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(107, 107, 112, 0.5);
+        }
+
+        ::-webkit-scrollbar-button,
+        ::-webkit-scrollbar-corner {
+            display: none;
+            background: transparent;
+        }
     </style>
 
     <script>

@@ -615,6 +615,156 @@
             flex: 1;
         }
     }
+
+    .adjust-confirm-hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .adjust-confirm-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #EDF7EE;
+        color: var(--color-exito);
+    }
+
+    .adjust-confirm-icon.is-out {
+        background: #FDEDED;
+        color: var(--color-error);
+    }
+
+    .adjust-confirm-icon[hidden] {
+        display: none;
+    }
+
+    .adjust-confirm-hero h3 {
+        margin: 0;
+        color: var(--color-noche);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .adjust-confirm-hero p {
+        margin: 0.25rem 0 0;
+        color: var(--color-piedra);
+        font-size: 0.84rem;
+        line-height: 1.45;
+    }
+
+    .adjust-confirm-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.55rem;
+        margin-top: 1rem;
+    }
+
+    .adjust-confirm-grid > div {
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-blanco);
+    }
+
+    .adjust-confirm-grid span {
+        display: block;
+        color: var(--color-piedra);
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .adjust-confirm-grid strong {
+        display: block;
+        margin-top: 0.15rem;
+        color: var(--color-noche);
+        font-family: var(--font-serif);
+        font-size: 1.2rem;
+        line-height: 1.1;
+    }
+
+    .adjust-confirm-grid strong.is-negative {
+        color: var(--color-error);
+    }
+
+    .adjust-confirm-reason {
+        margin-top: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: #FCFBF8;
+    }
+
+    .adjust-confirm-reason span {
+        display: block;
+        color: var(--color-piedra);
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .adjust-confirm-reason p {
+        margin: 0.2rem 0 0;
+        color: var(--color-noche);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .adjust-confirm-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #E6C7C7;
+        border-radius: 5px;
+        background: #FDEDED;
+        color: var(--color-error);
+        font-size: 0.78rem;
+        line-height: 1.4;
+    }
+
+    .adjust-confirm-warning[hidden] {
+        display: none;
+    }
+
+    .adjust-confirm-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 0.85rem 0 0;
+        padding: 0.85rem 1rem;
+        list-style: none;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-crema);
+    }
+
+    .adjust-confirm-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: var(--color-noche);
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    .adjust-confirm-list svg {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        color: var(--color-dorado);
+    }
+
+    @media (max-width: 520px) {
+        .adjust-confirm-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="adjust-page">
@@ -663,6 +813,7 @@
             id="adjustForm"
             data-stock="{{ (int) $stock }}"
             data-product="{{ $product->name }}"
+            data-supervisor-action="registrar el ajuste de existencias"
         >
             @csrf
 
@@ -857,6 +1008,85 @@
         </aside>
     </div>
 </div>
+
+<div class="modal-backdrop" id="adjust-confirm-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="adjust-confirm-title" style="max-width: 520px;">
+        <div class="modal-header">
+            <div>
+                <h2 id="adjust-confirm-title" style="font-size: 1.05rem; margin: 0;">Confirmar ajuste de existencias</h2>
+                <p class="muted" id="adjust-confirm-subtitle" style="font-size: 0.78rem; margin: 0.2rem 0 0;">Producto</p>
+            </div>
+            <button type="button" class="modal-close" data-adjust-confirm-cancel aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="adjust-confirm-hero">
+                <span class="adjust-confirm-icon" data-adjust-confirm-icon="in" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                </span>
+                <span class="adjust-confirm-icon is-out" data-adjust-confirm-icon="out" aria-hidden="true" hidden>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14" />
+                    </svg>
+                </span>
+                <div>
+                    <h3>Revisa el movimiento</h3>
+                    <p id="adjust-confirm-description">Confirma el ajuste para continuar.</p>
+                </div>
+            </div>
+
+            <div class="adjust-confirm-grid">
+                <div>
+                    <span>Stock actual</span>
+                    <strong id="adjust-confirm-stock">0</strong>
+                </div>
+                <div>
+                    <span>Movimiento</span>
+                    <strong id="adjust-confirm-delta">+1</strong>
+                </div>
+                <div>
+                    <span>Stock final</span>
+                    <strong id="adjust-confirm-result">1</strong>
+                </div>
+            </div>
+
+            <div class="adjust-confirm-reason">
+                <span>Motivo registrado</span>
+                <p id="adjust-confirm-reason">Sin motivo capturado.</p>
+            </div>
+
+            <div class="adjust-confirm-warning" id="adjust-confirm-warning" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;">
+                    <path d="M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" />
+                    <path d="M12 9v4M12 17h.01" />
+                </svg>
+                <span>El stock quedaría en negativo. Revisa si el sentido del ajuste es correcto antes de continuar.</span>
+            </div>
+
+            <ul class="adjust-confirm-list">
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>El movimiento quedará registrado en la bitácora con tu usuario, la fecha y el motivo.</span>
+                </li>
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>El stock no se edita directamente: este ajuste genera un movimiento inmutable.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-adjust-confirm-cancel>Volver</button>
+            <button type="button" class="btn btn-gold" data-adjust-confirm-accept>Registrar ajuste</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -881,6 +1111,24 @@
         const reason = document.getElementById('adjustReason');
         const reasonCounter = document.getElementById('adjustReasonCounter');
         const submit = document.getElementById('adjustSubmit');
+        const confirmModal = document.getElementById('adjust-confirm-modal');
+        const confirmSubtitle = document.getElementById('adjust-confirm-subtitle');
+        const confirmDescription = document.getElementById('adjust-confirm-description');
+        const confirmStock = document.getElementById('adjust-confirm-stock');
+        const confirmDelta = document.getElementById('adjust-confirm-delta');
+        const confirmResult = document.getElementById('adjust-confirm-result');
+        const confirmReason = document.getElementById('adjust-confirm-reason');
+        const confirmWarning = document.getElementById('adjust-confirm-warning');
+        const confirmAccept = confirmModal.querySelector('[data-adjust-confirm-accept]');
+        const confirmCancelButtons = confirmModal.querySelectorAll('[data-adjust-confirm-cancel]');
+        const confirmIcons = {
+            in: confirmModal.querySelector('[data-adjust-confirm-icon="in"]'),
+            out: confirmModal.querySelector('[data-adjust-confirm-icon="out"]'),
+        };
+
+        let confirmed = false;
+        let confirmCloseTimer = null;
+        let confirmResetTimer = null;
 
         const selectedDelta = () => Number(form.querySelector('input[name="quantity_delta"]:checked')?.value || 1);
 
@@ -914,6 +1162,80 @@
             warning.hidden = nextStock >= 0;
         };
 
+        const setConfirmIcon = (isIncoming) => {
+            confirmIcons.in.hidden = !isIncoming;
+            confirmIcons.out.hidden = isIncoming;
+        };
+
+        const resetConfirmation = () => {
+            confirmed = false;
+            submit.disabled = false;
+            submit.textContent = 'Registrar ajuste';
+        };
+
+        const scheduleConfirmationReset = () => {
+            if (confirmResetTimer) {
+                window.clearTimeout(confirmResetTimer);
+            }
+
+            confirmResetTimer = window.setTimeout(() => {
+                confirmResetTimer = null;
+                resetConfirmation();
+            }, 1200);
+        };
+
+        const openConfirm = () => {
+            const delta = selectedDelta();
+            const nextStock = stock + delta;
+            const isIncoming = delta > 0;
+            const reasonText = reason.value.trim();
+
+            confirmSubtitle.textContent = 'Producto: ' + productName;
+            confirmDescription.textContent = isIncoming
+                ? `La pieza "${productName}" volverá a contar como existencia disponible.`
+                : `La pieza "${productName}" saldrá del stock vendible y quedará retirada.`;
+            confirmStock.textContent = stock;
+            confirmDelta.textContent = isIncoming ? '+1' : '-1';
+            confirmResult.textContent = nextStock;
+            confirmResult.classList.toggle('is-negative', nextStock < 0);
+            confirmReason.textContent = reasonText || 'Sin motivo capturado.';
+            confirmWarning.hidden = nextStock >= 0;
+            setConfirmIcon(isIncoming);
+
+            if (confirmCloseTimer) {
+                window.clearTimeout(confirmCloseTimer);
+                confirmCloseTimer = null;
+            }
+
+            if (confirmResetTimer) {
+                window.clearTimeout(confirmResetTimer);
+                confirmResetTimer = null;
+            }
+
+            resetConfirmation();
+
+            confirmModal.style.display = 'flex';
+            confirmModal.classList.remove('is-closing');
+            confirmModal.classList.add('is-active');
+
+            window.setTimeout(() => confirmAccept.focus(), 80);
+        };
+
+        const closeConfirm = () => {
+            if (confirmCloseTimer) {
+                window.clearTimeout(confirmCloseTimer);
+            }
+
+            confirmModal.classList.add('is-closing');
+            confirmModal.classList.remove('is-active');
+
+            confirmCloseTimer = window.setTimeout(() => {
+                confirmModal.style.display = 'none';
+                confirmModal.classList.remove('is-closing');
+                confirmCloseTimer = null;
+            }, 280);
+        };
+
         radios.forEach((radio) => {
             radio.addEventListener('change', syncPreview);
         });
@@ -929,17 +1251,38 @@
         reason.addEventListener('input', syncReasonCounter);
 
         form.addEventListener('submit', (event) => {
-            const delta = selectedDelta();
-            const nextStock = stock + delta;
-            const action = delta > 0 ? 'alta' : 'baja';
-
-            if (!window.confirm(`¿Confirmas el ${action} de "${productName}"? El stock pasará de ${stock} a ${nextStock}.`)) {
-                event.preventDefault();
+            if (confirmed) {
+                submit.disabled = true;
+                submit.textContent = 'Registrando…';
                 return;
             }
 
-            submit.disabled = true;
-            submit.textContent = 'Registrando…';
+            event.preventDefault();
+            openConfirm();
+        });
+
+        confirmCancelButtons.forEach((button) => {
+            button.addEventListener('click', closeConfirm);
+        });
+
+        confirmModal.addEventListener('click', (event) => {
+            if (event.target === confirmModal) {
+                closeConfirm();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && confirmModal.classList.contains('is-active')) {
+                closeConfirm();
+            }
+        });
+
+        confirmAccept.addEventListener('click', () => {
+            confirmed = true;
+            closeConfirm();
+            scheduleConfirmationReset();
+
+            window.setTimeout(() => form.requestSubmit(), 200);
         });
 
         syncReasonCounter();

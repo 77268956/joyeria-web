@@ -584,9 +584,9 @@
                 </a>
 
                 @if (! $isSelf)
-                    <form action="{{ route('admin.users.toggle_status', $user) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas {{ $user->is_active ? 'desactivar' : 'activar' }} la cuenta de &quot;{{ $user->name }}&quot;?');">
+                    <form action="{{ route('admin.users.toggle_status', $user) }}" method="POST" data-user-confirm-form data-action="toggle" data-user-name="{{ $user->name }}" data-will-be-active="{{ $user->is_active ? 'false' : 'true' }}">
                         @csrf
-                        <button type="submit" class="btn btn-outline {{ $user->is_active ? 'btn-danger-outline' : 'btn-success-outline' }}">
+                        <button type="button" class="btn btn-outline {{ $user->is_active ? 'btn-danger-outline' : 'btn-success-outline' }}" data-user-confirm-open>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
                                 <line x1="12" y1="2" x2="12" y2="12"></line>
@@ -824,4 +824,6 @@
         </div>
     </div>
 </div>
+
+@include('admin.users.partials.status-confirm-modal')
 @endsection

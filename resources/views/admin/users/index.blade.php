@@ -982,11 +982,12 @@
                                         </a>
 
                                         @if ($user->id !== auth()->id())
-                                            <form action="{{ route('admin.users.toggle_status', $user) }}" method="POST" onsubmit="return confirmStatusToggle(event, @js($user->name), {{ $user->is_active ? 'false' : 'true' }})">
+                                            <form action="{{ route('admin.users.toggle_status', $user) }}" method="POST" data-user-confirm-form data-action="toggle" data-user-name="{{ $user->name }}" data-will-be-active="{{ $user->is_active ? 'false' : 'true' }}">
                                                 @csrf
                                                 <button
-                                                    type="submit"
+                                                    type="button"
                                                     class="users-action {{ $user->is_active ? 'is-danger' : 'is-success' }}"
+                                                    data-user-confirm-open
                                                     title="{{ $user->is_active ? 'Desactivar cuenta' : 'Activar cuenta' }}"
                                                     aria-label="{{ $user->is_active ? 'Desactivar' : 'Activar' }} a {{ $user->name }}"
                                                 >
@@ -1004,12 +1005,13 @@
                                                 </button>
                                             </form>
 
-                                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirmDelete(event, @js($user->name))">
+                                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" data-user-confirm-form data-action="delete" data-user-name="{{ $user->name }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button
-                                                    type="submit"
+                                                    type="button"
                                                     class="users-action is-danger"
+                                                    data-user-confirm-open
                                                     title="Eliminar usuario"
                                                     aria-label="Eliminar a {{ $user->name }}"
                                                 >
@@ -1057,15 +1059,5 @@
     </div>
 </div>
 
-<script>
-    function confirmStatusToggle(e, userName, willBeActive) {
-        const actionText = willBeActive ? 'activar' : 'desactivar';
-
-        return confirm(`¿Estás seguro de que deseas ${actionText} la cuenta de "${userName}"?`);
-    }
-
-    function confirmDelete(e, userName) {
-        return confirm(`¿Estás seguro de que deseas eliminar al colaborador "${userName}"? Esta acción se registrará en la bitácora.`);
-    }
-</script>
+@include('admin.users.partials.status-confirm-modal')
 @endsection
