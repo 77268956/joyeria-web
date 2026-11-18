@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCustomerRequest;
 use App\Http\Requests\Admin\UpdateCustomerRequest;
 use App\Models\Customer;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,12 +21,19 @@ use Throwable;
 
 class CustomerController extends Controller
 {
+    use BuildsActivityChanges;
+
     /**
      * List the customers of the store with search.
      */
     public function index(Request $request): View
     {
-        $customers = Customer::query()
+        $canManageStatus = $this->canManageCustomerStatus($request);
+        $statusFilter = $canManageStatus && $request->input('status') === 'inactive'
+            ? 'inactive'
+            : 'active';
+
+        $customers = ($statusFilter === 'inactive' ? Customer::onlyTrashed() : Customer::query())
             ->when($request->filled('search'), function (Builder $query) use ($request): void {
                 $term = '%'.$request->input('search').'%';
                 $query->where(function (Builder $query) use ($term): void {
@@ -52,9 +60,15 @@ class CustomerController extends Controller
             })->count(),
         ];
 
+        if ($canManageStatus) {
+            $stats['inactive'] = Customer::onlyTrashed()->count();
+        }
+
         return view('admin.customers.index', [
             'customers' => $customers,
             'stats' => $stats,
+            'canManageStatus' => $canManageStatus,
+            'statusFilter' => $statusFilter,
         ]);
     }
 
@@ -116,6 +130,8 @@ class CustomerController extends Controller
             activity('clientes')
                 ->performedOn($customer)
                 ->causedBy($user)
+                ->event('created')
+                ->withChanges($this->activityCreatedChanges($customer))
                 ->log("Cliente registrado: {$customer->full_name}");
         }
 
@@ -146,8 +162,10 @@ class CustomerController extends Controller
     /**
      * Display a customer with their sales history.
      */
-    public function show(Customer $customer): View
+    public function show(Request $request, Customer $customer): View
     {
+        $canManageStatus = $this->canManageCustomerStatus($request);
+
         $customer->load([
             'sales' => fn ($query) => $query->latest('id')->limit(30),
             'layaways' => fn ($query) => $query->latest('id')->limit(10),
@@ -171,6 +189,7 @@ class CustomerController extends Controller
                 'average_ticket' => $averageTicket,
                 'active_layaways' => $customer->layaways->where('status', LayawayStatus::Active)->count(),
             ],
+            'canManageStatus' => $canManageStatus,
         ]);
     }
 
@@ -208,11 +227,14 @@ class CustomerController extends Controller
             $data['id_photo_path'] = $request->file('id_photo')->store('customer-ids', 'local');
         }
 
+        $snapshot = $this->activitySnapshot($customer);
         $customer->update($data);
 
         activity('clientes')
             ->performedOn($customer)
             ->causedBy($request->user())
+            ->event('updated')
+            ->withChanges($this->activityUpdatedChanges($customer, $snapshot))
             ->log("Cliente actualizado: {$customer->full_name}");
 
         return redirect()->route('admin.customers.show', $customer)
@@ -220,20 +242,50 @@ class CustomerController extends Controller
     }
 
     /**
-     * Soft delete a customer.
+     * Deactivate a customer using soft delete.
      */
-    public function destroy(Customer $customer): RedirectResponse
+    public function destroy(Request $request, Customer $customer): RedirectResponse
     {
+        abort_unless($this->canManageCustomerStatus($request), 403);
+
         $name = $customer->full_name;
+        $snapshot = $this->activitySnapshot($customer);
         $customer->delete();
 
         activity('clientes')
             ->performedOn($customer)
-            ->causedBy(request()->user())
-            ->log("Cliente eliminado: {$name}");
+            ->causedBy($request->user())
+            ->event('deleted')
+            ->withChanges($this->activityDeletedChanges($snapshot))
+            ->log("Cliente desactivado: {$name}");
 
         return redirect()->route('admin.customers.index')
-            ->with('status', "El cliente '{$name}' se eliminó.");
+            ->with('status', "El cliente '{$name}' se desactivó. Puedes reactivarlo desde el filtro de desactivados.");
+    }
+
+    /**
+     * Reactivate a soft-deleted customer.
+     */
+    public function restore(Request $request, int $customer): RedirectResponse
+    {
+        abort_unless($this->canManageCustomerStatus($request), 403);
+
+        $customer = Customer::onlyTrashed()->findOrFail($customer);
+        $deletedAt = $customer->deleted_at?->toDateTimeString();
+        $customer->restore();
+
+        activity('clientes')
+            ->performedOn($customer)
+            ->causedBy($request->user())
+            ->event('restored')
+            ->withChanges([
+                'attributes' => ['deleted_at' => null],
+                'old' => ['deleted_at' => $deletedAt],
+            ])
+            ->log("Cliente reactivado: {$customer->full_name}");
+
+        return redirect()->route('admin.customers.index')
+            ->with('status', "El cliente '{$customer->full_name}' se reactivó correctamente.");
     }
 
     /**
@@ -270,5 +322,13 @@ class CustomerController extends Controller
         abort_if(blank($customer->id_photo_path) || ! Storage::disk('local')->exists($customer->id_photo_path), 404);
 
         return Storage::disk('local')->response($customer->id_photo_path);
+    }
+
+    /**
+     * Determine if the user can deactivate or reactivate customers.
+     */
+    private function canManageCustomerStatus(Request $request): bool
+    {
+        return $request->user()?->hasAnyRole(['Dueño', 'Gerente']) ?? false;
     }
 }

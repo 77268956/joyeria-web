@@ -203,6 +203,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/clientes/{customer}/editar', [CustomerController::class, 'edit'])->name('customers.edit');
         Route::put('/clientes/{customer}', [CustomerController::class, 'update'])->name('customers.update');
         Route::delete('/clientes/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+        Route::post('/clientes/{customer}/reactivar', [CustomerController::class, 'restore'])->name('customers.restore');
         Route::get('/clientes/{customer}/foto', [CustomerController::class, 'photo'])->name('customers.photo');
     });
 

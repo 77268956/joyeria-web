@@ -18,6 +18,7 @@
     $totalSpent = $stats['total_spent'] ?? '0.00';
     $averageTicket = $stats['average_ticket'] ?? '0.00';
     $activeLayaways = $stats['active_layaways'] ?? 0;
+    $canManageStatus = $canManageStatus ?? false;
 @endphp
 
 @section('content')
@@ -121,6 +122,17 @@
         height: 34px;
         padding: 0 0.85rem;
         font-size: 0.8rem;
+    }
+
+    .cust-hero-actions .btn-cust-deactivate {
+        color: var(--color-error);
+        border-color: rgba(196, 30, 58, 0.32);
+    }
+
+    .cust-hero-actions .btn-cust-deactivate:hover {
+        background: #FFF5F5;
+        border-color: var(--color-error);
+        color: var(--color-error);
     }
 
     /* Stats Grid con iconos a la derecha */
@@ -491,6 +503,21 @@
                 </svg>
                 <span>Editar Cliente</span>
             </a>
+            @if ($canManageStatus)
+                <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" data-customer-status-form data-action="deactivate" data-customer-name="{{ $customer->full_name }}" style="display: inline-flex;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" class="btn btn-outline btn-cust-deactivate" style="display: inline-flex; align-items: center; gap: 0.35rem;" data-customer-status-open>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <line x1="17" y1="8" x2="23" y2="14"></line>
+                            <line x1="23" y1="8" x2="17" y2="14"></line>
+                        </svg>
+                        <span>Desactivar</span>
+                    </button>
+                </form>
+            @endif
             <a href="{{ route('admin.customers.index') }}" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.35rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -897,4 +924,8 @@
         </div>
     </div>
 </div>
+
+@if ($canManageStatus)
+    @include('admin.customers.partials.status-confirm-modal')
+@endif
 @endsection

@@ -27,6 +27,11 @@ class CustomerTest extends TestCase
         return User::where('email', 'vendedor@joyeriaweb.com')->first();
     }
 
+    protected function manager(): User
+    {
+        return User::where('email', 'gerente@joyeriaweb.com')->first();
+    }
+
     /**
      * @return array<string, string>
      */
@@ -143,5 +148,99 @@ class CustomerTest extends TestCase
 
         $response->assertRedirect(route('admin.customers.show', $customer));
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'full_name' => 'Nombre Actualizado']);
+    }
+
+    public function test_a_seller_cannot_deactivate_a_customer(): void
+    {
+        $customer = Customer::factory()->create(['store_id' => Store::first()->id]);
+
+        $this->actingAs($this->seller())
+            ->delete(route('admin.customers.destroy', $customer))
+            ->assertForbidden();
+
+        $this->assertNotSoftDeleted('customers', ['id' => $customer->id]);
+    }
+
+    public function test_a_seller_cannot_reactivate_a_customer(): void
+    {
+        $customer = Customer::factory()->create(['store_id' => Store::first()->id]);
+        $customer->delete();
+
+        $this->actingAs($this->seller())
+            ->post(route('admin.customers.restore', $customer->id))
+            ->assertForbidden();
+
+        $this->assertSoftDeleted('customers', ['id' => $customer->id]);
+    }
+
+    public function test_a_manager_can_deactivate_and_reactivate_a_customer(): void
+    {
+        $customer = Customer::factory()->create(['store_id' => Store::first()->id]);
+
+        $this->actingAs($this->manager())
+            ->delete(route('admin.customers.destroy', $customer))
+            ->assertRedirect(route('admin.customers.index'));
+
+        $this->assertSoftDeleted('customers', ['id' => $customer->id]);
+
+        $this->actingAs($this->manager())
+            ->post(route('admin.customers.restore', $customer->id))
+            ->assertRedirect(route('admin.customers.index'));
+
+        $this->assertNotSoftDeleted('customers', ['id' => $customer->id]);
+    }
+
+    public function test_manager_sees_the_styled_confirmation_before_deactivating_a_customer(): void
+    {
+        $customer = Customer::factory()->create([
+            'store_id' => Store::first()->id,
+            'full_name' => 'Alex',
+        ]);
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.customers.index'))
+            ->assertOk()
+            ->assertSee('customer-status-modal', false)
+            ->assertSee('data-action="deactivate"', false)
+            ->assertDontSee('confirmCustomerDeactivation', false);
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.customers.show', $customer))
+            ->assertOk()
+            ->assertSee('customer-status-modal', false)
+            ->assertSee('data-action="deactivate"', false)
+            ->assertDontSee('confirmCustomerDeactivation', false);
+    }
+
+    public function test_manager_sees_the_styled_confirmation_before_reactivating_a_customer(): void
+    {
+        $customer = Customer::factory()->create(['store_id' => Store::first()->id]);
+        $customer->delete();
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.customers.index', ['status' => 'inactive']))
+            ->assertOk()
+            ->assertSee('customer-status-modal', false)
+            ->assertSee('data-action="reactivate"', false)
+            ->assertDontSee('confirmCustomerReactivation', false);
+    }
+
+    public function test_only_managers_can_see_deactivated_customers_in_the_directory(): void
+    {
+        $customer = Customer::factory()->create([
+            'store_id' => Store::first()->id,
+            'full_name' => 'Cliente Desactivado',
+        ]);
+        $customer->delete();
+
+        $this->actingAs($this->seller())
+            ->get(route('admin.customers.index', ['status' => 'inactive']))
+            ->assertOk()
+            ->assertDontSee('Cliente Desactivado');
+
+        $this->actingAs($this->manager())
+            ->get(route('admin.customers.index', ['status' => 'inactive']))
+            ->assertOk()
+            ->assertSee('Cliente Desactivado');
     }
 }

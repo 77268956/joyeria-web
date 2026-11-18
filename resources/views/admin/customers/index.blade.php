@@ -7,6 +7,8 @@
 @php
     $searchTerm = request('search');
     $hasSearch = ! empty($searchTerm);
+    $isInactiveView = ($statusFilter ?? 'active') === 'inactive';
+    $hasFilters = $hasSearch || $isInactiveView;
 @endphp
 
 @section('content')
@@ -123,6 +125,23 @@
         height: 38px;
         padding: 0 1rem;
         font-size: 0.82rem;
+    }
+
+    .cust-status-select {
+        height: 38px;
+        min-width: 155px;
+        padding: 0 0.75rem;
+        border: 1px solid var(--color-linea);
+        border-radius: 4px;
+        background: #FCFBF8;
+        color: var(--color-noche);
+        font-size: 0.82rem;
+    }
+
+    .cust-status-select:focus {
+        background: var(--color-blanco);
+        border-color: var(--color-dorado);
+        outline: none;
     }
 
     .cust-table-card {
@@ -343,6 +362,36 @@
         color: var(--color-hueso);
     }
 
+    .cust-icon-btn--danger {
+        border-color: rgba(196, 30, 58, 0.28);
+        color: var(--color-error);
+    }
+
+    .cust-icon-btn--danger:hover {
+        border-color: var(--color-error);
+        background: #FFF5F5;
+        color: var(--color-error);
+    }
+
+    .cust-icon-btn--success {
+        border-color: rgba(46, 125, 50, 0.28);
+        color: var(--color-exito);
+    }
+
+    .cust-icon-btn--success:hover {
+        border-color: var(--color-exito);
+        background: #EDF7EE;
+        color: var(--color-exito);
+    }
+
+    .cust-row-inactive {
+        background: #FCFBF8;
+    }
+
+    .cust-row-inactive .cust-name {
+        color: var(--color-piedra);
+    }
+
     .cust-empty {
         padding: 3rem 1.5rem;
         text-align: center;
@@ -426,6 +475,7 @@
     @media (max-width: 600px) {
         .cust-stats { grid-template-columns: minmax(0, 1fr); }
         .cust-filter-form { flex-direction: column; align-items: stretch; }
+        .cust-status-select { width: 100%; }
         .cust-filter-actions { justify-content: stretch; }
         .cust-filter-actions .btn { flex: 1; }
     }
@@ -499,18 +549,36 @@
             </span>
         </div>
 
-        <div class="cust-stat">
-            <div style="min-width: 0; flex: 1;">
-                <span class="cust-stat-label">Con contacto</span>
-                <strong class="cust-stat-value">{{ number_format($stats['with_contact'] ?? 0) }}</strong>
-                <span class="cust-stat-hint">Teléfono o correo guardado</span>
+        @if ($canManageStatus)
+            <div class="cust-stat">
+                <div style="min-width: 0; flex: 1;">
+                    <span class="cust-stat-label">Desactivados</span>
+                    <strong class="cust-stat-value" style="color: var(--color-error);">{{ number_format($stats['inactive'] ?? 0) }}</strong>
+                    <span class="cust-stat-hint">Fichas fuera del directorio</span>
+                </div>
+                <span class="cust-stat-icon" aria-hidden="true" style="background: #FFF5F5; color: var(--color-error);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="17" y1="8" x2="23" y2="14"></line>
+                        <line x1="23" y1="8" x2="17" y2="14"></line>
+                    </svg>
+                </span>
             </div>
-            <span class="cust-stat-icon" aria-hidden="true" style="background: #E8F0F5; color: var(--color-info);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-            </span>
-        </div>
+        @else
+            <div class="cust-stat">
+                <div style="min-width: 0; flex: 1;">
+                    <span class="cust-stat-label">Con contacto</span>
+                    <strong class="cust-stat-value">{{ number_format($stats['with_contact'] ?? 0) }}</strong>
+                    <span class="cust-stat-hint">Teléfono o correo guardado</span>
+                </div>
+                <span class="cust-stat-icon" aria-hidden="true" style="background: #E8F0F5; color: var(--color-info);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </span>
+            </div>
+        @endif
     </div>
 
     {{-- Barra de búsqueda y filtro --}}
@@ -530,9 +598,15 @@
                     autocomplete="off"
                 >
             </div>
+            @if ($canManageStatus)
+                <select name="status" class="cust-status-select" aria-label="Estado de los clientes">
+                    <option value="active" @selected(! $isInactiveView)>Clientes activos</option>
+                    <option value="inactive" @selected($isInactiveView)>Clientes desactivados</option>
+                </select>
+            @endif
             <div class="cust-filter-actions">
                 <button type="submit" class="btn btn-dark">Buscar</button>
-                @if ($hasSearch)
+                @if ($hasFilters)
                     <a href="{{ route('admin.customers.index') }}" class="btn btn-outline">Limpiar filtro</a>
                 @endif
             </div>
@@ -543,11 +617,19 @@
     <div class="cust-table-card">
         <div class="cust-table-head">
             <div>
-                <h2 class="font-serif">Directorio de Clientes</h2>
-                <p>{{ number_format($customers->total()) }} {{ $customers->total() === 1 ? 'cliente encontrado' : 'clientes encontrados' }} · Ordenados por nombre</p>
+                <h2 class="font-serif">{{ $isInactiveView ? 'Clientes Desactivados' : 'Directorio de Clientes' }}</h2>
+                <p>
+                    {{ number_format($customers->total()) }} {{ $customers->total() === 1 ? 'cliente encontrado' : 'clientes encontrados' }}
+                    · {{ $isInactiveView ? 'Fichas desactivadas, listas para reactivar' : 'Ordenados por nombre' }}
+                </p>
             </div>
-            @if ($hasSearch)
-                <span class="cust-filter-chip">Filtro: "{{ $searchTerm }}"</span>
+            @if ($hasFilters)
+                <span class="cust-filter-chip">
+                    {{ $isInactiveView ? 'Vista: desactivados' : 'Vista: activos' }}
+                    @if ($hasSearch)
+                        · "{{ $searchTerm }}"
+                    @endif
+                </span>
             @endif
         </div>
 
@@ -575,14 +657,18 @@
                                 $initials = 'CL';
                             }
                         @endphp
-                        <tr>
+                        <tr class="{{ $isInactiveView ? 'cust-row-inactive' : '' }}">
                             <td class="cust-cell-profile">
                                 <div class="cust-profile">
                                     <span class="cust-avatar" aria-hidden="true">{{ $initials }}</span>
                                     <div style="min-width: 0;">
-                                        <a href="{{ route('admin.customers.show', $customer) }}" class="cust-name">
-                                            {{ $customer->full_name }}
-                                        </a>
+                                        @if ($isInactiveView)
+                                            <span class="cust-name">{{ $customer->full_name }}</span>
+                                        @else
+                                            <a href="{{ route('admin.customers.show', $customer) }}" class="cust-name">
+                                                {{ $customer->full_name }}
+                                            </a>
+                                        @endif
                                         @if ($customer->address)
                                             <div class="cust-address" title="{{ $customer->address }}">{{ $customer->address }}</div>
                                         @endif
@@ -629,18 +715,44 @@
                             </td>
                             <td class="text-right cust-cell-actions">
                                 <div class="cust-actions">
-                                    <a href="{{ route('admin.customers.show', $customer) }}" class="cust-icon-btn" title="Ver ficha de cliente" aria-label="Ver ficha de {{ $customer->full_name }}">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                    </a>
-                                    <a href="{{ route('admin.customers.edit', $customer) }}" class="cust-icon-btn cust-icon-btn--dark" title="Editar cliente" aria-label="Editar {{ $customer->full_name }}">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <path d="m14 4 6 6L8 22H2v-6L14 4Z"></path>
-                                            <path d="m12 6 6 6"></path>
-                                        </svg>
-                                    </a>
+                                    @if ($isInactiveView)
+                                        <form action="{{ route('admin.customers.restore', $customer->id) }}" method="POST" data-customer-status-form data-action="reactivate" data-customer-name="{{ $customer->full_name }}">
+                                            @csrf
+                                            <button type="button" class="cust-icon-btn cust-icon-btn--success" title="Reactivar cliente" aria-label="Reactivar a {{ $customer->full_name }}" data-customer-status-open>
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                    <path d="M3 3v5h5"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('admin.customers.show', $customer) }}" class="cust-icon-btn" title="Ver ficha de cliente" aria-label="Ver ficha de {{ $customer->full_name }}">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('admin.customers.edit', $customer) }}" class="cust-icon-btn cust-icon-btn--dark" title="Editar cliente" aria-label="Editar {{ $customer->full_name }}">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="m14 4 6 6L8 22H2v-6L14 4Z"></path>
+                                                <path d="m12 6 6 6"></path>
+                                            </svg>
+                                        </a>
+                                        @if ($canManageStatus)
+                                            <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" data-customer-status-form data-action="deactivate" data-customer-name="{{ $customer->full_name }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="cust-icon-btn cust-icon-btn--danger" title="Desactivar cliente" aria-label="Desactivar a {{ $customer->full_name }}" data-customer-status-open>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                                        <circle cx="9" cy="7" r="4"></circle>
+                                                        <line x1="17" y1="8" x2="23" y2="14"></line>
+                                                        <line x1="23" y1="8" x2="17" y2="14"></line>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -656,12 +768,18 @@
                                             <line x1="23" y1="8" x2="17" y2="14"></line>
                                         </svg>
                                     </span>
-                                    <strong>{{ $hasSearch ? 'No se encontraron clientes para tu búsqueda' : 'No hay clientes registrados en esta sucursal' }}</strong>
-                                    <p>{{ $hasSearch ? 'Prueba con otros términos de búsqueda o verifica el número de documento.' : 'Registra tu primer cliente para asociar ventas, compras de oro o apartados.' }}</p>
-                                    @if ($hasSearch)
-                                        <a href="{{ route('admin.customers.index') }}" class="btn btn-outline">Limpiar búsqueda</a>
+                                    @if ($isInactiveView)
+                                        <strong>{{ $hasSearch ? 'No se encontraron clientes desactivados para tu búsqueda' : 'No hay clientes desactivados' }}</strong>
+                                        <p>{{ $hasSearch ? 'Prueba con otros términos de búsqueda o revisa el directorio activo.' : 'Los clientes que desactives aparecerán aquí para poder reactivarlos.' }}</p>
+                                        <a href="{{ route('admin.customers.index') }}" class="btn btn-outline">Ver clientes activos</a>
                                     @else
-                                        <a href="{{ route('admin.customers.create') }}" class="btn btn-gold">Registrar cliente</a>
+                                        <strong>{{ $hasSearch ? 'No se encontraron clientes para tu búsqueda' : 'No hay clientes registrados en esta sucursal' }}</strong>
+                                        <p>{{ $hasSearch ? 'Prueba con otros términos de búsqueda o verifica el número de documento.' : 'Registra tu primer cliente para asociar ventas, compras de oro o apartados.' }}</p>
+                                        @if ($hasSearch)
+                                            <a href="{{ route('admin.customers.index') }}" class="btn btn-outline">Limpiar búsqueda</a>
+                                        @else
+                                            <a href="{{ route('admin.customers.create') }}" class="btn btn-gold">Registrar cliente</a>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -678,4 +796,8 @@
         </div>
     @endif
 </div>
+
+@if ($canManageStatus)
+    @include('admin.customers.partials.status-confirm-modal')
+@endif
 @endsection
