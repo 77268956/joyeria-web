@@ -184,6 +184,44 @@ class StockCountTest extends TestCase
         ]);
     }
 
+    public function test_owner_sees_the_styled_confirmation_before_starting_a_count(): void
+    {
+        $this->actingAs($this->owner())
+            ->get(route('admin.stock-counts.index'))
+            ->assertOk()
+            ->assertSee('stock-count-confirm-modal', false)
+            ->assertSee('¿Todo listo para comenzar?');
+    }
+
+    public function test_owner_sees_the_styled_confirmation_before_finishing_a_count(): void
+    {
+        $owner = $this->owner();
+        $count = app(StockCountService::class)->start($owner);
+
+        $this->actingAs($owner)
+            ->get(route('admin.stock-counts.show', $count))
+            ->assertOk()
+            ->assertSee('stock-count-action-modal', false)
+            ->assertSee('Revisa antes de continuar')
+            ->assertSee('data-form="form-finish-stock-count"', false)
+            ->assertDontSee('onsubmit="return confirm(', false);
+    }
+
+    public function test_owner_sees_the_styled_confirmation_before_applying_a_count(): void
+    {
+        $owner = $this->owner();
+        $count = app(StockCountService::class)->start($owner);
+        app(StockCountService::class)->finish($count, $owner);
+
+        $this->actingAs($owner)
+            ->get(route('admin.stock-counts.show', $count))
+            ->assertOk()
+            ->assertSee('stock-count-action-modal', false)
+            ->assertSee('Revisa antes de continuar')
+            ->assertSee('data-form="form-apply-stock-count"', false)
+            ->assertDontSee('onsubmit="return confirm(', false);
+    }
+
     public function test_a_seller_can_view_but_not_start_a_count(): void
     {
         $seller = User::where('email', 'vendedor@joyeriaweb.com')->firstOrFail();

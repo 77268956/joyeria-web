@@ -476,6 +476,63 @@
         .sc-table-foot { flex-direction: column; align-items: stretch; }
         .sc-table-foot .btn { width: 100%; justify-content: center; }
     }
+
+    .sc-confirm-hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .sc-confirm-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--color-crema);
+        color: var(--color-dorado);
+    }
+
+    .sc-confirm-hero h3 {
+        margin: 0;
+        color: var(--color-noche);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .sc-confirm-hero p {
+        margin: 0.25rem 0 0;
+        color: var(--color-piedra);
+        font-size: 0.84rem;
+        line-height: 1.45;
+    }
+
+    .sc-confirm-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 1rem 0 0;
+        padding: 0.85rem 1rem;
+        list-style: none;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-crema);
+    }
+
+    .sc-confirm-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: var(--color-noche);
+        font-size: 0.84rem;
+        line-height: 1.4;
+    }
+
+    .sc-confirm-list svg {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        color: var(--color-dorado);
+    }
 </style>
 
 <div class="sc-show">
@@ -514,16 +571,32 @@
             <div class="sc-hero-actions">
                 @if ($count->isOpen())
                     @can('inventory.adjust')
-                        <form action="{{ route('admin.stock-counts.finish', $count) }}" method="POST" onsubmit="return confirm('¿Finalizar el conteo #{{ $count->id }}? Ya no podrás editar las piezas.');">
+                        <form action="{{ route('admin.stock-counts.finish', $count) }}" method="POST" id="form-finish-stock-count" data-supervisor-action="finalizar el conteo">
                             @csrf
-                            <button type="submit" class="btn btn-dark">Finalizar conteo</button>
+                            <button
+                                type="button"
+                                class="btn btn-dark"
+                                data-stock-count-action-open
+                                data-form="form-finish-stock-count"
+                                data-title="Finalizar conteo #{{ $count->id }}"
+                                data-description="Se guardará el avance actual y las piezas quedarán bloqueadas para edición. Después podrás revisar las diferencias y aplicar el conteo."
+                                data-confirm-label="Finalizar conteo"
+                            >Finalizar conteo</button>
                         </form>
                     @endcan
                 @elseif ($count->isFinished())
                     @can('inventory.adjust')
-                        <form action="{{ route('admin.stock-counts.apply', $count) }}" method="POST" onsubmit="return confirm('¿Aplicar el conteo #{{ $count->id }}? Se ajustará el inventario según las diferencias.');">
+                        <form action="{{ route('admin.stock-counts.apply', $count) }}" method="POST" id="form-apply-stock-count" data-supervisor-action="aplicar el conteo">
                             @csrf
-                            <button type="submit" class="btn btn-dark">Aplicar conteo</button>
+                            <button
+                                type="button"
+                                class="btn btn-dark"
+                                data-stock-count-action-open
+                                data-form="form-apply-stock-count"
+                                data-title="Aplicar conteo #{{ $count->id }}"
+                                data-description="Se ajustará el inventario según las diferencias detectadas. Esta acción no se puede deshacer."
+                                data-confirm-label="Aplicar conteo"
+                            >Aplicar conteo</button>
                         </form>
                     @endcan
                 @endif
@@ -625,7 +698,7 @@
     @endif
 
     @if ($count->isOpen())
-        <form action="{{ route('admin.stock-counts.record', $count) }}" method="POST" class="sc-form">
+        <form action="{{ route('admin.stock-counts.record', $count) }}" method="POST" class="sc-form" data-skip-supervisor>
             @csrf
 
             <div class="sc-table-card">
@@ -718,7 +791,7 @@
         @if ($candidates->isNotEmpty())
             <div class="sc-surplus-card">
                 <h2>Registrar sobrante (pieza no esperada)</h2>
-                <form action="{{ route('admin.stock-counts.record', $count) }}" method="POST" class="sc-surplus-form">
+                <form action="{{ route('admin.stock-counts.record', $count) }}" method="POST" class="sc-surplus-form" data-skip-supervisor>
                     @csrf
                     <input type="hidden" name="items[0][found]" value="1">
                     <div class="form-group">
@@ -823,4 +896,146 @@
         </div>
     @endif
 </div>
+
+@can('inventory.adjust')
+<div class="modal-backdrop" id="stock-count-action-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="stock-count-action-title" style="max-width: 500px;">
+        <div class="modal-header">
+            <div>
+                <h2 id="stock-count-action-title" style="font-size: 1.05rem; margin: 0;">Confirmar acción</h2>
+                <p class="muted" style="font-size: 0.78rem; margin: 0.2rem 0 0;">Conteo físico #{{ $count->id }}</p>
+            </div>
+            <button type="button" class="modal-close" data-stock-count-action-cancel aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="sc-confirm-hero">
+                <span class="sc-confirm-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                        <rect x="9" y="3" width="6" height="4" rx="1" />
+                        <path d="m9 14 2 2 4-4" />
+                    </svg>
+                </span>
+                <div>
+                    <h3>Revisa antes de continuar</h3>
+                    <p id="stock-count-action-description">Confirma la acción para continuar.</p>
+                </div>
+            </div>
+
+            <ul class="sc-confirm-list">
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>La acción quedará registrada en la bitácora de auditoría.</span>
+                </li>
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>Si tienes dudas, cancela y revisa el conteo antes de continuar.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-stock-count-action-cancel>Cancelar</button>
+            <button type="button" class="btn btn-dark" data-stock-count-action-confirm>Continuar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('stock-count-action-modal');
+
+    if (!modal) {
+        return;
+    }
+
+    const title = document.getElementById('stock-count-action-title');
+    const description = document.getElementById('stock-count-action-description');
+    const openButtons = document.querySelectorAll('[data-stock-count-action-open]');
+    const cancelButtons = modal.querySelectorAll('[data-stock-count-action-cancel]');
+    const confirmButton = modal.querySelector('[data-stock-count-action-confirm]');
+
+    let activeForm = null;
+    let submitting = false;
+    let closeTimer = null;
+
+    function openModal(button) {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+
+        activeForm = document.getElementById(button.dataset.form);
+
+        if (!activeForm) {
+            return;
+        }
+
+        title.textContent = button.dataset.title || 'Confirmar acción';
+        description.textContent = button.dataset.description || '';
+        confirmButton.textContent = button.dataset.confirmLabel || 'Continuar';
+
+        submitting = false;
+        modal.style.display = 'flex';
+        modal.classList.remove('is-closing');
+        modal.classList.add('is-active');
+
+        window.setTimeout(() => confirmButton.focus(), 80);
+    }
+
+    function closeModal() {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+        }
+
+        modal.classList.add('is-closing');
+        modal.classList.remove('is-active');
+
+        closeTimer = window.setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('is-closing');
+            closeTimer = null;
+        }, 280);
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener('click', () => openModal(button));
+    });
+
+    cancelButtons.forEach((button) => {
+        button.addEventListener('click', closeModal);
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-active')) {
+            closeModal();
+        }
+    });
+
+    confirmButton.addEventListener('click', () => {
+        if (submitting || !activeForm) {
+            return;
+        }
+
+        submitting = true;
+        closeModal();
+
+        window.setTimeout(() => {
+            activeForm.requestSubmit();
+        }, 200);
+    });
+});
+</script>
+@endcan
 @endsection

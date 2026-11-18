@@ -327,6 +327,63 @@
     @media (max-width: 600px) {
         .sc-stats { grid-template-columns: minmax(0, 1fr); }
     }
+
+    .sc-confirm-hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .sc-confirm-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--color-crema);
+        color: var(--color-dorado);
+    }
+
+    .sc-confirm-hero h3 {
+        margin: 0;
+        color: var(--color-noche);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .sc-confirm-hero p {
+        margin: 0.25rem 0 0;
+        color: var(--color-piedra);
+        font-size: 0.84rem;
+        line-height: 1.45;
+    }
+
+    .sc-confirm-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 1rem 0 0;
+        padding: 0.85rem 1rem;
+        list-style: none;
+        border: 1px solid var(--color-linea);
+        border-radius: 5px;
+        background: var(--color-crema);
+    }
+
+    .sc-confirm-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: var(--color-noche);
+        font-size: 0.84rem;
+        line-height: 1.4;
+    }
+
+    .sc-confirm-list svg {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        color: var(--color-dorado);
+    }
 </style>
 
 @php
@@ -341,9 +398,9 @@
         </div>
         <div class="page-actions">
             @can('inventory.adjust')
-                <form action="{{ route('admin.stock-counts.store') }}" method="POST" style="display: inline;">
+                <form action="{{ route('admin.stock-counts.store') }}" method="POST" id="form-start-stock-count" style="display: inline;" data-supervisor-action="el conteo físico">
                     @csrf
-                    <button type="submit" class="btn btn-gold sc-new-btn" onclick="return confirm('¿Iniciar un nuevo conteo físico con el inventario actual?');">
+                    <button type="button" class="btn btn-gold sc-new-btn" data-stock-count-open>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -496,10 +553,7 @@
                                     <strong>No hay conteos registrados</strong>
                                     <p>Inicia un nuevo conteo físico para conciliar las piezas del sistema con las que están en la tienda.</p>
                                     @can('inventory.adjust')
-                                        <form action="{{ route('admin.stock-counts.store') }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-gold" onclick="return confirm('¿Iniciar un nuevo conteo físico con el inventario actual?');">Nuevo conteo</button>
-                                        </form>
+                                        <button type="button" class="btn btn-gold" data-stock-count-open>Nuevo conteo</button>
                                     @endcan
                                 </div>
                             </td>
@@ -516,4 +570,140 @@
         </div>
     @endif
 </div>
+
+@can('inventory.adjust')
+<div class="modal-backdrop" id="stock-count-confirm-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="stock-count-confirm-title" style="max-width: 500px;">
+        <div class="modal-header">
+            <div>
+                <h2 id="stock-count-confirm-title" style="font-size: 1.05rem; margin: 0;">Iniciar conteo físico</h2>
+                <p class="muted" style="font-size: 0.78rem; margin: 0.2rem 0 0;">Inventario actual</p>
+            </div>
+            <button type="button" class="modal-close" data-stock-count-cancel aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="sc-confirm-hero">
+                <span class="sc-confirm-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                        <rect x="9" y="3" width="6" height="4" rx="1" />
+                        <path d="m9 14 2 2 4-4" />
+                    </svg>
+                </span>
+                <div>
+                    <h3>¿Todo listo para comenzar?</h3>
+                    <p>Se creará una lista con las piezas disponibles y apartadas de esta sucursal para que registres lo que encuentres en tienda.</p>
+                </div>
+            </div>
+
+            <ul class="sc-confirm-list">
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>El inventario no se modifica hasta que finalices y apliques el conteo.</span>
+                </li>
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>Podrás marcar piezas encontradas, faltantes y agregar piezas que no aparezcan en la lista.</span>
+                </li>
+                <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>La apertura del conteo quedará registrada en la bitácora de auditoría.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-stock-count-cancel>Cancelar</button>
+            <button type="button" class="btn btn-gold" data-stock-count-confirm>Iniciar conteo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('stock-count-confirm-modal');
+    const form = document.getElementById('form-start-stock-count');
+
+    if (!modal || !form) {
+        return;
+    }
+
+    const openButtons = document.querySelectorAll('[data-stock-count-open]');
+    const cancelButtons = modal.querySelectorAll('[data-stock-count-cancel]');
+    const confirmButton = modal.querySelector('[data-stock-count-confirm]');
+
+    let submitting = false;
+    let closeTimer = null;
+
+    function openModal() {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+
+        submitting = false;
+        modal.style.display = 'flex';
+        modal.classList.remove('is-closing');
+        modal.classList.add('is-active');
+
+        window.setTimeout(() => confirmButton?.focus(), 80);
+    }
+
+    function closeModal() {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+        }
+
+        modal.classList.add('is-closing');
+        modal.classList.remove('is-active');
+
+        closeTimer = window.setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('is-closing');
+            closeTimer = null;
+        }, 280);
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener('click', openModal);
+    });
+
+    cancelButtons.forEach((button) => {
+        button.addEventListener('click', closeModal);
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-active')) {
+            closeModal();
+        }
+    });
+
+    confirmButton?.addEventListener('click', () => {
+        if (submitting) {
+            return;
+        }
+
+        submitting = true;
+        closeModal();
+
+        window.setTimeout(() => {
+            form.requestSubmit();
+        }, 200);
+    });
+});
+</script>
+@endcan
 @endsection
