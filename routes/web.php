@@ -240,14 +240,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Usuarios y Permisos (Dueño con users.manage)
     Route::middleware(['permission:users.manage'])->group(function () {
         Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
+        Route::get('/usuarios/crear', [UserController::class, 'create'])->name('users.create');
         Route::post('/usuarios', [UserController::class, 'store'])->name('users.store');
+        Route::get('/usuarios/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::get('/usuarios/{user}/editar', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/usuarios/{user}', [UserController::class, 'update'])->name('users.update');
         Route::post('/usuarios/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle_status');
         Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
-    // Configuración del Sistema
-    Route::get('/configuracion', function () {
-        return view('admin.settings.index');
-    })->name('settings.index');
+    // Configuración del Sistema (solo Dueño)
+    Route::middleware(['permission:settings.manage'])->group(function () {
+        Route::get('/configuracion', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('/configuracion', [SettingController::class, 'update'])->name('settings.update');
+    });
 });

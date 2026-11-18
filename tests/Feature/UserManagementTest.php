@@ -40,6 +40,42 @@ class UserManagementTest extends TestCase
         $responseSeller->assertForbidden();
     }
 
+    public function test_owner_can_view_user_profile_and_form_screens(): void
+    {
+        $owner = User::where('email', 'admin@joyeriaweb.com')->first();
+        $seller = User::where('email', 'vendedor@joyeriaweb.com')->first();
+
+        $this->actingAs($owner)
+            ->get(route('admin.users.create'))
+            ->assertOk()
+            ->assertSee('Nuevo colaborador');
+
+        $this->actingAs($owner)
+            ->get(route('admin.users.show', $seller))
+            ->assertOk()
+            ->assertSee($seller->name)
+            ->assertSee('Vendedor')
+            ->assertSee('Acceso y permisos');
+
+        $this->actingAs($owner)
+            ->get(route('admin.users.edit', $seller))
+            ->assertOk()
+            ->assertSee('Editar colaborador')
+            ->assertSee($seller->email);
+    }
+
+    public function test_manager_and_seller_cannot_access_user_profile_or_forms(): void
+    {
+        $manager = User::where('email', 'gerente@joyeriaweb.com')->first();
+        $seller = User::where('email', 'vendedor@joyeriaweb.com')->first();
+
+        foreach ([$manager, $seller] as $actor) {
+            $this->actingAs($actor)->get(route('admin.users.create'))->assertForbidden();
+            $this->actingAs($actor)->get(route('admin.users.show', $seller))->assertForbidden();
+            $this->actingAs($actor)->get(route('admin.users.edit', $seller))->assertForbidden();
+        }
+    }
+
     public function test_owner_can_create_a_new_user_with_role_and_audit_is_recorded(): void
     {
         $owner = User::where('email', 'admin@joyeriaweb.com')->first();
@@ -57,7 +93,9 @@ class UserManagementTest extends TestCase
 
         $response = $this->actingAs($owner)->post(route('admin.users.store'), $userData);
 
-        $response->assertRedirect(route('admin.users.index'));
+        $createdUser = User::where('email', 'cajero@joyeriaweb.com')->first();
+
+        $response->assertRedirect(route('admin.users.show', $createdUser));
         $response->assertSessionHas('status');
 
         $this->assertDatabaseHas('users', [
@@ -66,7 +104,6 @@ class UserManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        $createdUser = User::where('email', 'cajero@joyeriaweb.com')->first();
         $this->assertTrue($createdUser->hasRole('Vendedor'));
 
         // Verify audit log
@@ -90,7 +127,7 @@ class UserManagementTest extends TestCase
 
         $response = $this->actingAs($owner)->put(route('admin.users.update', $seller), $updateData);
 
-        $response->assertRedirect(route('admin.users.index'));
+        $response->assertRedirect(route('admin.users.show', $seller));
         $this->assertDatabaseHas('users', [
             'id' => $seller->id,
             'name' => 'Juan Vendedor Editado',

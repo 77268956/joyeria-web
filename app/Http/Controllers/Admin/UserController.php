@@ -7,15 +7,20 @@ use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Store;
 use App\Models\User;
+use App\Traits\BuildsActivityChanges;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    use BuildsActivityChanges;
+
     /**
      * Display a listing of the users.
      */
@@ -53,7 +58,57 @@ class UserController extends Controller
         $roles = Role::all();
         $stores = Store::where('is_active', true)->get();
 
-        return view('admin.users.index', compact('users', 'roles', 'stores'));
+        $summary = [
+            'total' => User::withoutTrashed()->count(),
+            'active' => User::withoutTrashed()->where('is_active', true)->count(),
+            'inactive' => User::withoutTrashed()->where('is_active', false)->count(),
+            'roles' => $roles->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'roles', 'stores', 'summary'));
+    }
+
+    /**
+     * Show the form to register a new user.
+     */
+    public function create(): View
+    {
+        return view('admin.users.create', $this->formData());
+    }
+
+    /**
+     * Display the user's profile and access summary.
+     */
+    public function show(User $user): View
+    {
+        $user->load(['roles.permissions', 'store']);
+
+        $recentActivity = Activity::query()
+            ->where('subject_type', $user->getMorphClass())
+            ->where('subject_id', $user->id)
+            ->with('causer')
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        return view('admin.users.show', [
+            'user' => $user,
+            'permissions' => $user->getAllPermissions()->sortBy('name')->values(),
+            'recentActivity' => $recentActivity,
+        ]);
+    }
+
+    /**
+     * Show the form to edit a user.
+     */
+    public function edit(User $user): View
+    {
+        $user->load(['roles', 'store']);
+
+        return view('admin.users.edit', [
+            'user' => $user,
+            ...$this->formData(),
+        ]);
     }
 
     /**
@@ -76,13 +131,17 @@ class UserController extends Controller
 
         $user->assignRole($validated['role']);
 
+        $changes = $this->activityCreatedChanges($user);
+        $changes['attributes']['role'] = $validated['role'];
+
         activity('usuarios')
             ->performedOn($user)
             ->causedBy(Auth::user())
-            ->withProperties(['role' => $validated['role'], 'email' => $user->email])
+            ->event('created')
+            ->withChanges($changes)
             ->log("Usuario creado: {$user->name} con rol {$validated['role']}");
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('status', "El usuario '{$user->name}' ha sido creado exitosamente.");
     }
 
@@ -92,6 +151,8 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($user);
+        $previousRole = $user->getRoleNames()->first();
 
         // Prevent self-deactivation
         if ($user->id === Auth::id() && ! $request->boolean('is_active')) {
@@ -119,13 +180,21 @@ class UserController extends Controller
         $user->update($data);
         $user->syncRoles([$validated['role']]);
 
+        $changes = $this->activityUpdatedChanges($user, $snapshot);
+
+        if ($previousRole !== $validated['role']) {
+            $changes['old']['role'] = $previousRole;
+            $changes['attributes']['role'] = $validated['role'];
+        }
+
         activity('usuarios')
             ->performedOn($user)
             ->causedBy(Auth::user())
-            ->withProperties(['role' => $validated['role'], 'email' => $user->email])
+            ->event('updated')
+            ->withChanges($changes)
             ->log("Usuario actualizado: {$user->name}");
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('status', "El usuario '{$user->name}' ha sido actualizado exitosamente.");
     }
 
@@ -138,6 +207,7 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Por seguridad, no puedes cambiar el estado activo de tu propia cuenta.']);
         }
 
+        $snapshot = $this->activitySnapshot($user);
         $user->update([
             'is_active' => ! $user->is_active,
         ]);
@@ -147,11 +217,25 @@ class UserController extends Controller
         activity('usuarios')
             ->performedOn($user)
             ->causedBy(Auth::user())
-            ->withProperties(['is_active' => $user->is_active])
+            ->event($user->is_active ? 'activated' : 'deactivated')
+            ->withChanges($this->activityUpdatedChanges($user, $snapshot))
             ->log("Usuario {$statusLabel}: {$user->name}");
 
         return redirect()->route('admin.users.index')
             ->with('status', "El usuario '{$user->name}' ha sido {$statusLabel} correctamente.");
+    }
+
+    /**
+     * Shared data for the create and edit forms.
+     *
+     * @return array{roles: Collection<int, Role>, stores: Collection<int, Store>}
+     */
+    private function formData(): array
+    {
+        return [
+            'roles' => Role::query()->orderBy('name')->get(),
+            'stores' => Store::query()->where('is_active', true)->orderBy('name')->get(),
+        ];
     }
 
     /**
@@ -164,11 +248,14 @@ class UserController extends Controller
         }
 
         $name = $user->name;
+        $snapshot = $this->activitySnapshot($user);
         $user->delete();
 
         activity('usuarios')
             ->performedOn($user)
             ->causedBy(Auth::user())
+            ->event('deleted')
+            ->withChanges($this->activityDeletedChanges($snapshot))
             ->log("Usuario eliminado: {$name}");
 
         return redirect()->route('admin.users.index')
