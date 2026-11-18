@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Joyería Web — Joyería Fina & Metales Preciosos')
+@section('title', 'Javier — Joyería Fina & Metales Preciosos')
 
 @section('meta_description', 'Joyería fina en oro y plata de ley. Descubre nuestra colección, cotiza tu oro en línea y visítanos en sucursal.')
 

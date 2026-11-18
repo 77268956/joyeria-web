@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', $product->name.' — Joyería Web')
+@section('title', $product->name.' — Javier')
 @section('meta_description', \Illuminate\Support\Str::limit(strip_tags($product->description ?? $product->name), 150))
 
 @section('content')

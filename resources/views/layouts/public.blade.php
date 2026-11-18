@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('meta_description', 'Joyería fina en oro y plata, valuación experta y compra de metales preciosos.')">
-    <title>@yield('title', 'Joyería Web — Joyería Fina & Metales Preciosos')</title>
+    <title>@yield('title', 'Javier — Joyería Fina & Metales Preciosos')</title>
 
     <!-- Google Fonts: Cinzel & Roboto Condensed -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,7 +73,7 @@
                 <span></span><span></span><span></span>
             </button>
 
-            <a href="{{ route('home') }}" class="navbar-brand">{{ $publicSettings?->system_name ?? 'Joyería Web' }}</a>
+            <a href="{{ route('home') }}" class="navbar-brand">Javier</a>
 
             <div class="navbar-access">
                 @auth
@@ -110,7 +110,7 @@
     <footer class="public-footer">
         <div class="footer-inner">
             <div class="footer-col" data-animate>
-                <span class="footer-brand">{{ $publicSettings?->system_name ?? 'Joyería Web' }}</span>
+                <span class="footer-brand">Javier</span>
                 <p class="footer-text">Oro y plata de ley, valuación experta y compra directa de metales preciosos.</p>
             </div>
 
@@ -143,7 +143,7 @@
         </div>
 
         <div class="footer-bottom" data-animate>
-            &copy; {{ date('Y') }} {{ $publicSettings?->system_name ?? 'Joyería Web' }}. Todos los derechos reservados.
+            &copy; {{ date('Y') }} Javier. Todos los derechos reservados.
         </div>
     </footer>
 

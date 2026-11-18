@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Sucursal — Joyería Web')
+@section('title', 'Sucursal — Javier')
 
 @section('content')
     <section class="page-header">
