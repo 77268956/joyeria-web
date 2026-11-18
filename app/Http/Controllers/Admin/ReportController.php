@@ -15,12 +15,13 @@ class ReportController extends Controller
     public function __construct(protected ReportService $reports) {}
 
     /**
-     * Show the report catalogue.
+     * Show the reporting dashboard and the report catalogue.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         return view('admin.reports.index', [
             'reports' => $this->reports->catalogue(),
+            'overview' => $this->reports->overview($request->input('from'), $request->input('to')),
         ]);
     }
 

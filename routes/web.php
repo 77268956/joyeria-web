@@ -226,10 +226,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['permission:reports.view'])->group(function () {
         Route::get('/reportes', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reportes/{report}', [ReportController::class, 'show'])
-            ->whereIn('report', ['ventas', 'compras', 'inventario', 'caja'])
+            ->whereIn('report', ['ventas', 'compras', 'inventario', 'caja', 'apartados'])
             ->name('reports.show');
         Route::get('/reportes/{report}/exportar/{format}', [ReportController::class, 'export'])
-            ->whereIn('report', ['ventas', 'compras', 'inventario', 'caja'])
+            ->whereIn('report', ['ventas', 'compras', 'inventario', 'caja', 'apartados'])
             ->whereIn('format', ['csv', 'pdf'])
             ->name('reports.export');
     });
