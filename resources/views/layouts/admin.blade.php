@@ -16,7 +16,8 @@
         :root {
             --color-noche:        #12161F;
             --color-hueso:        #F7F4EE;
-            --color-crema:        #F3EFE8; /* slightly darker than hueso, for table heads & filter bars */
+            --color-crema:        #F3EFE8; /* slightly darker than hueso, for filter bars and panels */
+            --color-tabla-header: #FAF8F4; /* pale table head, distinct from the page background */
             --color-blanco:       #FFFFFF;
             --color-dorado:       #B89A5E;
             --color-dorado-claro: #E3D6B4;
@@ -535,7 +536,7 @@
         /* ------------------ TABLES ------------------ */
         .table-wrap { overflow-x: auto; }
         table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
-        table.data-table thead tr { background-color: var(--color-crema); border-bottom: 1px solid var(--color-linea); }
+        table.data-table thead tr { background-color: var(--color-tabla-header); border-bottom: 1px solid var(--color-linea); }
         table.data-table th {
             padding: 0.85rem 1.1rem;
             font-weight: 600;
@@ -589,7 +590,7 @@
             position: sticky;
             top: 0;
             z-index: 2;
-            background-color: var(--color-crema);
+            background-color: var(--color-tabla-header);
             box-shadow: inset 0 -1px 0 var(--color-linea);
         }
         .paginated-page .paginated-pagination,

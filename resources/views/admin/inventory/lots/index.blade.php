@@ -194,7 +194,7 @@
 
     .lots-table thead tr {
         border-bottom: 1px solid var(--color-linea);
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
     }
 
     .lots-table th {
@@ -202,7 +202,7 @@
         top: 0;
         z-index: 2;
         padding: 0.6rem 0.85rem;
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
         box-shadow: inset 0 -1px 0 var(--color-linea);
         color: var(--color-noche);
         font-size: 0.64rem;

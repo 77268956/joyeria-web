@@ -143,7 +143,7 @@
     .cash-table-full thead th {
         position: sticky;
         top: 0;
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         z-index: 2;
         padding: 0.75rem 0.95rem;
         font-size: 0.74rem;

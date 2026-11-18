@@ -252,7 +252,7 @@
         z-index: 1;
         padding: 0.75rem 0.9rem;
         border-bottom: 1px solid var(--color-linea);
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         color: var(--color-noche);
         font-size: 0.68rem;
         font-weight: 700;

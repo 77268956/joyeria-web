@@ -452,7 +452,7 @@
         position: sticky;
         top: 0;
         z-index: 2;
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
         box-shadow: inset 0 -1px 0 var(--color-linea);
         white-space: nowrap;
     }

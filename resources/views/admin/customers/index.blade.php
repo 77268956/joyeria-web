@@ -214,7 +214,7 @@
     }
 
     .cust-table thead tr {
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         border-bottom: 1px solid var(--color-linea);
     }
 
@@ -223,7 +223,7 @@
         top: 0;
         z-index: 5;
         padding: 0.65rem 0.95rem;
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         box-shadow: inset 0 -1px 0 var(--color-linea);
         color: var(--color-noche);
         font-size: 0.64rem;

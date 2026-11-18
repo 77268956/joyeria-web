@@ -376,7 +376,7 @@
     }
 
     .lot-movements-table thead tr {
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
     }
 
     .lot-movements-table th {
@@ -384,7 +384,7 @@
         top: 0;
         z-index: 2;
         padding: 0.55rem 0.8rem;
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
         box-shadow: inset 0 -1px 0 var(--color-linea);
         color: var(--color-noche);
         font-size: 0.62rem;

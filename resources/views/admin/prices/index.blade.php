@@ -549,7 +549,7 @@
         z-index: 2;
         padding: 0.4rem 0.7rem;
         border-bottom: 1px solid var(--color-linea);
-        background: var(--color-crema);
+        background: var(--color-tabla-header);
         color: var(--color-piedra);
         font-size: 0.63rem;
         font-weight: 600;

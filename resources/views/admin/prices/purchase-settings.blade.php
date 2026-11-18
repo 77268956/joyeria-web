@@ -274,7 +274,7 @@
 
     .purchase-table th {
         padding: 0.45rem 1rem;
-        background: #FCFBF8;
+        background: var(--color-tabla-header);
         border-bottom: 1px solid var(--color-linea);
         color: var(--color-piedra);
         font-size: 0.6rem;

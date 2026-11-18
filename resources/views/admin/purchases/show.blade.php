@@ -327,7 +327,7 @@
         position: sticky;
         top: 0;
         z-index: 2;
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         box-shadow: inset 0 -1px 0 var(--color-linea);
     }
 
@@ -360,7 +360,7 @@
     }
 
     .purchase-responsive-table thead tr {
-        background-color: var(--color-crema);
+        background-color: var(--color-tabla-header);
         border-bottom: 1px solid var(--color-linea);
     }
 
