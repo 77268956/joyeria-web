@@ -11,6 +11,7 @@ use App\Models\Location;
 use App\Models\MaterialLot;
 use App\Models\Metal;
 use App\Services\InventoryService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,8 @@ use Illuminate\View\View;
 
 class MaterialLotController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(protected InventoryService $inventory) {}
 
     /**
@@ -84,7 +87,8 @@ class MaterialLotController extends Controller
         activity('inventario')
             ->performedOn($lot)
             ->causedBy(Auth::user())
-            ->withProperties(['code' => $lot->code, 'weight_g' => (string) $lot->initial_weight_g])
+            ->event('created')
+            ->withChanges($this->activityCreatedChanges($lot))
             ->log("Lote de materia prima registrado: {$lot->code}");
 
         return redirect()->route('admin.inventory.lots.show', $lot)
@@ -107,12 +111,15 @@ class MaterialLotController extends Controller
     public function adjustWeight(AdjustLotWeightRequest $request, MaterialLot $lot): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($lot);
 
         $this->inventory->adjustLotWeight($lot, (string) $validated['weight_delta_g'], $validated['reason']);
 
         activity('inventario')
             ->performedOn($lot)
             ->causedBy(Auth::user())
+            ->event('adjusted')
+            ->withChanges($this->activityUpdatedChanges($lot, $snapshot))
             ->withProperties(['weight_delta_g' => (string) $validated['weight_delta_g'], 'reason' => $validated['reason']])
             ->log("Ajuste de peso de lote: {$lot->code}");
 
@@ -126,12 +133,15 @@ class MaterialLotController extends Controller
     public function melt(SendToMeltingRequest $request, MaterialLot $lot): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($lot);
 
         $this->inventory->sendLotToMelting($lot, $validated['reason']);
 
         activity('inventario')
             ->performedOn($lot)
             ->causedBy(Auth::user())
+            ->event('sent_to_melting')
+            ->withChanges($this->activityUpdatedChanges($lot, $snapshot))
             ->withProperties(['reason' => $validated['reason']])
             ->log("Lote enviado a fundición: {$lot->code}");
 

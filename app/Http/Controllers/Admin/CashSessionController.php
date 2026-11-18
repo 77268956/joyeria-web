@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\CloseCashSessionRequest;
 use App\Http\Requests\Admin\OpenCashSessionRequest;
 use App\Models\CashSession;
 use App\Services\CashSessionService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -17,6 +18,8 @@ use RuntimeException;
 
 class CashSessionController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(protected CashSessionService $cash) {}
 
     /**
@@ -54,7 +57,8 @@ class CashSessionController extends Controller
         activity('caja')
             ->performedOn($session)
             ->causedBy(Auth::user())
-            ->withProperties(['opening_amount' => (string) $session->opening_amount])
+            ->event('opened')
+            ->withChanges($this->activityCreatedChanges($session))
             ->log('Apertura de turno de caja');
 
         return redirect()->route('admin.cash.index')
@@ -89,6 +93,7 @@ class CashSessionController extends Controller
         activity('caja')
             ->performedOn($session)
             ->causedBy(Auth::user())
+            ->event('movement')
             ->withProperties([
                 'type' => $movement->type->value,
                 'amount' => (string) $movement->amount,
@@ -112,6 +117,7 @@ class CashSessionController extends Controller
         }
 
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($session);
 
         try {
             $closed = $this->cash->close(
@@ -132,8 +138,9 @@ class CashSessionController extends Controller
         $log = activity('caja')
             ->performedOn($closed)
             ->causedBy(Auth::user())
+            ->event('closed')
+            ->withChanges($this->activityUpdatedChanges($closed, $snapshot))
             ->withProperties([
-                'difference_total' => (string) $closed->difference_total,
                 'supervisor_id' => $closed->supervisor_id,
                 'supervisor_name' => $closed->supervisor?->name,
             ]);

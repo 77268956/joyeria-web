@@ -15,6 +15,7 @@ use App\Models\MetalPurchaseItem;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\MetalPurchaseService;
+use App\Traits\BuildsActivityChanges;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,8 @@ use Throwable;
 
 class MetalPurchaseController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(
         protected MetalPurchaseService $purchases,
         protected CashSessionService $cash,
@@ -145,11 +148,8 @@ class MetalPurchaseController extends Controller
         activity('compras')
             ->performedOn($purchase)
             ->causedBy($user)
-            ->withProperties([
-                'number' => $purchase->number,
-                'total' => (string) $purchase->total_amount,
-                'status' => $purchase->status->value,
-            ])
+            ->event('created')
+            ->withChanges($this->activityCreatedChanges($purchase))
             ->log("Compra de metales registrada: {$purchase->number}");
 
         $message = $purchase->isPaid()
@@ -213,8 +213,10 @@ class MetalPurchaseController extends Controller
      */
     public function approve(ApproveMetalPurchaseRequest $request, MetalPurchase $metalPurchase): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($metalPurchase);
+
         try {
-            $this->purchases->approve(
+            $metalPurchase = $this->purchases->approve(
                 $metalPurchase,
                 Auth::user(),
                 $request->validated()['approval_note'] ?? null,
@@ -226,6 +228,8 @@ class MetalPurchaseController extends Controller
         activity('compras')
             ->performedOn($metalPurchase)
             ->causedBy(Auth::user())
+            ->event('approved')
+            ->withChanges($this->activityUpdatedChanges($metalPurchase, $snapshot))
             ->log("Compra aprobada: {$metalPurchase->number}");
 
         return back()->with('status', "La compra {$metalPurchase->number} fue aprobada y liquidada.");
@@ -236,8 +240,10 @@ class MetalPurchaseController extends Controller
      */
     public function reject(RejectMetalPurchaseRequest $request, MetalPurchase $metalPurchase): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($metalPurchase);
+
         try {
-            $this->purchases->reject(
+            $metalPurchase = $this->purchases->reject(
                 $metalPurchase,
                 Auth::user(),
                 $request->validated()['reason'],
@@ -249,6 +255,8 @@ class MetalPurchaseController extends Controller
         activity('compras')
             ->performedOn($metalPurchase)
             ->causedBy(Auth::user())
+            ->event('rejected')
+            ->withChanges($this->activityUpdatedChanges($metalPurchase, $snapshot))
             ->log("Compra rechazada: {$metalPurchase->number}");
 
         return back()->with('status', "La compra {$metalPurchase->number} fue rechazada.");
@@ -270,6 +278,7 @@ class MetalPurchaseController extends Controller
     public function adjust(AdjustMetalPurchaseRequest $request, MetalPurchase $metalPurchase): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($metalPurchase);
 
         try {
             $this->purchases->adjust(
@@ -282,9 +291,13 @@ class MetalPurchaseController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
+        $metalPurchase->refresh();
+
         activity('compras')
             ->performedOn($metalPurchase)
             ->causedBy(Auth::user())
+            ->event('adjusted')
+            ->withChanges($this->activityUpdatedChanges($metalPurchase, $snapshot))
             ->withProperties(['reason' => $validated['reason']])
             ->log("Compra ajustada: {$metalPurchase->number}");
 

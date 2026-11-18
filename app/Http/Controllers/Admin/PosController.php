@@ -12,6 +12,7 @@ use App\Models\Sale;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\SaleService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,8 @@ use Throwable;
 
 class PosController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(
         protected SaleService $sales,
         protected CashSessionService $cash,
@@ -152,11 +155,8 @@ class PosController extends Controller
         activity('ventas')
             ->performedOn($sale)
             ->causedBy($user)
-            ->withProperties([
-                'number' => $sale->number,
-                'total' => (string) $sale->total,
-                'items' => $sale->items->count(),
-            ])
+            ->event('created')
+            ->withChanges($this->activityCreatedChanges($sale))
             ->log("Venta registrada: {$sale->number}");
 
         return response()->json([

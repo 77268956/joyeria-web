@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscountAuthorization;
 use App\Services\CashSessionService;
 use App\Services\DiscountAuthorizationService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,8 @@ use Throwable;
 
 class DiscountAuthorizationController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(
         protected DiscountAuthorizationService $authorizations,
     ) {}
@@ -80,10 +83,8 @@ class DiscountAuthorizationController extends Controller
             activity('descuentos')
                 ->performedOn($authorization)
                 ->causedBy($user)
-                ->withProperties([
-                    'discount_percent' => $request->input('discount_percent'),
-                    'discount_amount' => $request->input('discount_amount'),
-                ])
+                ->event('requested')
+                ->withChanges($this->activityCreatedChanges($authorization))
                 ->log("Solicitud de descuento del {$request->input('discount_percent')}%");
 
             return response()->json([
@@ -150,11 +151,14 @@ class DiscountAuthorizationController extends Controller
     public function approve(DiscountAuthorization $authorization): JsonResponse
     {
         try {
-            $this->authorizations->approve($authorization, Auth::user());
+            $snapshot = $this->activitySnapshot($authorization);
+            $authorization = $this->authorizations->approve($authorization, Auth::user());
 
             activity('descuentos')
                 ->performedOn($authorization)
                 ->causedBy(Auth::user())
+                ->event('approved')
+                ->withChanges($this->activityUpdatedChanges($authorization, $snapshot))
                 ->log("Descuento del {$authorization->discount_percent}% aprobado");
 
             return response()->json(['status' => 'approved']);
@@ -173,11 +177,14 @@ class DiscountAuthorizationController extends Controller
         ]);
 
         try {
-            $this->authorizations->reject($authorization, Auth::user(), $request->input('reason'));
+            $snapshot = $this->activitySnapshot($authorization);
+            $authorization = $this->authorizations->reject($authorization, Auth::user(), $request->input('reason'));
 
             activity('descuentos')
                 ->performedOn($authorization)
                 ->causedBy(Auth::user())
+                ->event('rejected')
+                ->withChanges($this->activityUpdatedChanges($authorization, $snapshot))
                 ->log("Descuento del {$authorization->discount_percent}% rechazado");
 
             return response()->json(['status' => 'rejected']);

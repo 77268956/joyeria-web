@@ -16,6 +16,7 @@ use App\Models\Product;
 use App\Models\ProductPhoto;
 use App\Services\BarcodeGenerator;
 use App\Services\InventoryService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,8 @@ use Throwable;
 
 class ProductController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(protected InventoryService $inventory) {}
 
     /**
@@ -103,7 +106,8 @@ class ProductController extends Controller
         activity('inventario')
             ->performedOn($product)
             ->causedBy(Auth::user())
-            ->withProperties(['sku' => $product->sku])
+            ->event('created')
+            ->withChanges($this->activityCreatedChanges($product))
             ->log("Pieza registrada: {$product->name}");
 
         return redirect()->route('admin.inventory.show', $product)
@@ -144,7 +148,7 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
         $validated = $request->validated();
-        $previousPrice = (string) $product->price;
+        $snapshot = $this->activitySnapshot($product);
 
         try {
             DB::transaction(function () use ($request, $validated, $product): void {
@@ -175,7 +179,8 @@ class ProductController extends Controller
         activity('inventario')
             ->performedOn($product)
             ->causedBy(Auth::user())
-            ->withProperties(['sku' => $product->sku, 'price_before' => $previousPrice, 'price_after' => (string) $product->price])
+            ->event('updated')
+            ->withChanges($this->activityUpdatedChanges($product, $snapshot))
             ->log("Pieza actualizada: {$product->name}");
 
         return redirect()->route('admin.inventory.show', $product)
@@ -188,11 +193,14 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         $name = $product->name;
+        $snapshot = $this->activitySnapshot($product);
         $product->delete();
 
         activity('inventario')
             ->performedOn($product)
             ->causedBy(Auth::user())
+            ->event('deleted')
+            ->withChanges($this->activityDeletedChanges($snapshot))
             ->log("Pieza eliminada: {$name}");
 
         return redirect()->route('admin.inventory.index')
@@ -273,12 +281,15 @@ class ProductController extends Controller
     public function adjust(AdjustStockRequest $request, Product $product): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($product);
 
         $this->inventory->adjustProduct($product, (int) $validated['quantity_delta'], $validated['reason']);
 
         activity('inventario')
             ->performedOn($product)
             ->causedBy(Auth::user())
+            ->event('adjusted')
+            ->withChanges($this->activityUpdatedChanges($product, $snapshot))
             ->withProperties(['quantity_delta' => (int) $validated['quantity_delta'], 'reason' => $validated['reason']])
             ->log("Ajuste de existencias: {$product->name}");
 
@@ -292,12 +303,15 @@ class ProductController extends Controller
     public function melt(SendToMeltingRequest $request, Product $product): RedirectResponse
     {
         $validated = $request->validated();
+        $snapshot = $this->activitySnapshot($product);
 
         $this->inventory->sendProductToMelting($product, $validated['reason']);
 
         activity('inventario')
             ->performedOn($product)
             ->causedBy(Auth::user())
+            ->event('sent_to_melting')
+            ->withChanges($this->activityUpdatedChanges($product, $snapshot))
             ->withProperties(['reason' => $validated['reason']])
             ->log("Pieza enviada a fundición: {$product->name}");
 

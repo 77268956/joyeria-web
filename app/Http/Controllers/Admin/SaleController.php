@@ -9,6 +9,7 @@ use App\Models\Sale;
 use App\Models\Store;
 use App\Services\CashSessionService;
 use App\Services\SaleService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ use Throwable;
 
 class SaleController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(
         protected SaleService $sales,
         protected CashSessionService $cash,
@@ -109,8 +112,10 @@ class SaleController extends Controller
      */
     public function void(VoidSaleRequest $request, Sale $sale): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($sale);
+
         try {
-            $this->sales->void($sale, $request->validated('reason'), Auth::user());
+            $sale = $this->sales->void($sale, $request->validated('reason'), Auth::user());
         } catch (Throwable $exception) {
             return back()->withErrors(['error' => $exception->getMessage()]);
         }
@@ -118,6 +123,8 @@ class SaleController extends Controller
         activity('ventas')
             ->performedOn($sale)
             ->causedBy(Auth::user())
+            ->event('voided')
+            ->withChanges($this->activityUpdatedChanges($sale, $snapshot))
             ->withProperties(['reason' => $request->validated('reason')])
             ->log("Venta anulada: {$sale->number}");
 

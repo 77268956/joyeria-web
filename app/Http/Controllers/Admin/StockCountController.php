@@ -10,6 +10,7 @@ use App\Http\Requests\Admin\StoreStockCountRequest;
 use App\Models\Product;
 use App\Models\StockCount;
 use App\Services\StockCountService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,6 +18,8 @@ use Throwable;
 
 class StockCountController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(protected StockCountService $counts) {}
 
     /**
@@ -58,6 +61,8 @@ class StockCountController extends Controller
         activity('inventario')
             ->performedOn($count)
             ->causedBy($request->user())
+            ->event('started')
+            ->withChanges($this->activityCreatedChanges($count))
             ->log("Conteo físico iniciado #{$count->id}");
 
         return redirect()->route('admin.stock-counts.show', $count)
@@ -121,8 +126,10 @@ class StockCountController extends Controller
      */
     public function finish(Request $request, StockCount $stockCount): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($stockCount);
+
         try {
-            $this->counts->finish($stockCount, $request->user());
+            $stockCount = $this->counts->finish($stockCount, $request->user());
         } catch (Throwable $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -130,6 +137,8 @@ class StockCountController extends Controller
         activity('inventario')
             ->performedOn($stockCount)
             ->causedBy($request->user())
+            ->event('finished')
+            ->withChanges($this->activityUpdatedChanges($stockCount, $snapshot))
             ->log("Conteo físico finalizado #{$stockCount->id}");
 
         return back()->with('status', 'El conteo quedó finalizado. Revísalo y aplícalo para ajustar el inventario.');
@@ -140,8 +149,10 @@ class StockCountController extends Controller
      */
     public function apply(Request $request, StockCount $stockCount): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($stockCount);
+
         try {
-            $this->counts->apply($stockCount, $request->user());
+            $stockCount = $this->counts->apply($stockCount, $request->user());
         } catch (Throwable $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -149,6 +160,8 @@ class StockCountController extends Controller
         activity('inventario')
             ->performedOn($stockCount)
             ->causedBy($request->user())
+            ->event('applied')
+            ->withChanges($this->activityUpdatedChanges($stockCount, $snapshot))
             ->log("Conteo físico aplicado #{$stockCount->id}");
 
         return redirect()->route('admin.stock-counts.show', $stockCount)

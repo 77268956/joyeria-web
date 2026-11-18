@@ -76,6 +76,7 @@ class FetchMetalPrices extends Command
         Log::warning($message);
 
         activity('precios')
+            ->event('failed')
             ->withProperties(['failed' => $details])
             ->log('Fallo al actualizar el precio del metal desde el proveedor');
     }

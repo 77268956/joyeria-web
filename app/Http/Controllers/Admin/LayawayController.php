@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\LayawayService;
+use App\Traits\BuildsActivityChanges;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,8 @@ use Throwable;
 
 class LayawayController extends Controller
 {
+    use BuildsActivityChanges;
+
     public function __construct(
         protected LayawayService $layaways,
         protected CashSessionService $cash,
@@ -137,10 +140,8 @@ class LayawayController extends Controller
         activity('apartados')
             ->performedOn($layaway)
             ->causedBy($user)
-            ->withProperties([
-                'number' => $layaway->number,
-                'total' => (string) $layaway->total_price,
-            ])
+            ->event('created')
+            ->withChanges($this->activityCreatedChanges($layaway))
             ->log("Apartado registrado: {$layaway->number}");
 
         return redirect()->route('admin.layaways.show', $layaway)
@@ -181,6 +182,8 @@ class LayawayController extends Controller
             return back()->with('error', 'Debe abrir un turno de caja para registrar abonos.');
         }
 
+        $snapshot = $this->activitySnapshot($layaway);
+
         try {
             $layaway = $this->layaways->addPayment($layaway, $session, $user, $request->validated());
         } catch (Throwable $exception) {
@@ -190,6 +193,8 @@ class LayawayController extends Controller
         activity('apartados')
             ->performedOn($layaway)
             ->causedBy($user)
+            ->event('payment')
+            ->withChanges($this->activityUpdatedChanges($layaway, $snapshot))
             ->withProperties(['amount' => (string) $request->validated('amount')])
             ->log("Abono registrado al apartado: {$layaway->number}");
 
@@ -208,6 +213,8 @@ class LayawayController extends Controller
             return back()->with('error', 'Debe abrir un turno de caja para entregar apartados.');
         }
 
+        $snapshot = $this->activitySnapshot($layaway);
+
         try {
             $layaway = $this->layaways->complete($layaway, $session, $user);
         } catch (Throwable $exception) {
@@ -217,6 +224,8 @@ class LayawayController extends Controller
         activity('apartados')
             ->performedOn($layaway)
             ->causedBy($user)
+            ->event('completed')
+            ->withChanges($this->activityUpdatedChanges($layaway, $snapshot))
             ->log("Apartado entregado y convertido en venta: {$layaway->number}");
 
         return redirect()->route('admin.layaways.show', $layaway)
@@ -228,6 +237,8 @@ class LayawayController extends Controller
      */
     public function cancel(CancelLayawayRequest $request, Layaway $layaway): RedirectResponse
     {
+        $snapshot = $this->activitySnapshot($layaway);
+
         try {
             $layaway = $this->layaways->cancel($layaway, $request->user(), $request->validated('reason'));
         } catch (Throwable $exception) {
@@ -237,7 +248,8 @@ class LayawayController extends Controller
         activity('apartados')
             ->performedOn($layaway)
             ->causedBy($request->user())
-            ->withProperties(['reason' => $request->validated('reason')])
+            ->event('cancelled')
+            ->withChanges($this->activityUpdatedChanges($layaway, $snapshot))
             ->log("Apartado cancelado: {$layaway->number}");
 
         return redirect()->route('admin.layaways.show', $layaway)
