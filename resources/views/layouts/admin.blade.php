@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Panel') — Joyería Web</title>
+    <meta name="supervisor-authorized-until" content="{{ session('supervisor_authorization.expires_at') }}">
+    <title>@yield('title', 'Panel') — {{ $systemSettings?->system_name ?? 'Joyería Web' }}</title>
 
     <!-- Google Fonts: Cormorant Garamond & Jost -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -220,6 +221,7 @@
         .main-wrapper {
             margin-left: var(--sidebar-width);
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -343,6 +345,7 @@
         /* ------------------ CONTENT ------------------ */
         .content-area {
             flex: 1;
+            min-width: 0;
             padding: 2.25rem 2rem;
         }
 
@@ -895,6 +898,7 @@
         syncModalAnimations();
     </script>
     @vite('resources/js/motion.js')
+    @vite('resources/js/supervisor.js')
     @stack('styles')
 </head>
 <body class="@yield('body_class')">
@@ -909,7 +913,7 @@
         <div class="sidebar-brand">
             <img src="{{ asset('images/logo-placeholder.svg') }}" alt="Logo de la joyería" class="sidebar-logo">
             <div class="sidebar-brand-text">
-                <h1>Joyería Web</h1>
+                <h1>{{ $systemSettings?->system_name ?? 'Joyería Web' }}</h1>
                 <span>Alta Gama &amp; Control</span>
             </div>
             <button type="button" id="sidebar-toggle" class="sidebar-toggle" title="Mostrar u ocultar menú" aria-label="Mostrar u ocultar menú">
@@ -1158,7 +1162,7 @@
                 </div>
 
                 <!-- Botón de Salir -->
-                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ route('logout') }}" method="POST" style="margin: 0;" data-skip-supervisor>
                     @csrf
                     <button type="submit" class="btn-logout" title="Cerrar sesión actual">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1177,6 +1181,8 @@
             @yield('content')
         </main>
     </div>
+
+    @include('admin.partials.supervisor-modal')
 
     @stack('scripts')
 

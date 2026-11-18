@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Store;
+use App\Models\SystemSetting;
 use App\Services\CashSessionService;
 use App\Services\MetalPriceService;
 use App\Services\Pricing\MetalPriceProviderInterface;
@@ -61,11 +62,25 @@ class AppServiceProvider extends ServiceProvider
             $service = $this->app->make(MetalPriceService::class);
             $cash = $this->app->make(CashSessionService::class);
 
+            $storeId = Auth::user()?->store_id;
+            $systemSettings = $storeId !== null
+                ? SystemSetting::query()->where('store_id', $storeId)->first()
+                : null;
+            $systemSettings ??= SystemSetting::query()->orderBy('id')->first();
+
             $view->with([
                 'goldMetalPrice' => $service->currentByCode('GOLD'),
                 'silverMetalPrice' => $service->currentByCode('SILVER'),
                 'openCashSession' => $cash->currentSession(Auth::user()),
+                'systemSettings' => $systemSettings,
             ]);
+        });
+
+        View::composer(['layouts.auth', 'auth.login'], function ($view): void {
+            $view->with(
+                'systemSettings',
+                SystemSetting::query()->orderBy('id')->first(),
+            );
         });
 
         View::composer(['layouts.public', 'public.contact', 'public.store'], function ($view): void {

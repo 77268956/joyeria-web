@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckSessionInactivity;
 use App\Http\Middleware\EnsureCashSessionIsOpen;
+use App\Http\Middleware\RequireSupervisorAuthorization;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'cash.session' => EnsureCashSessionIsOpen::class,
+            'supervisor.authorization' => RequireSupervisorAuthorization::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

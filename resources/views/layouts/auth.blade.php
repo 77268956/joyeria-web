@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Ingreso al Sistema') — Joyería Web</title>
+    <title>@yield('title', 'Ingreso al Sistema') — {{ $systemSettings?->system_name ?? 'Joyería Web' }}</title>
 
     <!-- Google Fonts: Cormorant Garamond & Jost -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

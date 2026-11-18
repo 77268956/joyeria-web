@@ -13,7 +13,9 @@ use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockCountController;
+use App\Http\Controllers\Admin\SupervisorConfirmationController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PublicSiteController;
@@ -60,10 +62,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // =========================================================================
 // 3. PANEL ADMINISTRATIVO (Rutas protegidas por auth)
 // =========================================================================
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'supervisor.authorization'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
+
+    // Autorización con PIN de supervisor para acciones sensibles
+    Route::post('/confirmacion/pin', [SupervisorConfirmationController::class, 'validatePin'])
+        ->middleware('throttle:20,1')
+        ->name('supervisor.validate_pin');
 
     // Dashboard principal
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -739,7 +739,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('admin.cash.close') }}" method="POST" id="form-close-cash">
+            <form action="{{ route('admin.cash.close') }}" method="POST" id="form-close-cash" data-skip-supervisor>
                 @csrf
                 <input type="hidden" name="supervisor_pin" id="close_supervisor_pin">
 
@@ -1184,7 +1184,7 @@
             <button type="button" class="modal-close" data-close-modal="modal-open-shift" onclick="closeModal('modal-open-shift')" aria-label="Cerrar">&times;</button>
         </div>
 
-        <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash">
+        <form action="{{ route('admin.cash.open') }}" method="POST" id="form-open-cash" data-skip-supervisor>
             @csrf
             <div class="modal-body" style="padding: 1.5rem; text-align: center;">
                 <div style="width: 52px; height: 52px; border-radius: 50%; background-color: var(--color-crema); color: var(--color-dorado); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">

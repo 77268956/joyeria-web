@@ -308,7 +308,7 @@
     <div class="login-form-area">
         <div class="login-card">
             <div class="brand-header">
-                <h2 class="brand-title">Joyería Web</h2>
+                <h2 class="brand-title">{{ $systemSettings?->system_name ?? 'Joyería Web' }}</h2>
                 <p class="brand-subtitle">Panel de Control</p>
                 <div class="gold-divider"></div>
             </div>
